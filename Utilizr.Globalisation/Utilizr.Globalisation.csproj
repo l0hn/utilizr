@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Utilizr.Extensions\Utilizr.Extensions.csproj" />
+    <ProjectReference Include="..\Utilizr.Logging\Utilizr.Logging.csproj" />
+  </ItemGroup>
+
+</Project>
