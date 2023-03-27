@@ -45,25 +45,29 @@ namespace Utilizr
             return true;
         }
 
-        public override bool TrySetMember(SetMemberBinder binder, object value)
+        public override bool TrySetMember(SetMemberBinder binder, object? value)
         {
             Instance!.GetType().InvokeMember(
                 binder.Name,
                 BindingFlags.SetProperty,
                 Type.DefaultBinder,
                 Instance,
-                new object[] { WrapIfRequired(value) }
+                new object?[] { WrapIfRequired(value) }
             );
             return true;
         }
 
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object? result)
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object?[]? args, out object? result)
         {
-            for (int i = 0; i < args.Length; i++)
+            if (args != null)
             {
-                if (args[i] is COMObject co)
-                    args[i] = co.Instance!;
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (args[i] is COMObject co)
+                        args[i] = co.Instance!;
+                }
             }
+
             result = Instance!.GetType().InvokeMember(
                 binder.Name,
                 BindingFlags.InvokeMethod,
@@ -89,7 +93,7 @@ namespace Utilizr
             return true;
         }
 
-        private static object? WrapIfRequired(object obj)
+        private static object? WrapIfRequired(object? obj)
         {
             return obj != null && obj.GetType().IsCOMObject
                 ? new COMObject(obj)

@@ -1,22 +1,23 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
+using System.Linq;
 using System.Management;
-using Microsoft.Win32;
 using Utilizr.Logging;
 
 namespace Utilizr.Info
 {
-    public class HardwareInfo
+    public static class HardwareInfo
     {
-        private string _motherboardSerial = string.Empty;
+        private static string _motherboardSerial = string.Empty;
 
-        public string GetMotherboardSerialNumber()
+        public static string GetMotherboardSerialNumber()
         {
             var query = "Select * From Win32_BaseBoard";
             if (string.IsNullOrEmpty(_motherboardSerial))
             {
                 string id = "";
                 using var searcher = new ManagementObjectSearcher(query);
-                foreach (ManagementObject item in searcher.Get())
+                foreach (var item in searcher.Get().Cast<ManagementObject>())
                 {
                     id += item["SerialNumber"].ToString();
                 }
@@ -26,8 +27,8 @@ namespace Utilizr.Info
         }
 
 
-        private string _processorId = string.Empty;
-        public string GetProcessorID()
+        private static string _processorId = string.Empty;
+        public static string GetProcessorID()
         {
             if (string.IsNullOrEmpty(_processorId))
             {
@@ -38,9 +39,12 @@ namespace Utilizr.Info
                 {
                     try
                     {
-                        id = item["processorID"].ToString();
-                        if (!string.IsNullOrEmpty(id))
-                            break;
+                        if (item != null)
+                        {
+                            id = item["processorID"].ToString() ?? string.Empty;
+                            if (!string.IsNullOrEmpty(id))
+                                break;
+                        }
                     }
                     catch (Exception)
                     {
@@ -51,21 +55,25 @@ namespace Utilizr.Info
             return _processorId;
         }
 
-        public string GetVolumeSerial()
+        public static string? GetVolumeSerial()
         {
             string defaultVolume = Environment.ExpandEnvironmentVariables("%homedrive%");
             return GetVolumeSerial(defaultVolume);
         }
 
 
-        public string? GetVolumeSerial(string volume)
+        public static string GetVolumeSerial(string volume)
         {
             try
             {
                 volume = volume.TrimEnd('\\', ':');
                 using var disk = new ManagementObject(@"win32_logicaldisk.deviceid=""" + volume + @":""");
                 disk.Get();
-                string volumeSerial = disk["VolumeSerialNumber"].ToString();
+                var volumeSerial = disk["VolumeSerialNumber"].ToString();
+
+                if (string.IsNullOrEmpty(volumeSerial))
+                    throw new HardwareInfoException("Retrieved VolumeSerialNumber null or empty");
+
                 return volumeSerial;
             }
             catch (Exception err)
@@ -76,12 +84,12 @@ namespace Utilizr.Info
             throw new HardwareInfoException("Could not retrieve volume serial. MONO directive set but using WindowsHardwareInfo object.");
         }
 
-        public string GetComputerName()
+        public static string GetComputerName()
         {
             return Environment.MachineName;
         }
 
-        public string GetRootHDDPhysicalSerial()
+        public static string GetRootHDDPhysicalSerial()
         {
             try
             {
@@ -89,11 +97,15 @@ namespace Utilizr.Info
                 var phsyicalZero = "\\\\.\\PHYSICALDRIVE0";
 
                 var searcher = new ManagementObjectSearcher(query);
-                foreach (ManagementObject managementObject in searcher.Get())
+                foreach (var managementObject in searcher.Get().Cast<ManagementObject>())
                 {
                     if (managementObject.Properties["Tag"].Value.ToString() == phsyicalZero)
                     {
-                        return managementObject.Properties["SerialNumber"].Value.ToString();
+                        var diskSerial = managementObject.Properties["SerialNumber"].Value.ToString();
+                        if (string.IsNullOrEmpty(diskSerial))
+                            throw new HardwareInfoException("Retrieved physical serial for root hdd null or empty.");
+
+                        return diskSerial;
                     }
                 }
             }
@@ -111,7 +123,7 @@ namespace Utilizr.Info
             try
             {
                 using var regKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography");
-                machineGuid = regKey.GetValue("MachineGuid").ToString();
+                machineGuid = regKey?.GetValue("MachineGuid")?.ToString() ?? "";
             }
             catch (Exception e)
             {

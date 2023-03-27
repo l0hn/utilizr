@@ -124,17 +124,13 @@ namespace Utilizr
             uint creationFlags,
             IntPtr envBlock)
         {
-            SafeFileHandle parentOutputPipeHandle;
-            SafeFileHandle childOutputPipeHandle;
-            SafeFileHandle parentErrorPipeHandle;
-            SafeFileHandle childErrorPipeHandle;
 
             var pi = new PROCESS_INFORMATION();
 
             try
             {
-                CreatePipe(out parentOutputPipeHandle, out childOutputPipeHandle, false);
-                CreatePipe(out parentErrorPipeHandle, out childErrorPipeHandle, false);
+                CreatePipe(out SafeFileHandle parentOutputPipeHandle, out SafeFileHandle childOutputPipeHandle, false);
+                CreatePipe(out SafeFileHandle parentErrorPipeHandle, out SafeFileHandle childErrorPipeHandle, false);
 
                 var saProcess = new SECURITY_ATTRIBUTES();
                 saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
@@ -142,7 +138,7 @@ namespace Utilizr
                 var saThread = new SECURITY_ATTRIBUTES();
                 saThread.nLength = (uint)Marshal.SizeOf(saThread);
 
-                STARTUPINFO si = new STARTUPINFO();
+                var si = new STARTUPINFO();
                 si.cb = (uint)Marshal.SizeOf(si);
                 si.hStdOutput = childOutputPipeHandle.DangerousGetHandle();
                 si.hStdError = childErrorPipeHandle.DangerousGetHandle();
@@ -245,7 +241,7 @@ namespace Utilizr
                     var saThread = new SECURITY_ATTRIBUTES();
                     saThread.nLength = (uint)Marshal.SizeOf(saThread);
 
-                    STARTUPINFO si = new STARTUPINFO();
+                    var si = new STARTUPINFO();
                     si.cb = (uint)Marshal.SizeOf(si);
                     si.wShowWindow = ShowWindowFlags.SW_SHOW;
 
@@ -292,7 +288,7 @@ namespace Utilizr
                     creationFlags |= ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT;
                     //creationFlags |= CREATE_NEW_CONSOLE;
 
-                    string environmentBlock = null;
+                    string? environmentBlock = null;
                     if (startInfo.EnvironmentVariables != null)
                     {
                         environmentBlock = GetEnvironmentVariablesBlock(startInfo.EnvironmentVariables);
@@ -341,8 +337,10 @@ namespace Utilizr
                     if (startInfo.RedirectStandardInput)
                     {
                         var enc = startInfo.StandardInputEncoding ?? GetEncoding((int)Kernel32.GetConsoleOutputCP());
-                        var standardInput = new StreamWriter(new FileStream(parentInputPipeHandle!, FileAccess.Write, 4096, false), enc);
-                        standardInput.AutoFlush = true;
+                        var standardInput = new StreamWriter(new FileStream(parentInputPipeHandle!, FileAccess.Write, 4096, false), enc)
+                        {
+                            AutoFlush = true
+                        };
                         getInputDelegate?.Invoke(standardInput);
                     }
 

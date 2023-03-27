@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Utilizr.Logging;
+using Utilizr.Logging.Handlers;
 
 namespace Utilizr.Network
 {
@@ -19,20 +21,20 @@ namespace Utilizr.Network
         /// <summary>
         /// Fired when a line is recieved from the server.
         /// </summary>
-        public event EventHandler<LineRecievedEventArgs> LineReceieved;
-        public event ErrorHandler Error;
-        public event EventHandler Disconnected;
+        public event EventHandler<LineRecievedEventArgs>? LineReceieved;
+        public event ErrorHandler? Error;
+        public event EventHandler? Disconnected;
 
-        private TcpClient _tcpClient;
-        private Stream _tcpStream;
-        private ManualResetEvent _sendReady;
-        private Queue<string> _sendQueue;
-        private ManualResetEvent _receiveReady;
-        private Queue<string> _receiveQueue;
-        private object WRITE_LOCK = new object();
-        private object READ_LOCK = new object();
-        private string _host;
-        private int _port;
+        private readonly TcpClient _tcpClient;
+        private Stream? _tcpStream;
+        private readonly ManualResetEvent _sendReady;
+        private readonly Queue<string> _sendQueue;
+        private readonly ManualResetEvent _receiveReady;
+        private readonly Queue<string> _receiveQueue;
+        private readonly object WRITE_LOCK = new();
+        private readonly object READ_LOCK = new();
+        private readonly string _host;
+        private readonly int _port;
         private bool _connected = false;
         private bool _isDisposing;
 
@@ -53,13 +55,15 @@ namespace Utilizr.Network
             _receiveQueue = new Queue<string>();
             _host = host;
             _port = port;
-            _tcpClient = new TcpClient();
-            _tcpClient.SendTimeout = sendTimeout;
-            _tcpClient.ReceiveTimeout = recieveTimeout;
+            _tcpClient = new TcpClient
+            {
+                SendTimeout = sendTimeout,
+                ReceiveTimeout = recieveTimeout
+            };
             MagicPhrases = new List<string>();
         }
 
-        public Task Connect(AsyncCallback callback)
+        public Task Connect()
         {
             return Task.Run(() =>
             {
@@ -132,7 +136,7 @@ namespace Utilizr.Network
                     var nextLine = _sendQueue.Dequeue();
                     nextLine = nextLine.Trim('\r', '\n') + "\r\n";
                     var bytes = Encoding.UTF8.GetBytes(nextLine);
-                    var ar = _tcpStream.BeginWrite(bytes, 0, bytes.Length, null, null);
+                    var ar = _tcpStream!.BeginWrite(bytes, 0, bytes.Length, null, null);
                     _tcpStream.EndWrite(ar);
                     _tcpStream.Flush();
                 }
@@ -148,7 +152,7 @@ namespace Utilizr.Network
                 string currentChunk = "";
                 while (_tcpClient.Connected)
                 {
-                    read = _tcpStream.EndRead(_tcpStream.BeginRead(buf, 0, buf.Length, null, null));
+                    read = _tcpStream!.EndRead(_tcpStream.BeginRead(buf, 0, buf.Length, null, null));
                     if (read <= 0)
                     {
                         continue;
@@ -159,7 +163,7 @@ namespace Utilizr.Network
                     var remainder = currentChunk.Length;
                     while ((i = currentChunk.IndexOf("\r\n")) > -1)
                     {
-                        var line = currentChunk.Substring(0, i);
+                        var line = currentChunk[..i];
                         lock (READ_LOCK)
                         {
                             _receiveQueue.Enqueue(line);
@@ -219,7 +223,7 @@ namespace Utilizr.Network
 #if DEBUG
                     Console.WriteLine($"processing {line}");
 #endif 
-                    Router.Process(new LineRecievedEventArgs() { Message = line });
+                    Router.Process(new LineRecievedEventArgs(line));
                     OnLineRecieved(line);
                 }
                 catch (Exception ex)
@@ -231,7 +235,7 @@ namespace Utilizr.Network
 
         protected virtual void OnLineRecieved(string line)
         {
-            var lineArgs = new LineRecievedEventArgs() { Message = line };
+            var lineArgs = new LineRecievedEventArgs(line);
             LineReceieved?.Invoke(this, lineArgs);
             if (!string.IsNullOrEmpty(lineArgs.ResponseMessage))
             {
@@ -266,6 +270,8 @@ namespace Utilizr.Network
             {
                 Log.Exception("TELNET", ex);
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -278,7 +284,12 @@ namespace Utilizr.Network
         /// <summary>
         /// Set this if you want to respond to the message
         /// </summary>
-        public string ResponseMessage { get; set; } = null;
+        public string? ResponseMessage { get; set; } = null;
+
+        public LineRecievedEventArgs(string message)
+        {
+            Message = message;
+        }
 
         internal void Reset()
         {
@@ -288,8 +299,8 @@ namespace Utilizr.Network
 
     public class MessageRouter
     {
-        private List<Handler> _handlers;
-        private TelnetClient _telnetClient;
+        private readonly List<Handler> _handlers;
+        private readonly TelnetClient _telnetClient;
 
         public MessageRouter(TelnetClient telnetClient)
         {
@@ -304,15 +315,7 @@ namespace Utilizr.Network
             bool contains = false,
             bool endswith = false)
         {
-            _handlers.Add(new Handler()
-            {
-                StringComparison = comparison,
-                StringToCompare = stringToCompare,
-                StartsWith = startswith,
-                EndsWith = endswith,
-                Contains = contains,
-                Action = handler,
-            });
+            _handlers.Add(new Handler(comparison, stringToCompare, startswith, endswith, contains, handler));
         }
 
         public void Process(LineRecievedEventArgs args)
@@ -339,8 +342,20 @@ namespace Utilizr.Network
         public Action<LineRecievedEventArgs> Action { get; set; }
         public string StringToCompare { get; set; }
 
-        internal Handler()
+        internal Handler(
+            StringComparison stringComparison,
+            string stringToCompare,
+            bool startswith,
+            bool endswith,
+            bool contains,
+            Action<LineRecievedEventArgs> handler)
         {
+            StringComparison = stringComparison;
+            StringToCompare = stringToCompare;
+            StartsWith = startswith; 
+            EndsWith = endswith;
+            Contains = contains;
+            Action = handler;
         }
 
         public void ProcessMessage(LineRecievedEventArgs args)

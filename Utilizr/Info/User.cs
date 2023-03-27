@@ -16,12 +16,17 @@ namespace Utilizr.Windows
     {
         public static SecurityIdentifier GetCurrentUserSID()
         {
-            return WindowsIdentity.GetCurrent().User;
+            var identity = WindowsIdentity.GetCurrent();
+
+            if (identity.User == null)
+                throw new Exception("WindowsIdentity.User returned null security identifier.");
+
+            return identity.User;
         }
 
         public static string GetCurrentUserSIDString()
         {
-            return WindowsIdentity.GetCurrent().User.ToString();
+            return GetCurrentUserSID().ToString();
         }
 
         public static string GetCurrentUsername()
@@ -100,7 +105,7 @@ namespace Utilizr.Windows
         /// <param name="maxAttempt"></param>
         /// <param name="delaySecondsPerAttempt"></param>
         /// <returns>Null if process is still not running after exceeding <paramref name="maxAttempt"/></returns>
-        public static Process GetExplorerProcess(
+        public static Process? GetExplorerProcess(
             out int attemptsMade,
             int maxAttempt = 3,
             int delaySecondsPerAttempt = 10)
@@ -143,7 +148,7 @@ namespace Utilizr.Windows
         public static T RunAsImpersonated<T>(Func<T> func) where T : new()
         {
             IntPtr hToken = IntPtr.Zero;
-            T returnedValue = new T();
+            var returnedValue = new T();
 
             if (Advapi32.OpenProcessToken(Process.GetCurrentProcess().Handle, (uint)TOKEN_PRIVILEGE_FLAGS.TOKEN_QUERY, ref hToken) == 0)
             {
@@ -172,7 +177,7 @@ namespace Utilizr.Windows
                     if (result)
                     {
                         var linkedToken = Marshal.PtrToStructure<TOKEN_LINKED_TOKEN>(pLinkedToken);
-                        SafeAccessTokenHandle tokenHandle = new SafeAccessTokenHandle(linkedToken.LinkedToken);
+                        var tokenHandle = new SafeAccessTokenHandle(linkedToken.LinkedToken);
                         returnedValue = WindowsIdentity.RunImpersonated(tokenHandle, () => func());
                     }
 

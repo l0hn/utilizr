@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
@@ -51,6 +52,7 @@ namespace Utilizr.Threading
             }
         }
 
+        [MemberNotNull(nameof(Mutex))]
         private void Create(bool initiallyOwned)
         {
             var security = new MutexSecurity();
@@ -65,7 +67,7 @@ namespace Utilizr.Threading
             }
             catch (Exception)
             {
-                Mutex = new Mutex(initiallyOwned, _path, out bool createdNew);
+                Mutex = new Mutex(initiallyOwned, _path, out _);
                 Mutex.SetAccessControl(security);
             }
         }
@@ -88,9 +90,10 @@ namespace Utilizr.Threading
         public void Dispose()
         {
             Mutex?.Close();
+            GC.SuppressFinalize(this);
         }
 
-        public bool ExecuteSynchronized(System.Action action, int timeout = -1, bool exitContext = false)
+        public bool ExecuteSynchronized(Action action, int timeout = -1, bool exitContext = false)
         {
             var acquired = SafeWaitOne(timeout, exitContext);
 

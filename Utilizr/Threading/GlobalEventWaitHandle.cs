@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
@@ -9,7 +10,7 @@ namespace Utilizr.Threading
 {
     public class GlobalEventWaitHandle : IDisposable
     {
-        private string _path;
+        private readonly string _path;
         public EventWaitHandle WaitHandle { get; private set; }
 
         /// <summary>
@@ -51,6 +52,7 @@ namespace Utilizr.Threading
             }
         }
 
+        [MemberNotNull(nameof(WaitHandle))]
         private void Create(bool initialState, EventResetMode mode)
         {
             var eventSecurity = new EventWaitHandleSecurity();
@@ -63,7 +65,7 @@ namespace Utilizr.Threading
             }
             catch (Exception)
             {
-                WaitHandle = new EventWaitHandle(initialState, mode, _path, out bool createdNew);
+                WaitHandle = new EventWaitHandle(initialState, mode, _path, out _);
                 WaitHandle.SetAccessControl(eventSecurity);
             }
         }
@@ -96,6 +98,7 @@ namespace Utilizr.Threading
         public void Dispose()
         {
             WaitHandle?.Close();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -64,14 +64,18 @@ namespace Utilizr.Info
             );
 
             if (result >= 0)
-                return Marshal.PtrToStringUni(outPath);
+            {
+                var path = Marshal.PtrToStringUni(outPath);
+                if (!string.IsNullOrEmpty(path))
+                    return path;
+            }
 
             throw new ExternalException("Unable to retrieve the known folder path. It may not be available on this system.", result);
         }
 
         public static string SafeGetDownloadsFolder()
         {
-            var downloadsFolder = "";
+            string downloadsFolder;
             try
             {
                 downloadsFolder = GetPath(KnownFolder.Downloads);

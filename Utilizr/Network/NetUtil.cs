@@ -9,6 +9,7 @@ using Utilizr.Logging;
 
 namespace Utilizr.Network
 {
+    // TODO: Refactor NetUtil away from WebRequest.CreateRequest()
     public static class NetUtil
     {
         /// <summary>
@@ -19,7 +20,7 @@ namespace Utilizr.Network
         /// <returns></returns>
         public static int GetAvailablePort(int startPort, int endPort)
         {
-            IPAddress localhostAddress = Dns.GetHostEntry("localhost").AddressList.Where(i => i.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
+            var localhostAddress = Dns.GetHostEntry("localhost").AddressList?.Where(i => i.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
 
             if (localhostAddress == null)
                 throw new Exception("IPv4 localhost not found");
@@ -45,7 +46,7 @@ namespace Utilizr.Network
 
         public static int GetRandomAvailablePort(int startPort, int endPort)
         {
-            IPAddress localhostAddress = Dns.GetHostEntry("localhost").AddressList.Where(i => i.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
+            var localhostAddress = Dns.GetHostEntry("localhost").AddressList.Where(i => i.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
 
             if (localhostAddress == null)
                 throw new Exception("IPv4 localhost not found");
@@ -108,13 +109,11 @@ namespace Utilizr.Network
             {
                 var request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "HEAD";
-                using (var response = request.GetResponse())
+                using var response = request.GetResponse();
+                var httpResponse = (HttpWebResponse)response;
+                if (httpResponse.StatusCode != HttpStatusCode.OK)
                 {
-                    var httpResponse = (HttpWebResponse)response;
-                    if (httpResponse.StatusCode != HttpStatusCode.OK)
-                    {
-                        throw new Exception($"failed to make head request to {url}");
-                    }
+                    throw new Exception($"failed to make head request to {url}");
                 }
                 return true;
             }
@@ -158,7 +157,7 @@ namespace Utilizr.Network
                     {
                         var method = typeof(WebHeaderCollection).GetMethod("AddWithoutValidate", BindingFlags.Instance | BindingFlags.NonPublic);
                         string rangeHeaderValue = $"bytes={resumeFromByte}-";
-                        method.Invoke(request.Headers, new object[] { HttpRequestHeader.Range.ToString(), rangeHeaderValue });
+                        method?.Invoke(request.Headers, new object[] { HttpRequestHeader.Range.ToString(), rangeHeaderValue });
                     }
                     catch (Exception)
                     {
@@ -166,33 +165,29 @@ namespace Utilizr.Network
                     }
                 }
             }
-            using (var response = request.GetResponse())
-            using (var responseStream = response.GetResponseStream())
-            using (var fileStream = File.Open(destination, resumeFromByte>0 ? FileMode.Open : FileMode.Create , FileAccess.ReadWrite, FileShare.None))
+            using var response = request.GetResponse();
+            using var responseStream = response.GetResponseStream();
+            using var fileStream = File.Open(destination, resumeFromByte > 0 ? FileMode.Open : FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+            if (resumeFromByte > 0)
             {
-                if (resumeFromByte > 0)
-                {
-                    fileStream.Seek(resumeFromByte, 0);
-                }
-                long totalSize = response.ContentLength + resumeFromByte;
-                long totalRead = resumeFromByte;
-                int bufferLen = 8 * 1024;
-                byte[] buffer = new byte[bufferLen];
-                int bytesRead = 0;
+                fileStream.Seek(resumeFromByte, 0);
+            }
+            long totalSize = response.ContentLength + resumeFromByte;
+            long totalRead = resumeFromByte;
+            int bufferLen = 8 * 1024;
+            byte[] buffer = new byte[bufferLen];
+            int bytesRead = 0;
 
-                PipelineActionArgs pipelineArgs = new PipelineActionArgs();
-                pipelineArgs.Buffer = buffer;
-
-                while ((bytesRead = responseStream.Read(buffer, 0, bufferLen)) != 0)
+            var pipelineArgs = new PipelineActionArgs(buffer);
+            while ((bytesRead = responseStream.Read(buffer, 0, bufferLen)) != 0)
+            {
+                if (bytesRead > 0)
                 {
-                    if (bytesRead > 0)
-                    {
-                        fileStream.Write(buffer, 0, bytesRead);
-                        totalRead += bytesRead;
-                        pipelineArgs.Length = bytesRead;
-                        pipelineAction?.Invoke(pipelineArgs);
-                        progressCallback?.Invoke(((double)totalRead / totalSize), totalRead, totalSize);
-                    }
+                    fileStream.Write(buffer, 0, bytesRead);
+                    totalRead += bytesRead;
+                    pipelineArgs.Length = bytesRead;
+                    pipelineAction?.Invoke(pipelineArgs);
+                    progressCallback?.Invoke(((double)totalRead / totalSize), totalRead, totalSize);
                 }
             }
         }
@@ -212,16 +207,19 @@ namespace Utilizr.Network
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "HEAD";
 
-            using (var response = (HttpWebResponse)(request.GetResponse()))
-            {
-                return response.ContentLength;
-            }
+            using var response = (HttpWebResponse)(request.GetResponse());
+            return response.ContentLength;
         }
     }
 
     public class PipelineActionArgs
     {
-        public byte[] Buffer;
-        public int Length;
+        public byte[] Buffer { get; set; }
+        public int Length { get; set; }
+
+        public PipelineActionArgs(byte[] buffer)
+        {
+            Buffer = buffer;
+        }
     }
 }

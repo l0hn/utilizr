@@ -16,8 +16,7 @@ namespace Utilizr.FileSystem
         public static string GetTargetPath(string filePath)
         {
             var targetPath = ResolveMsiShortcut(filePath);
-            if (targetPath == null)
-                targetPath = ResolveShortcut(filePath);
+            targetPath ??= ResolveShortcut(filePath);
 
             return targetPath;
         }
@@ -31,7 +30,7 @@ namespace Utilizr.FileSystem
             Msi.MsiGetShortcutTarget(file, product, feature, component);
 
             int pathLength = InstallStateConsts.MaxPathLength;
-            StringBuilder path = new StringBuilder(pathLength);
+            var path = new StringBuilder(pathLength);
 
             var installState = Msi.MsiGetComponentPath(product.ToString(), component.ToString(), path, ref pathLength);
 
@@ -47,23 +46,21 @@ namespace Utilizr.FileSystem
         {
             // IWshRuntimeLibrary is in the COM library "Windows Script Host Object Model"
             // IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            using (dynamic shell = COMObject.CreateObject("WScript.Shell"))
+            using dynamic shell = COMObject.CreateObject("WScript.Shell");
+            try
             {
-                try
-                {
-                    // IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
-                    dynamic shortcut = shell.CreateShortcut(filePath);
+                // IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
+                dynamic shortcut = shell.CreateShortcut(filePath);
 
-                    if (!File.Exists(shortcut.TargetPath))
-                        return shortcut.TargetPath.Replace(" (x86)", "");
+                if (!File.Exists(shortcut.TargetPath))
+                    return shortcut.TargetPath.Replace(" (x86)", "");
 
-                    return shortcut.TargetPath;
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception(ex, "Failed to get shortcut target");
-                    return null;
-                }
+                return shortcut.TargetPath;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex, "Failed to get shortcut target");
+                throw;
             }
         }
 

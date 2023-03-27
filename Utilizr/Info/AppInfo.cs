@@ -162,22 +162,22 @@ namespace Utilizr.Info
             if (string.IsNullOrEmpty(AppName))
                 throw new InvalidOperationException($"Unable to get window's directory with null/empty '{nameof(AppName)}' for '{dirName}' with root '{rootDir}'");
 
-            static string programData(string dirName)
+            static string programData(string appName, string dirName)
             {
-                return Path.Combine(Environment.ExpandEnvironmentVariables("%PROGRAMDATA%"), AppName, dirName);
+                return Path.Combine(Environment.ExpandEnvironmentVariables("%PROGRAMDATA%"), appName, dirName);
             }
 
             if (rootDir == AppInfoRoot.AppData)
             {
                 if (!Environment.UserInteractive) //is most likely a service
                 {
-                    return programData(dirName);
+                    return programData(AppName, dirName);
                 }
                 return Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppName, dirName);
             }
             else if (rootDir == AppInfoRoot.ProgramData)
             {
-                return programData(dirName);
+                return programData(AppName, dirName);
             }
 
             //AppInfoRoot.InstallDirectory
@@ -187,7 +187,7 @@ namespace Utilizr.Info
 
         public static void ZipLogs(string destinationFile)
         {
-            ZipLogs(destinationFile, new ZipLogsAdditionalItem[]{}, new ZipLogsAdditionalItem[]{});
+            ZipLogs(destinationFile, Array.Empty<ZipLogsAdditionalItem>(), Array.Empty<ZipLogsAdditionalItem>());
         }
 
         public static void ZipLogs(string destinationFile, ZipLogsAdditionalItem[] additionalDirs, ZipLogsAdditionalItem[] additionalFiles) 
@@ -197,46 +197,44 @@ namespace Utilizr.Info
                 File.Delete(destinationFile);
             }
 
-            using (var zip = new ZipFile(destinationFile)) 
+            using var zip = new ZipFile(destinationFile);
+            zip.AlternateEncoding = Encoding.UTF8;
+            zip.AlternateEncodingUsage = ZipOption.AsNecessary;
+
+            zip.AddDirectory(LogDirectory, "logs");
+            zip.AddDirectory(DataDirectory, "data");
+
+            foreach (var additionalDir in additionalDirs)
             {
-                zip.AlternateEncoding = Encoding.UTF8;
-                zip.AlternateEncodingUsage = ZipOption.AsNecessary;
-
-                zip.AddDirectory(LogDirectory, "logs");
-                zip.AddDirectory(DataDirectory, "data");
-
-                foreach (var additionalDir in additionalDirs)
+                try
                 {
-                    try
-                    {
-                        if (!Directory.Exists(additionalDir.Path))
-                            continue;
+                    if (!Directory.Exists(additionalDir.Path))
+                        continue;
 
-                        zip.AddDirectory(additionalDir.Path, additionalDir.PathInArchive);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDir.Path}' to archive: {ex.Message}");
-                    }
+                    zip.AddDirectory(additionalDir.Path, additionalDir.PathInArchive);
                 }
-
-                foreach (var additionalFile in additionalFiles)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        if (!File.Exists(additionalFile.Path))
-                            continue;
-
-                        zip.AddFile(additionalFile.Path, additionalFile.PathInArchive);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
-                    }
+                    System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDir.Path}' to archive: {ex.Message}");
                 }
-
-                zip.Save();
             }
+
+            foreach (var additionalFile in additionalFiles)
+            {
+                try
+                {
+                    if (!File.Exists(additionalFile.Path))
+                        continue;
+
+                    zip.AddFile(additionalFile.Path, additionalFile.PathInArchive);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
+                }
+            }
+
+            zip.Save();
         }
     }
 

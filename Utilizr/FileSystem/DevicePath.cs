@@ -18,9 +18,9 @@ namespace Utilizr.FileSystem
             int i = devicePath.Length;
             while (i > 0 && (i = devicePath.LastIndexOf('\\', i - 1)) != -1)
             {
-                if (_deviceMap.TryGetValue(devicePath.Substring(0, i), out string drive))
+                if (_deviceMap?.TryGetValue(devicePath[..i], out string? drive) == true)
                 {
-                    dosPath = string.Concat(drive, devicePath.Substring(i));
+                    dosPath = string.Concat(drive, devicePath[i..]);
                     return dosPath.Length != 0;
                 }
             }
@@ -33,22 +33,22 @@ namespace Utilizr.FileSystem
             if (_deviceMap == null)
             {
                 Dictionary<string, string> localDeviceMap = BuildDeviceMap();
-                Interlocked.CompareExchange<Dictionary<string, string>>(ref _deviceMap!, localDeviceMap, null);
+                Interlocked.CompareExchange<Dictionary<string, string?>>(ref _deviceMap!, localDeviceMap!, null!);
             }
         }
 
         private static Dictionary<string, string> BuildDeviceMap()
         {
             string[] logicalDrives = Environment.GetLogicalDrives();
-            Dictionary<string, string> localDeviceMap = new Dictionary<string, string>(logicalDrives.Length);
-            StringBuilder lpTargetPath = new StringBuilder(MAX_PATH);
+            var localDeviceMap = new Dictionary<string, string>(logicalDrives.Length);
+            var lpTargetPath = new StringBuilder(MAX_PATH);
             foreach (string drive in logicalDrives)
             {
-                string lpDeviceName = drive.Substring(0, 2);
+                string lpDeviceName = drive[..2];
                 Kernel32.QueryDosDevice(lpDeviceName, lpTargetPath, MAX_PATH);
                 localDeviceMap.Add(NormalizeDeviceName(lpTargetPath.ToString()), lpDeviceName);
             }
-            localDeviceMap.Add(networkDevicePrefix.Substring(0, networkDevicePrefix.Length - 1), "\\");
+            localDeviceMap.Add(networkDevicePrefix[..^1], "\\");
             return localDeviceMap;
         }
 
@@ -56,7 +56,7 @@ namespace Utilizr.FileSystem
         {
             if (string.Compare(deviceName, 0, networkDevicePrefix, 0, networkDevicePrefix.Length, StringComparison.InvariantCulture) == 0)
             {
-                string shareName = deviceName.Substring(deviceName.IndexOf('\\', networkDevicePrefix.Length) + 1);
+                string shareName = deviceName[(deviceName.IndexOf('\\', networkDevicePrefix.Length) + 1)..];
                 return string.Concat(networkDevicePrefix, shareName);
             }
             return deviceName;
