@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Crypto", "Utilizr.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Globalisation", "Utilizr.Globalisation\Utilizr.Globalisation.csproj", "{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr", "Utilizr\Utilizr.csproj", "{B3197749-F043-432D-8C79-440FBF19D21F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Win32", "Utilizr.Win32\Utilizr.Win32.csproj", "{7F2DD9FB-4EB4-4A79-94A7-E144DCA5DA19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3197749-F043-432D-8C79-440FBF19D21F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3197749-F043-432D-8C79-440FBF19D21F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3197749-F043-432D-8C79-440FBF19D21F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3197749-F043-432D-8C79-440FBF19D21F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F2DD9FB-4EB4-4A79-94A7-E144DCA5DA19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F2DD9FB-4EB4-4A79-94A7-E144DCA5DA19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F2DD9FB-4EB4-4A79-94A7-E144DCA5DA19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F2DD9FB-4EB4-4A79-94A7-E144DCA5DA19}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

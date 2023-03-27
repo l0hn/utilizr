@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Utilizr.Crypto;
 
 namespace Utilizr.Extensions
 {
@@ -36,16 +35,6 @@ namespace Utilizr.Extensions
                 return false;
 
             return str.IsNullOrWhitespace();
-        }
-
-        public static string HashSHA256(this string str)
-        {
-            return Hash.SHA256(str);
-        }
-
-        public static string HashMD5(this string str)
-        {
-            return Hash.MD5(str);
         }
 
         /// <summary>

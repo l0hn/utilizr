@@ -1,0 +1,248 @@
+﻿using Ionic.Zip;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Text;
+
+
+namespace Utilizr.Info
+{
+    /// <summary>
+    /// Determine the root location for any of the app's folders.
+    /// </summary>
+    public enum AppInfoRoot
+    {
+        /// <summary>
+        /// Inside app's install directory (default)
+        /// </summary>
+        InstallDirectory,
+
+        /// <summary>
+        /// Use the user local appdata folder (or the C:\ProgramData folder for non-user processes).
+        /// </summary>
+        AppData,
+
+        /// <summary>
+        /// Always use non-user specific location of C:\ProgramData.
+        /// </summary>
+        ProgramData,
+    }
+
+    public static class AppInfo
+    {
+        public static string? AppName { get; set; }
+
+        private static string? _appDirectory;
+        /// <summary>
+        /// Directory of executing assembly (install directory) and will not differ depending on <see cref="DirectoryRoot"/>.
+        /// </summary>
+        public static string AppDirectory
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_appDirectory))
+                {
+                    _appDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                }
+                return _appDirectory!;
+            }
+        }
+
+        /// <summary>
+        /// Specify the root for any of the folders specified on properties within this class.
+        /// See <see cref="AppInfoRoot"/> for valid values.
+        /// </summary>
+        public static AppInfoRoot DirectoryRoot { get; set; }
+
+        private static string? _directoryRootPath;
+        /// <summary>
+        /// Root path for supporting folders (/logs, /data, etc). Will differ depending on <see cref="DirectoryRoot"/>.
+        /// Note: Not the same as <see cref="AppDirectory"/>!
+        /// </summary>
+        public static string DirectoryRootPath
+        {
+            get
+            {
+                CreateAppDirectory(ref _directoryRootPath, "");
+                return _directoryRootPath!;
+            }
+        }
+
+        private static string? _urlDataDirectory;
+        public static string UrlDataDirectory
+        {
+            get
+            {
+                CreateAppDirectory(ref _urlDataDirectory, "url_data");
+                return _urlDataDirectory!;
+            }
+        }
+
+        private static string? _libsDirectory;
+        public static string LibsDirectory
+        {
+            get
+            {
+                CreateAppDirectory (ref _libsDirectory, "libs");
+                return _libsDirectory!;
+            }
+        }
+
+        private static string? _dataDirectory;
+        public static string DataDirectory
+        {
+            get
+            {
+                CreateAppDirectory(ref _dataDirectory, "data");
+                return _dataDirectory!;
+            }
+        }
+
+        private static string? _queueDirectory;
+        public static string QueueDirectory
+        {
+            get
+            {
+                CreateAppDirectory(ref _queueDirectory, "queues");
+                return _queueDirectory!;
+            }
+        }
+
+        private static string? _logDirectory;
+        public static string LogDirectory
+        {
+            get
+            {
+                CreateAppDirectory(ref _logDirectory, "logs");
+                return _logDirectory!;
+            }
+        }
+
+        private static string? _updatesDirectory;
+        public static string UpdatesDirectory
+        {
+            get
+            {
+                CreateAppDirectory(ref _updatesDirectory, "updates");
+                return _updatesDirectory!;
+            }
+        }
+
+        private static string? _cacheDir;
+        public static string CacheDir
+        {
+            get
+            {
+                CreateAppDirectory(ref _cacheDir, "cache");
+                return _cacheDir!;
+            }
+        }
+
+
+        private static void CreateAppDirectory(ref string? directory_string, string dir_name)
+        {
+            if (string.IsNullOrEmpty(directory_string))
+            {
+                directory_string = GetAppDirectory(dir_name);
+            }
+
+            if (!Directory.Exists(directory_string))
+            {
+                Directory.CreateDirectory(directory_string);
+            }
+        }
+
+        private static string GetAppDirectory(string dirName)
+        {
+            return GetAppDirectory(dirName, DirectoryRoot);
+        }
+
+        private static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
+        {
+            if (string.IsNullOrEmpty(AppName))
+                throw new InvalidOperationException($"Unable to get window's directory with null/empty '{nameof(AppName)}' for '{dirName}' with root '{rootDir}'");
+
+            static string programData(string dirName)
+            {
+                return Path.Combine(Environment.ExpandEnvironmentVariables("%PROGRAMDATA%"), AppName, dirName);
+            }
+
+            if (rootDir == AppInfoRoot.AppData)
+            {
+                if (!Environment.UserInteractive) //is most likely a service
+                {
+                    return programData(dirName);
+                }
+                return Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppName, dirName);
+            }
+            else if (rootDir == AppInfoRoot.ProgramData)
+            {
+                return programData(dirName);
+            }
+
+            //AppInfoRoot.InstallDirectory
+            return Path.Combine(AppDirectory, dirName);
+        }
+
+
+        public static void ZipLogs(string destinationFile)
+        {
+            ZipLogs(destinationFile, new ZipLogsAdditionalItem[]{}, new ZipLogsAdditionalItem[]{});
+        }
+
+        public static void ZipLogs(string destinationFile, ZipLogsAdditionalItem[] additionalDirs, ZipLogsAdditionalItem[] additionalFiles) 
+        {
+            if (File.Exists(destinationFile))
+            {
+                File.Delete(destinationFile);
+            }
+
+            using (var zip = new ZipFile(destinationFile)) 
+            {
+                zip.AlternateEncoding = Encoding.UTF8;
+                zip.AlternateEncodingUsage = ZipOption.AsNecessary;
+
+                zip.AddDirectory(LogDirectory, "logs");
+                zip.AddDirectory(DataDirectory, "data");
+
+                foreach (var additionalDir in additionalDirs)
+                {
+                    try
+                    {
+                        if (!Directory.Exists(additionalDir.Path))
+                            continue;
+
+                        zip.AddDirectory(additionalDir.Path, additionalDir.PathInArchive);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDir.Path}' to archive: {ex.Message}");
+                    }
+                }
+
+                foreach (var additionalFile in additionalFiles)
+                {
+                    try
+                    {
+                        if (!File.Exists(additionalFile.Path))
+                            continue;
+
+                        zip.AddFile(additionalFile.Path, additionalFile.PathInArchive);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
+                    }
+                }
+
+                zip.Save();
+            }
+        }
+    }
+
+    public struct ZipLogsAdditionalItem
+    {
+        public string Path;
+        public string PathInArchive;
+    }
+}

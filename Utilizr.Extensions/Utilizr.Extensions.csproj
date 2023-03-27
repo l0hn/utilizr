@@ -11,10 +11,6 @@
     <PackageReference Include="System.Threading.AccessControl" Version="7.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Utilizr.Crypto\Utilizr.Crypto.csproj" />
-  </ItemGroup>
-
   <!--<ItemGroup Condition="'$(TargetFramework)' == 'NET7_0_OR_GREATER'">
     <PackageReference Include="System.Threading.AccessControl" Version="7.0.1" />
   </ItemGroup>
