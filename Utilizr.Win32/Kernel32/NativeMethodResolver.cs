@@ -1,14 +1,13 @@
 ﻿using System;
-using static Utilizr.Win32.Kernel32.Kernel32;
 
-namespace Utilizr.Win32
+namespace Utilizr.Win32.Kernel32
 {
     public static class NativeMethodResolver
     {
         public static bool MethodExists(string libraryName, string methodName)
         {
-            var libraryPtr = LoadLibrary(libraryName);
-            var procPtr = GetProcAddress(libraryPtr, methodName);
+            var libraryPtr = Kernel32.LoadLibrary(libraryName);
+            var procPtr = Kernel32.GetProcAddress(libraryPtr, methodName);
 
             return libraryPtr != UIntPtr.Zero && procPtr != UIntPtr.Zero;
         }

@@ -18,6 +18,21 @@ namespace Utilizr.Win32.Kernel32
         public static extern UIntPtr LoadLibrary(string lpFileName);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr FindResource(IntPtr hModule, string lpName, uint lpType);
+
+        [DllImport(KERNEL32_DLL)]
+        public static extern IntPtr FindResource(IntPtr hModule, int lpID, string lpType);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr LoadResource(IntPtr hModule, IntPtr hResInfo);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern uint SizeofResource(IntPtr hModule, IntPtr hResInfo);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool Wow64DisableWow64FsRedirection(ref IntPtr ptr);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
@@ -174,5 +189,6 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
     }
 }
