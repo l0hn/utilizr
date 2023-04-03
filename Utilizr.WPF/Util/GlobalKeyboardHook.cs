@@ -4,7 +4,7 @@ using Utilizr.Logging;
 using Utilizr.Win32.User32;
 using Utilizr.Win32.User32.Flags;
 
-namespace Utilizr.WPF
+namespace Utilizr.WPF.Util
 {
     public class GlobalKeyboardHook : IDisposable
     {

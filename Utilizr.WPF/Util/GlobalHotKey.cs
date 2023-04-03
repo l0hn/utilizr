@@ -7,7 +7,7 @@ using Utilizr.Win32.User32;
 // https://stackoverflow.com/a/624424/1229237
 // https://stackoverflow.com/a/3654821/1229237
 
-namespace Utilizr.Windows
+namespace Utilizr.WPF.Util
 {
     public class GlobalHotKey
     {
