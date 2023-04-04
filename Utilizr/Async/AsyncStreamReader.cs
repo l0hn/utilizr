@@ -48,7 +48,7 @@ namespace Utilizr.Async
         // Creates a new AsyncStreamReader for the given stream. The
         // character encoding is set by encoding and the buffer size,
         // in number of 16-bit characters, is set by bufferSize.
-        internal AsyncStreamReader(Stream stream, Action<string?> callback, Encoding encoding)
+        public AsyncStreamReader(Stream stream, Action<string?> callback, Encoding encoding)
         {
             Debug.Assert(stream != null && encoding != null && callback != null, "Invalid arguments!");
             Debug.Assert(stream.CanRead, "Stream must be readable!");
@@ -68,8 +68,8 @@ namespace Utilizr.Async
         }
 
         // User calls BeginRead to start the asynchronous read
-        [MemberNotNull(nameof(_sb))]
-        internal void BeginReadLine()
+        //[MemberNotNull(nameof(_sb))]
+        public void BeginReadLine()
         {
             _cancelOperation = false;
 
@@ -84,7 +84,7 @@ namespace Utilizr.Async
             }
         }
 
-        internal void CancelOperation()
+        public void CancelOperation()
         {
             _cancelOperation = true;
         }
@@ -255,7 +255,7 @@ namespace Utilizr.Async
             }
         }
 
-        internal Task EOF => _readToBufferTask ?? Task.CompletedTask;
+        public Task EOF => _readToBufferTask ?? Task.CompletedTask;
 
         public void Dispose()
         {
