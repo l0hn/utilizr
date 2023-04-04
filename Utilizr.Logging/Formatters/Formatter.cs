@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Utilizr.Extensions;
+//using Utilizr.Extensions;
 using Utilizr.Logging.Interfaces;
 
 namespace Utilizr.Logging.Formatters
