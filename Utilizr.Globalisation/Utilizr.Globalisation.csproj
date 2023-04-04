@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Utilizr.Extensions\Utilizr.Extensions.csproj" />
     <ProjectReference Include="..\Utilizr.Logging\Utilizr.Logging.csproj" />
   </ItemGroup>
 

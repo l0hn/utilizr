@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using Utilizr.Extensions;
+using Utilizr.Globalisation.Extensions;
 
 namespace Utilizr.Globalisation.Parsers
 {
