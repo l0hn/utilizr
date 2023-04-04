@@ -2,10 +2,9 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using Utilizr.Win32.Crypt32;
 using Utilizr.Win32.Crypt32.Flags;
 
-namespace Utilizr.Crypto
+namespace Utilizr.Win32
 {
     public static class CertificateHelper
     {
@@ -25,7 +24,7 @@ namespace Utilizr.Crypto
 
             try
             {
-                if (!Crypt32.CryptQueryObject(
+                if (!Crypt32.Crypt32.CryptQueryObject(
                     CertQueryFlags.CERT_QUERY_OBJECT_FILE,
                     ptrFilename,
                     (CertQueryFlags.CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED
@@ -47,7 +46,7 @@ namespace Utilizr.Crypto
 
                 // Get size of the encoded message.
                 int cbData = 0;
-                if (!Crypt32.CryptMsgGetParam(
+                if (!Crypt32.Crypt32.CryptMsgGetParam(
                     cryptMsg,
                     CmsgFlags.CMSG_ENCODED_MESSAGE,
                     0,
@@ -60,7 +59,7 @@ namespace Utilizr.Crypto
                 var vData = new byte[cbData];
 
                 // Get the encoded message.
-                if (!Crypt32.CryptMsgGetParam(
+                if (!Crypt32.Crypt32.CryptMsgGetParam(
                     cryptMsg,
                     CmsgFlags.CMSG_ENCODED_MESSAGE,
                     0,
@@ -80,9 +79,9 @@ namespace Utilizr.Crypto
                     {
                         cert = signerInfo.Certificate;
                         commonName = Marshal.AllocHGlobal(255);
-                        int len = Crypt32.CertGetNameString(
+                        int len = Crypt32.Crypt32.CertGetNameString(
                             cert.Handle,
-                            Crypt32.CERT_NAME_SIMPLE_DISPLAY_TYPE,
+                            Crypt32.Crypt32.CERT_NAME_SIMPLE_DISPLAY_TYPE,
                             0,
                             null,
                             commonName,
@@ -99,13 +98,13 @@ namespace Utilizr.Crypto
             {
                 Marshal.FreeHGlobal(ptrFilename);
                 if (cryptMsg != IntPtr.Zero)
-                    Crypt32.CryptMsgClose(cryptMsg);
+                    Crypt32.Crypt32.CryptMsgClose(cryptMsg);
 
                 if (certStore != IntPtr.Zero)
-                    Crypt32.CertCloseStore(certStore, CertQueryFlags.CERT_CLOSE_STORE_CHECK_FLAG);
+                    Crypt32.Crypt32.CertCloseStore(certStore, CertQueryFlags.CERT_CLOSE_STORE_CHECK_FLAG);
 
                 if (context != IntPtr.Zero)
-                    Crypt32.CertFreeCertificateContext(context);
+                    Crypt32.Crypt32.CertFreeCertificateContext(context);
 
                 if (commonName != IntPtr.Zero)
                     Marshal.FreeHGlobal(commonName);

@@ -1,18 +1,17 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Runtime.InteropServices;
-using Utilizr.Win32.WinTrust;
 using Utilizr.Win32.WinTrust.Flags;
 using Utilizr.Win32.WinTrust.Structs;
 
-namespace Utilizr.Crypto
+namespace Utilizr.Win32
 {
     public static class AuthenticodeTools
     {
         public static bool IsCatalogFile(string fileName)
         {
             using var sh = new SafeFileHandle(new IntPtr(-1), true);
-            return WinTrust.IsCatalogFile(sh, fileName);
+            return WinTrust.WinTrust.IsCatalogFile(sh, fileName);
         }
 
         public static bool IsTrusted(string fileName)
@@ -33,7 +32,7 @@ namespace Utilizr.Crypto
                 IntPtr pData = wvtDataPtr;
                 Marshal.StructureToPtr(wintrust_action_generic_verify_v2, pGuid, true);
                 Marshal.StructureToPtr(data, pData, true);
-                result = WinTrust.WinVerifyTrust(IntPtr.Zero, pGuid, pData);
+                result = WinTrust.WinTrust.WinVerifyTrust(IntPtr.Zero, pGuid, pData);
             }
 
             return result;

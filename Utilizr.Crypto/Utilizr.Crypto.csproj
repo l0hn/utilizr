@@ -6,12 +6,4 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="7.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Utilizr.Win32\Utilizr.Win32.csproj" />
-  </ItemGroup>
-
 </Project>

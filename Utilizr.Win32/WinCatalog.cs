@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using Kernel32 = Utilizr.Win32.Kernel32.Kernel32;
-using DWORD = System.UInt32;
-using Utilizr.Win32.WinTrust;
 using Utilizr.Win32.WinTrust.Structs;
+using DWORD = System.UInt32;
 
-namespace Utilizr.Crypto
+namespace Utilizr.Win32
 {
     public class WinCatalog
     {
@@ -26,7 +24,7 @@ namespace Utilizr.Crypto
         /// <returns> Dictionary mapping files relative paths to HashValues </returns>
         public static IEnumerable<string> GetHashesFromCatalog(string catalogFilePath)
         {
-            IntPtr resultCatalog = WinTrust.CryptCATOpen(catalogFilePath, 0, IntPtr.Zero, 1, 0);
+            IntPtr resultCatalog = WinTrust.WinTrust.CryptCATOpen(catalogFilePath, 0, IntPtr.Zero, 1, 0);
             IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
             int catalogVersion = 0;
@@ -41,7 +39,7 @@ namespace Utilizr.Crypto
                     // Navigate all members in Catalog files and get their relative paths and hashes
                     do
                     {
-                        memberInfo = WinTrust.CryptCATEnumerateMember(resultCatalog, memberInfo);
+                        memberInfo = WinTrust.WinTrust.CryptCATEnumerateMember(resultCatalog, memberInfo);
                         if (memberInfo != IntPtr.Zero)
                         {
                             CRYPTCATMEMBER currentMember = (CRYPTCATMEMBER)Marshal.PtrToStructure(memberInfo, typeof(CRYPTCATMEMBER));
@@ -58,7 +56,7 @@ namespace Utilizr.Crypto
                 }
                 finally
                 {
-                    WinTrust.CryptCATClose(resultCatalog);
+                    WinTrust.WinTrust.CryptCATClose(resultCatalog);
                 }
             }
             else
@@ -76,7 +74,7 @@ namespace Utilizr.Crypto
         {
             int catalogVersion = -1;
 
-            IntPtr catalogData = WinTrust.CryptCATStoreFromHandle(catalogHandle);
+            IntPtr catalogData = WinTrust.WinTrust.CryptCATStoreFromHandle(catalogHandle);
             CRYPTCATSTORE catalogInfo = (CRYPTCATSTORE)Marshal.PtrToStructure(catalogData, typeof(CRYPTCATSTORE));
 
             if (catalogInfo.dwPublicVersion == _catalogVersion2)
@@ -109,7 +107,7 @@ namespace Utilizr.Crypto
             IntPtr catAdmin = IntPtr.Zero;
 
             // To get handle to the hash algorithm to be used to calculate hashes
-            if (!WinTrust.CryptCATAdminAcquireContext2(ref catAdmin, IntPtr.Zero, hashAlgorithm, IntPtr.Zero, 0))
+            if (!WinTrust.WinTrust.CryptCATAdminAcquireContext2(ref catAdmin, IntPtr.Zero, hashAlgorithm, IntPtr.Zero, 0))
             {
                 throw new Exception("Unable to acquire hash algorithm context");
             }
@@ -119,7 +117,7 @@ namespace Utilizr.Crypto
             IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
             // Open the file that is to be hashed for reading and get its handle
-            IntPtr fileHandle = Kernel32.CreateFileW(filePath, GENERIC_READ, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+            IntPtr fileHandle = Kernel32.Kernel32.CreateFileW(filePath, GENERIC_READ, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
             if (fileHandle != INVALID_HANDLE_VALUE)
             {
                 try
@@ -128,7 +126,7 @@ namespace Utilizr.Crypto
                     IntPtr hashBuffer = IntPtr.Zero;
 
                     // Call first time to get the size of expected buffer to hold new hash value
-                    if (!WinTrust.CryptCATAdminCalcHashFromFileHandle2(catAdmin, fileHandle, ref hashBufferSize, hashBuffer, 0))
+                    if (!WinTrust.WinTrust.CryptCATAdminCalcHashFromFileHandle2(catAdmin, fileHandle, ref hashBufferSize, hashBuffer, 0))
                     {
                         throw new Exception("Unable to create file hash");
                     }
@@ -138,7 +136,7 @@ namespace Utilizr.Crypto
                     try
                     {
                         // Call second time to actually get the hash value
-                        if (!WinTrust.CryptCATAdminCalcHashFromFileHandle2(catAdmin, fileHandle, ref hashBufferSize, hashBuffer, 0))
+                        if (!WinTrust.WinTrust.CryptCATAdminCalcHashFromFileHandle2(catAdmin, fileHandle, ref hashBufferSize, hashBuffer, 0))
                         {
                             throw new Exception("Unable to create file hash");
                         }
@@ -157,8 +155,8 @@ namespace Utilizr.Crypto
                 }
                 finally
                 {
-                    WinTrust.CryptCATAdminReleaseContext(catAdmin, 0);
-                    Kernel32.CloseHandle(fileHandle);
+                    WinTrust.WinTrust.CryptCATAdminReleaseContext(catAdmin, 0);
+                    Kernel32.Kernel32.CloseHandle(fileHandle);
                 }
             }
             else
