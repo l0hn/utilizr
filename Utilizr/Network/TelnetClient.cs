@@ -5,17 +5,16 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Utilizr.Logging;
 
 namespace Utilizr.Network
 {
     public delegate void ErrorHandler(object sender, Exception ex);
+
     /// <summary>
     /// Simple async telnet client
     /// </summary>
     public class TelnetClient : IDisposable
     {
-
         /// <summary>
         /// Fired when a line is recieved from the server.
         /// </summary>
@@ -73,31 +72,15 @@ namespace Utilizr.Network
                 try
                 {
                     Task.Factory.StartNew(SendLoop, TaskCreationOptions.LongRunning);
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception("TELNET", ex);
-                }
-
-                try
-                {
                     Task.Factory.StartNew(RecieveLoop, TaskCreationOptions.LongRunning);
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception("TELNET", ex);
-                }
-
-                try
-                {
                     Task.Factory.StartNew(RecieveProcessLoop, TaskCreationOptions.LongRunning);
+
+                    _connected = true;
                 }
                 catch (Exception ex)
                 {
-                    Log.Exception("TELNET", ex);
+                    OnError(ex);
                 }
-
-                _connected = true;
             });
         }
 
@@ -183,9 +166,9 @@ namespace Utilizr.Network
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.Info("TELNET", $"Unprocessed messages: send:{_sendQueue.Count}, recieve:{_receiveQueue.Count}");
+                OnError(new Exception($"Terminal error, disconnecting... Unprocessed messages: send:{_sendQueue.Count}, recieve:{_receiveQueue.Count}", ex));
                 throw;
             }
             finally
@@ -215,18 +198,18 @@ namespace Utilizr.Network
                     }
                     if (string.IsNullOrEmpty(line))
                     {
-                        //                        Log.Info("TELNET_READ_PROCESSING", "Skipping empty line");
+                        //Log.Info("TELNET_READ_PROCESSING", "Skipping empty line");
                         continue;
                     }
 #if DEBUG
-                    Console.WriteLine($"processing {line}");
+                    System.Diagnostics.Debug.WriteLine($"processing {line}");
 #endif 
                     Router.Process(new LineRecievedEventArgs(line));
                     OnLineRecieved(line);
                 }
                 catch (Exception ex)
                 {
-                    Log.Exception("TELNET_READ_PROCESSING", ex);
+                    OnError(new Exception("TELNET_READ_PROCESSING", ex));
                 }
             }
         }
@@ -266,7 +249,7 @@ namespace Utilizr.Network
             }
             catch (Exception ex)
             {
-                Log.Exception("TELNET", ex);
+                OnError(ex);
             }
 
             GC.SuppressFinalize(this);
