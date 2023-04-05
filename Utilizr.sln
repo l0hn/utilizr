@@ -5,17 +5,15 @@ VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Logging", "Utilizr.Logging\Utilizr.Logging.csproj", "{548FA421-6F71-4DFF-96C5-76AA39C788A8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Extensions", "Utilizr.Extensions\Utilizr.Extensions.csproj", "{7D928397-2634-471C-A4C2-A95F89522289}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Crypto", "Utilizr.Crypto\Utilizr.Crypto.csproj", "{4C948DA5-5481-4730-8C69-4BF6236759C2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Globalisation", "Utilizr.Globalisation\Utilizr.Globalisation.csproj", "{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr", "Utilizr\Utilizr.csproj", "{B3197749-F043-432D-8C79-440FBF19D21F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.Win32", "Utilizr.Win32\Utilizr.Win32.csproj", "{7F2DD9FB-4EB4-4A79-94A7-E144DCA5DA19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilizr.WPF", "Utilizr.WPF\Utilizr.WPF.csproj", "{DD043FCF-124F-4AA8-80BB-06CBD807EF2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilizr.WPF", "Utilizr.WPF\Utilizr.WPF.csproj", "{DD043FCF-124F-4AA8-80BB-06CBD807EF2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilizr.Win", "Utilizr.Win\Utilizr.Win.csproj", "{518A75D9-D30E-470A-B465-0A4B3D33E15E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,14 +25,6 @@ Global
 		{548FA421-6F71-4DFF-96C5-76AA39C788A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{548FA421-6F71-4DFF-96C5-76AA39C788A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{548FA421-6F71-4DFF-96C5-76AA39C788A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D928397-2634-471C-A4C2-A95F89522289}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D928397-2634-471C-A4C2-A95F89522289}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D928397-2634-471C-A4C2-A95F89522289}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D928397-2634-471C-A4C2-A95F89522289}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4C948DA5-5481-4730-8C69-4BF6236759C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C948DA5-5481-4730-8C69-4BF6236759C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4C948DA5-5481-4730-8C69-4BF6236759C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4C948DA5-5481-4730-8C69-4BF6236759C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFBF5645-00EF-4CBC-8B15-D71FB96B1612}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +41,10 @@ Global
 		{DD043FCF-124F-4AA8-80BB-06CBD807EF2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD043FCF-124F-4AA8-80BB-06CBD807EF2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD043FCF-124F-4AA8-80BB-06CBD807EF2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{518A75D9-D30E-470A-B465-0A4B3D33E15E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{518A75D9-D30E-470A-B465-0A4B3D33E15E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{518A75D9-D30E-470A-B465-0A4B3D33E15E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{518A75D9-D30E-470A-B465-0A4B3D33E15E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

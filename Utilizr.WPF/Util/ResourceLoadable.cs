@@ -5,7 +5,7 @@ using Utilizr.Info;
 
 namespace Utilizr.WPF.Util
 {
-    public class ResourceLoadable: Loadable<ResourceLoadable>
+    public class ResourceLoadable : Loadable<ResourceLoadable>
     {
         [JsonProperty("_resources")]
         private readonly Dictionary<string, byte[]> _resources;

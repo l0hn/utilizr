@@ -115,6 +115,16 @@ namespace Utilizr.Win32.Kernel32
             [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle,
             uint dwOptions);
 
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool DuplicateHandle(
+            IntPtr hSourceProcessHandle,
+            SafeHandle hSourceHandle,
+            IntPtr hTargetProcess,
+            out SafeFileHandle targetHandle,
+            int dwDesiredAccess,
+            bool bInheritHandle,
+            int dwOptions);
+
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Auto)]
         public static extern IntPtr GetModuleHandle(string moduleName);
 

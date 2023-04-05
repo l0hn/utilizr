@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Utilizr.Extensions;
+//using Utilizr.Extensions;
 
 namespace Utilizr.Logging.Handlers
 {

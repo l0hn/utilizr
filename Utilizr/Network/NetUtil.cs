@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
-using Utilizr.Logging;
 
 namespace Utilizr.Network
 {
@@ -82,8 +81,7 @@ namespace Utilizr.Network
                     var nslookupOutput = Shell.Exec("nslookup", "myip.opendns.com", $"resolver{i}.opendns.com");
                     if (nslookupOutput.ErrorOutput?.Contains("***") == true)
                     {
-                        Log.Info("ip lookup failed: " + nslookupOutput.ErrorOutput);
-                        return null;
+                        throw new Exception($"IP lookup failed: {nslookupOutput.ErrorOutput}");
                     }
 
                     ip = nslookupOutput.Output!.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries)
@@ -97,7 +95,7 @@ namespace Utilizr.Network
                 }
                 catch (Exception ex)
                 {
-                    Log.Exception("UTILIZR", ex, "Error getting public IP");
+                    throw new Exception("Error getting public IP", ex);
                 }
             }
             return null;
