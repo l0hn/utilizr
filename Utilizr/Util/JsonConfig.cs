@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
-using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utilizr.Async;
 
-namespace Utilizr.WPF.Util
+namespace Utilizr.Util
 {
     public static class JsonConfig<T> where T : Loadable<T>, new()
     {
@@ -75,11 +75,7 @@ namespace Utilizr.WPF.Util
         /// </summary>
         [JsonIgnore]
         public virtual bool SaveOnLoadFaliure { get; set; } = false;
-
-        /// <summary>
-        /// Resource name identifying the embedded file in the currently executing assembly (will take priority in loading sequence)
-        /// </summary>
-        [JsonIgnore] public virtual string? EmbeddedResourceName { get; } = null;
+        
 
         /// <summary>
         /// Setting ReadOnly to true will cause an exception if a SaveInstance() attempt is made on the instance without explicitly providing a file path
@@ -140,7 +136,7 @@ namespace Utilizr.WPF.Util
 
                         lock (this)
                         {
-                            var json = JsonConvert.SerializeObject(this);
+                            var json = JsonSerializer.Serialize(currentT);
                             json = CustomSerializeStep(json);
                             File.WriteAllText(path, json);
                         }
@@ -213,6 +209,11 @@ namespace Utilizr.WPF.Util
             return newT;
         }
 
+        public virtual string RawLoad(string customLoadPath)
+        {
+            return null;
+        }
+        
         public static T Load(T t, out bool loadFailed, string customLoadPath = "")
         {
             loadFailed = true;
@@ -221,14 +222,8 @@ namespace Utilizr.WPF.Util
                 string? json = null;
                 try
                 {
-                    if (!string.IsNullOrEmpty(t.EmbeddedResourceName))
-                    {
-                        var resourceData = Win32.Kernel32.ResourceHelper.LoadResourceFile(t.EmbeddedResourceName, customLoadPath);
-                        if (resourceData != null)
-                        {
-                            json = Encoding.UTF8.GetString(resourceData);
-                        }
-                    }
+                    json = t.RawLoad(customLoadPath);
+                    
                 }
                 catch (Exception)
                 {
@@ -251,8 +246,8 @@ namespace Utilizr.WPF.Util
 
                 if (string.IsNullOrEmpty(json))
                     return t;
-
-                var loadedObj = JsonConvert.DeserializeObject<T>(json);
+                
+                var loadedObj = JsonSerializer.Deserialize<T>(json);
                 if (loadedObj != null)
                 {
                     loadFailed = false;
