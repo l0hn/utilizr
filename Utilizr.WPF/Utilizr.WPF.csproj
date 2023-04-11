@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
     <ProjectReference Include="..\Utilizr.Win32\Utilizr.Win32.csproj" />
+    <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
     <ProjectReference Include="..\Utilizr\Utilizr.csproj" />
   </ItemGroup>
 

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using Utilizr.Info;
+using Utilizr.Win.Util;
 
 namespace Utilizr.WPF.Util
 {
-    public class ResourceLoadable : Loadable<ResourceLoadable>
+    public class ResourceLoadable : LoadableEmbedded<ResourceLoadable>
     {
         [JsonProperty("_resources")]
         private readonly Dictionary<string, byte[]> _resources;

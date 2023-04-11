@@ -209,7 +209,7 @@ namespace Utilizr.Util
             return newT;
         }
 
-        public virtual string RawLoad(string customLoadPath)
+        public virtual string? RawLoad(string customLoadPath)
         {
             return null;
         }
