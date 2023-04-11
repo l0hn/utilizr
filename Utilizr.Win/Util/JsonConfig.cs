@@ -9,9 +9,9 @@ namespace Utilizr.Win.Util;
 /// <typeparam name="T"></typeparam>
 public abstract class LoadableEmbedded<T>: Loadable<T> where T : Loadable<T>, new()
 {
-    public virtual string EmbeddedResourceName { get; }
+    public virtual string? EmbeddedResourceName { get; }
     
-    public override string RawLoad(string customLoadPath = "")
+    public override string? RawLoad(string customLoadPath = "")
     {
         if (!string.IsNullOrEmpty(EmbeddedResourceName))
         {
