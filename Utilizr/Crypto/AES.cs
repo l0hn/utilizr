@@ -76,5 +76,45 @@ namespace Utilizr.Crypto
 
             return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount);
         }
+
+        public static byte[] Encrypt(
+            string plainText,
+            string key,
+            out byte[] initVector,
+            CipherMode cipherMode = CipherMode.CBC,
+            int initVectorLength = 16,
+            int blockSize = 128)
+        {
+            if (string.IsNullOrEmpty(plainText))
+                throw new ArgumentException($"{nameof(plainText)} cannot be null or empty.");
+
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException($"{nameof(key)} cannot be null or empty.");
+
+            using (var aes = Aes.Create())
+            {
+                aes.Mode = cipherMode;
+                aes.BlockSize = blockSize;
+                aes.Key = Encoding.UTF8.GetBytes(key);
+
+                var initVectorBytes = new Span<byte>(new byte[initVectorLength]);
+                RNGCryptoServiceProvider.Fill(initVectorBytes);
+                initVector = initVectorBytes.ToArray();
+                aes.IV = initVector;
+                aes.Padding = PaddingMode.PKCS7;
+
+                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memStream = new MemoryStream())
+                using (CryptoStream cryptoStream = new CryptoStream(memStream, encryptor, CryptoStreamMode.Write))
+                {
+                    cryptoStream.Write(Encoding.UTF8.GetBytes(plainText), 0, plainText.Length);
+                    cryptoStream.FlushFinalBlock();
+
+                    var cipherTextBytes = memStream.ToArray();
+                    return cipherTextBytes;
+                }
+            }
+        }
     }
 }
