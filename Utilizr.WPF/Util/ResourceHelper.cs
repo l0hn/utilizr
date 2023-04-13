@@ -195,6 +195,14 @@ namespace Utilizr.WPF.Util
             }
         }
 
+        public static string GetRawSvgSource(string resourceKey)
+        {
+            // todo: GetRawSvgSource() needs a better implemention, but good enough for now
+            var path = Path.Combine(AppInfo.AppDirectory, _resourceDir);
+            path = Path.Combine(path, resourceKey);
+            return File.ReadAllText(path);
+        }
+
         static void CheckDesignMode()
         {
             _inDesignMode ??= (bool)(DesignerProperties.IsInDesignModeProperty.GetMetadata(typeof(DependencyObject)).DefaultValue);
