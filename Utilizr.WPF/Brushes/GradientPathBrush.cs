@@ -10,52 +10,53 @@ namespace Utilizr.WPF.Brushes
         Perpendicular,
         Parallel
     }
-    public class GradientPath : FrameworkElement
+
+    public class GradientPathBrush : FrameworkElement
     {
         const double outlinePenWidth = 1;
 
         public static readonly DependencyProperty DataProperty =
-            Path.DataProperty.AddOwner(typeof(GradientPath),
+            Path.DataProperty.AddOwner(typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsMeasure |
                                                     FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty GradientStopsProperty =
             DependencyProperty.Register("GradientStops",
                 typeof(GradientStopCollection),
-                typeof(GradientPath),
+                typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty GradientModeProperty =
             DependencyProperty.Register("GradientMode",
                 typeof(GradientMode),
-                typeof(GradientPath),
+                typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(GradientMode.Perpendicular,
                                               FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty ColorInterpolationModeProperty =
-            GradientBrush.ColorInterpolationModeProperty.AddOwner(typeof(GradientPath),
+            GradientBrush.ColorInterpolationModeProperty.AddOwner(typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(ColorInterpolationMode.SRgbLinearInterpolation,
                                               FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty StrokeThicknessProperty =
-            Shape.StrokeThicknessProperty.AddOwner(typeof(GradientPath),
+            Shape.StrokeThicknessProperty.AddOwner(typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsMeasure |
                                                    FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty StrokeStartLineCapProperty =
-            Shape.StrokeStartLineCapProperty.AddOwner(typeof(GradientPath),
+            Shape.StrokeStartLineCapProperty.AddOwner(typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(PenLineCap.Flat, FrameworkPropertyMetadataOptions.AffectsMeasure |
                                                                FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty StrokeEndLineCapProperty =
-            Shape.StrokeEndLineCapProperty.AddOwner(typeof(GradientPath),
+            Shape.StrokeEndLineCapProperty.AddOwner(typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(PenLineCap.Flat, FrameworkPropertyMetadataOptions.AffectsMeasure |
                                                                FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty ToleranceProperty =
             DependencyProperty.Register("Tolerance",
                 typeof(double),
-                typeof(GradientPath),
+                typeof(GradientPathBrush),
                 new FrameworkPropertyMetadata(Geometry.StandardFlatteningTolerance,
                                               FrameworkPropertyMetadataOptions.AffectsRender));
 

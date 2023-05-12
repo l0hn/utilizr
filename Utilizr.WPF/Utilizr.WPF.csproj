@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <Folder Include="Controls\" />
-    <Folder Include="Brushes\" />
   </ItemGroup>
 
 </Project>
