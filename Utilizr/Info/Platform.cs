@@ -37,6 +37,8 @@ namespace Utilizr.Info
 
         public static bool IsWin10AndHigher => IsWindows && OSVersion >= OperatingSystem.Win10;
 
+        public static bool IsWin11AndHigher => IsWindows && OSVersion >= OperatingSystem.Win11;
+
         private static Version RS5Version = new Version(10, 0, 17763);
         public static bool IsRS5OrHigher => Environment.OSVersion.Version >= RS5Version;
 

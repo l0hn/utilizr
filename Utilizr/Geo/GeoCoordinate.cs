@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Utilizr.Geo
 {
@@ -21,13 +19,13 @@ namespace Utilizr.Geo
         {
             get
             {
-                return this.m_latitude;
+                return m_latitude;
             }
             set
             {
                 if (value > 90.0 || value < -90.0)
                     throw new ArgumentOutOfRangeException("Latitude", "The value of the parameter must be from -90.0 to 90.0.");
-                this.m_latitude = value;
+                m_latitude = value;
             }
         }
 
@@ -39,13 +37,13 @@ namespace Utilizr.Geo
         {
             get
             {
-                return this.m_longitude;
+                return m_longitude;
             }
             set
             {
                 if (value > 180.0 || value < -180.0)
                     throw new ArgumentOutOfRangeException("Longitude", "The value of the parameter must be from -90.0 to 90.0.");
-                this.m_longitude = value;
+                m_longitude = value;
             }
         }
 
@@ -61,8 +59,8 @@ namespace Utilizr.Geo
         /// <paramref name="latitude" />, <paramref name="longitude" />, <paramref name="horizontalAccuracy" />, <paramref name="verticalAccuracy," /> or <paramref name="course" /> is out of range.</exception>
         public GeoCoordinate(double latitude, double longitude)
         {
-            this.Latitude = latitude;
-            this.Longitude = longitude;
+            Latitude = latitude;
+            Longitude = longitude;
         }
         /// <summary>
         /// Taken from .Net 4.5
@@ -71,14 +69,14 @@ namespace Utilizr.Geo
         /// <returns></returns>
         public double GetDistanceTo(GeoCoordinate other)
         {
-            if (double.IsNaN(this.Latitude) || double.IsNaN(this.Longitude) || double.IsNaN(other.Latitude) || double.IsNaN(other.Longitude))
+            if (double.IsNaN(Latitude) || double.IsNaN(Longitude) || double.IsNaN(other.Latitude) || double.IsNaN(other.Longitude))
             {
                 throw new ArgumentException("The coordinate's latitude or longitude is not a number.");
             }
             else
             {
-                double latitude = this.Latitude * 0.0174532925199433;
-                double longitude = this.Longitude * 0.0174532925199433;
+                double latitude = Latitude * 0.0174532925199433;
+                double longitude = Longitude * 0.0174532925199433;
                 double num = other.Latitude * 0.0174532925199433;
                 double longitude1 = other.Longitude * 0.0174532925199433;
                 double num1 = longitude1 - longitude;
