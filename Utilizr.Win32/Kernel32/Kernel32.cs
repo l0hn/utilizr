@@ -199,6 +199,5 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
     }
 }
