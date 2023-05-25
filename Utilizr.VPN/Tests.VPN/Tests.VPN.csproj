@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BFF7CF20-B4F4-4B76-83C6-C471E8EBCF10}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tests.VPN</RootNamespace>
+    <AssemblyName>Tests.VPN</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotRas.Win8">
+      <HintPath>..\libs\DotRas\DotRas.Win8.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.1.12217, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.2.6.1\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ControllerTest.cs" />
+    <Compile Include="MiscTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Utilizr.Net3\Utilizr.Net3.csproj">
+      <Project>{6708d9c9-482d-4efc-9cc5-474bcc9f89f7}</Project>
+      <Name>Utilizr.Net3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilizr.OpenVPN.Net3\Utilizr.OpenVPN.Net3.csproj">
+      <Project>{a026b7ad-c0f1-47c2-ba2d-7b6f7d6c8997}</Project>
+      <Name>Utilizr.OpenVPN.Net3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilizr.OpenVPN.Service\Utilizr.OpenVPN.Service.csproj">
+      <Project>{c3f1a637-d985-4e64-bfeb-7453ebce2575}</Project>
+      <Name>Utilizr.OpenVPN.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilizr.VPN.Net3\Utilizr.VPN.Net3.csproj">
+      <Project>{2e9e3965-0b7e-42d7-8f81-d776746d4c1a}</Project>
+      <Name>Utilizr.VPN.Net3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilizr.VPN.Win\Utilizr.VPN.Win.csproj">
+      <Project>{c988a98d-a04d-45d1-9cac-d6b86d6b2588}</Project>
+      <Name>Utilizr.VPN.Win</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

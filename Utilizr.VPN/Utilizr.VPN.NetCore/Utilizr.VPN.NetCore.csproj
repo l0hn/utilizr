@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <AssemblyName>Utilizr.VPN</AssemblyName>
+        <RootNamespace>Utilizr.VPN</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Utilizr.NetCore3_1\Utilizr.NetCore3_1.csproj" />
+      <ProjectReference Include="..\Utilizr.OpenVPN.NetCore\Utilizr.OpenVPN.NetCore.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\Utilizr.VPN\Utilizr.VPN.projitems" Label="Shared" />
+
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+</Project>

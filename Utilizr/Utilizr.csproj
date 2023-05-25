@@ -1,14 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+	
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
+	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-
+	
+  <ItemGroup>
+    <Compile Remove="VPN\OpenVPN.NetCore\**" />
+    <Compile Remove="VPN\Utilizr.VPN.NetCore\**" />
+    <EmbeddedResource Remove="VPN\OpenVPN.NetCore\**" />
+    <EmbeddedResource Remove="VPN\Utilizr.VPN.NetCore\**" />
+    <None Remove="VPN\OpenVPN.NetCore\**" />
+    <None Remove="VPN\Utilizr.VPN.NetCore\**" />
+  </ItemGroup>
+	
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.16.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
+    <ProjectReference Include="..\Utilizr.Logging\Utilizr.Logging.csproj" />
   </ItemGroup>
 
 </Project>
