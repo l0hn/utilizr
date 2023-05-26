@@ -59,5 +59,11 @@ namespace Utilizr.Win32.Advapi32
             int dwTokenType,
             ref IntPtr phNewToken
         );
+
+        [DllImport(ADVAPI32_DLL, SetLastError = true)]
+        public static extern bool SetServiceStatus(
+            IntPtr handle,
+            ref ServiceStatus serviceStatus
+        );
     }
 }
