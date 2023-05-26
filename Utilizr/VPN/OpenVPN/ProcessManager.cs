@@ -215,6 +215,17 @@ namespace Utilizr.OpenVPN
             }
         }
 
+        public static IEnumerable<WMIProcessInfo> GetRunningProcessesForFile(string filePath)
+        {
+            return
+                GetRunningProcesses()
+                    .Where(i => i.ExecutablePath != null && i.ExecutablePath.Equals(filePath, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static IEnumerable<WMIProcessInfo> GetRunningProcesses()
+        {
+            return InternalGetRunningProcesses(null);
+        }
 
         public static WMIProcessInfo GetRunningProcess(int pid)
         {
