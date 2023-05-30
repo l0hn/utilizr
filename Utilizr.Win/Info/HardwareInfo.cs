@@ -2,14 +2,51 @@
 using System;
 using System.Linq;
 using System.Management;
+using Utilizr.Extensions;
 using Utilizr.Logging;
 
 namespace Utilizr.Win.Info
 {
     public static class HardwareInfo
     {
-        private static string _motherboardSerial = string.Empty;
+        /// <summary>
+        /// Generates a unique hardware id based on various hardware serial numbers for the current system.
+        /// Uses a combination of motherboard | hdd_physical_serial | processor_id
+        /// </summary>
+        /// <returns></returns>
+        public static string GenerateUniqueHardwareID()
+        {
+            var motherboardSerial = "none";
+            var processorSerial = "none";
+            var hddSerial = "none";
+            try
+            {
+                motherboardSerial = GetMotherboardSerialNumber();
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
+                processorSerial = GetProcessorID();
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
+                hddSerial = GetRootHDDPhysicalSerial();
+            }
+            catch (Exception)
+            {
+            }
+            motherboardSerial = motherboardSerial.ToLower().HashMD5();
+            processorSerial = processorSerial.ToLower().HashMD5();
+            hddSerial = hddSerial.ToLower().HashMD5();
+            return $"{motherboardSerial}|{hddSerial}|{processorSerial}".ToLower();
+        }
 
+        private static string _motherboardSerial = string.Empty;
         public static string GetMotherboardSerialNumber()
         {
             var query = "Select * From Win32_BaseBoard";

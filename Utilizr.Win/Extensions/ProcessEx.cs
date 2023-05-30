@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
+using System.Runtime.InteropServices;
+using System.Text;
+using Utilizr.Win32.Kernel32;
+using Utilizr.Win32.Kernel32.Flags;
 
 namespace Utilizr.Win.Extensions
 {
@@ -92,6 +97,56 @@ namespace Utilizr.Win.Extensions
                 }
             }
             process.Kill();
+        }
+
+        /// <summary>
+        /// Wait for a process to exit, without an access denied error.
+        /// </summary>
+        /// <param name="p"></param>
+        public static void SafeWaitForExit(this Process p)
+        {
+            var flags = ProcessAccessFlags.QueryLimitedInformation | ProcessAccessFlags.Synchronize;
+
+            var hProcess = Kernel32.OpenProcess(flags, false, (uint)p.Id);
+            if (hProcess == IntPtr.Zero)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            try
+            {
+                if (Kernel32.WaitForSingleObject(hProcess, Kernel32.WAIT_FOR_OBJECT_INFINITE) != 0)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            finally
+            {
+                Kernel32.CloseHandle(hProcess);
+            }
+        }
+
+        /// <summary>
+        /// Get the filepath of the process, without an access denied error.
+        /// </summary>
+        public static string SafeGetProcessFilename(this Process p)
+        {
+            int capacity = 2000;
+            var builder = new StringBuilder(capacity);
+            var hProcess = Kernel32.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, false, (uint)p.Id);
+
+            if (hProcess == IntPtr.Zero)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            bool success = false;
+            try
+            {
+                success = Kernel32.QueryFullProcessImageName(hProcess, 0, builder, ref capacity);
+            }
+            finally
+            {
+                Kernel32.CloseHandle(hProcess);
+            }
+
+            return success
+                ? builder.ToString()
+                : string.Empty;
         }
     }
 }

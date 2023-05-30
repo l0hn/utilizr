@@ -46,7 +46,7 @@ namespace Utilizr.Util
             return result;
         }
 
-        protected string[] SplitCommanSeparatedArgValue(string argumentValue)
+        protected string[] SplitCommanSeparatedArgValue(string? argumentValue)
         {
             if (string.IsNullOrEmpty(argumentValue))
                 return Array.Empty<string>();
