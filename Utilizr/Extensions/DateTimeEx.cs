@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Utilizr.Extensions
 {
@@ -9,18 +10,19 @@ namespace Utilizr.Extensions
         /// </summary>
         /// <param name="dateTime"></param>
         /// <returns></returns>
-        public static long ToUnixTimestamp(this DateTime dateTime, DateTimeKind dateTimeKind = DateTimeKind.Utc)
-            => new DateTimeOffset(
-                new DateTime(dateTime.Ticks, dateTimeKind), TimeSpan.Zero).ToUnixTimeSeconds();
+        public static long ToUnixTimestamp(this DateTime dateTime)
+        {
+            return new DateTimeOffset(dateTime).ToUnixTimeSeconds();
+        }
 
         /// <summary>
         /// Convert a datetime object to a unix timestamp
         /// </summary>
         /// <param name="dateTime"></param>
         /// <returns></returns>
-        public static string ToUnixTimestampString(this DateTime dateTime, DateTimeKind dateTimeKind = DateTimeKind.Utc)
+        public static string ToUnixTimestampString(this DateTime dateTime)
         {
-            return dateTime.ToUnixTimestamp(dateTimeKind).ToString();
+            return dateTime.ToUnixTimestamp().ToString();
         }
 
         /// <summary>
@@ -37,8 +39,13 @@ namespace Utilizr.Extensions
         /// <param name="timestamp"></param>
         /// <returns>DateTime object (UTC)</returns>
         public static DateTime ToDateTime(this long timestamp, DateTimeKind dateTimeKind = DateTimeKind.Utc)
-            => new DateTime(DateTimeOffset.FromUnixTimeSeconds(timestamp).Ticks, dateTimeKind);
+        {
+            var dtOffset = DateTimeOffset.FromUnixTimeSeconds(timestamp);
 
+            return dateTimeKind == DateTimeKind.Utc
+                ? dtOffset.UtcDateTime
+                : dtOffset.LocalDateTime;
+        }
 
         /// <summary>
         /// Get the whole number of months which has passed between 2 dates. Will not calculate fractions.
@@ -76,7 +83,7 @@ namespace Utilizr.Extensions
         public static int TotalYears(this DateTime dateTime, DateTime toCompare)
         {
             var zeroTime = new DateTime(1, 1, 1);
-            var timeSpan = dateTime > toCompare
+            var timeSpan = dateTime < toCompare
                 ? toCompare - dateTime
                 : dateTime - toCompare;
 
