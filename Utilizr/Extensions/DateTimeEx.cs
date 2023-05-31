@@ -42,13 +42,47 @@ namespace Utilizr.Extensions
 
         /// <summary>
         /// Get the whole number of months which has passed between 2 dates. Will not calculate fractions.
+        /// Note: not great performance for large comparisons.
         /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
+        /// <param name="dateTime"></param>
+        /// <param name="toCompare"></param>
         /// <returns></returns>
-        public static int TotalMonths(this DateTime start, DateTime end)
+        public static int TotalMonths(this DateTime dateTime, DateTime toCompare)
         {
-            return (start.Year * 12 + start.Month) - (end.Year * 12 + end.Month);
+            // todo: worth looking into more performant TotalMonths() for DateTimes that are far apart?
+            var earlyDate = (dateTime > toCompare)
+                ? toCompare.Date
+                : dateTime.Date;
+            var lateDate = (dateTime > toCompare)
+                ? dateTime.Date
+                : toCompare.Date;
+
+            // Start with 1 month's difference and keep incrementing until we overshoot the late date
+            int monthsDiff = 1;
+            while (earlyDate.AddMonths(monthsDiff) <= lateDate)
+            {
+                monthsDiff++;
+            }
+
+            return monthsDiff - 1;
+        }
+
+        /// <summary>
+        /// Get the whole number of years which has passed between 2 dates. Will not calculate fractions.
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <param name="toCompare"></param>
+        /// <returns></returns>
+        public static int TotalYears(this DateTime dateTime, DateTime toCompare)
+        {
+            var zeroTime = new DateTime(1, 1, 1);
+            var timeSpan = dateTime > toCompare
+                ? toCompare - dateTime
+                : dateTime - toCompare;
+
+            // Because we start at year 1 for the Gregorian calendar, we must subtract a year here.
+            // todo: DateTimeEx.TotalYears() may be a bit off for cultures not using Gregorian calendar
+            return (zeroTime + timeSpan).Year - 1;
         }
     }
 }
