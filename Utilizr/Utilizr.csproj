@@ -8,7 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="VPN\**" />
+    <EmbeddedResource Remove="VPN\**" />
+    <None Remove="VPN\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
   </ItemGroup>
 
 </Project>

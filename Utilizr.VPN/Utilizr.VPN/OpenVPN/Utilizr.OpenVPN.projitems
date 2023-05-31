@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7C1DCA99-2E5B-4FF2-87D6-9025FA654960</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Utililzr.OpenVPN</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)driver\**\*.*">
+      <Link>driver\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)ovpn\**\*.*">
+      <Link>ovpn\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="$(MSBuildThisFileDirectory)ovpn\**\*.bat" />
+    <Content Remove="$(MSBuildThisFileDirectory)ovpn\**\*.bat" />
+    <None Include="$(MSBuildThisFileDirectory)ovpn\openvpn_down.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)ovpn\openvpn_up.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ipc\WCFService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ManagementClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OVPNProcess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProcessManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TapInstaller.cs" />
+  </ItemGroup>
+</Project>

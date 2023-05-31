@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>122BDA16-03CF-4514-AABA-833872A945F4</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Utilizr.VPN</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AbstractOpenVPNHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AddrAndMask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthenticationHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AutoDialer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BandwidthUsage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ipv6Helper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IVPNController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IVPNProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Killswitch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OpenVPNProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VPNController.cs" />
+  </ItemGroup>
+</Project>
