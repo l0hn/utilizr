@@ -4,7 +4,6 @@ using Utilizr.Crypto;
 namespace Utilizr.Tests.Crypto
 {
     [TestFixture]
-    [Category("Crypto")]
     public class StringEncrypterTests
     {
         [Test]
@@ -23,7 +22,7 @@ namespace Utilizr.Tests.Crypto
             string passphrase = "איר שמעקן ווי אַ מאַלפּע 'ס טאָכעס| 你闻起来像一只猴子的屁股";
             string encrypted = StringEncrypter.EncryptString(message, passphrase);
             string original = StringEncrypter.DecryptString(encrypted, passphrase);
-            Assert.AreEqual(message, original);
+            Assert.That(message, Is.EqualTo(original));
         }
     }
 }
