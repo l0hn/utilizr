@@ -38,5 +38,17 @@ namespace Utilizr.Extensions
         /// <returns>DateTime object (UTC)</returns>
         public static DateTime ToDateTime(this long timestamp, DateTimeKind dateTimeKind = DateTimeKind.Utc)
             => new DateTime(DateTimeOffset.FromUnixTimeSeconds(timestamp).Ticks, dateTimeKind);
+
+
+        /// <summary>
+        /// Get the whole number of months which has passed between 2 dates. Will not calculate fractions.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public static int TotalMonths(this DateTime start, DateTime end)
+        {
+            return (start.Year * 12 + start.Month) - (end.Year * 12 + end.Month);
+        }
     }
 }
