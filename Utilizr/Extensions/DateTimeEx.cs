@@ -42,12 +42,14 @@ namespace Utilizr.Extensions
 
         /// <summary>
         /// Get the whole number of months which has passed between 2 dates. Will not calculate fractions.
+        /// Note: not great performance for large comparisons.
         /// </summary>
         /// <param name="dateTime"></param>
         /// <param name="toCompare"></param>
         /// <returns></returns>
         public static int TotalMonths(this DateTime dateTime, DateTime toCompare)
         {
+            // todo: worth looking into more performant TotalMonths() for DateTimes that are far apart?
             var earlyDate = (dateTime > toCompare)
                 ? toCompare.Date
                 : dateTime.Date;
