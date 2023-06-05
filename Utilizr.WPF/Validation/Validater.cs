@@ -4,7 +4,7 @@ using Utilizr.Globalisation;
 
 namespace Utilizr.WPF.Validation
 {
-    public delegate ValidationResult CustomValidationDelegate(string input);
+    public delegate ValidationResult CustomValidationDelegate(string? input);
 
     /// <summary>
     /// Opportunity to tweak input before validation applied.
@@ -12,7 +12,7 @@ namespace Utilizr.WPF.Validation
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    public delegate string PreValidateCoercion(string input);
+    public delegate string PreValidateCoercion(string? input);
 
 
     public class Validater
@@ -34,7 +34,7 @@ namespace Utilizr.WPF.Validation
             PreValidateCoercion = preValidateCoercion;
         }
 
-        public ValidationResult Validate(string input)
+        public ValidationResult Validate(string? input)
         {
             var result = new ValidationResult
             {
@@ -95,13 +95,13 @@ namespace Utilizr.WPF.Validation
             return new Validater((input) => ValidateInteger(input, minimum, maximum), preValidateCoercion);
         }
 
-        static ValidationResult ValidateEmail(string input)
+        static ValidationResult ValidateEmail(string? input)
         {
             var result = new ValidationResult() {IsValid = true};
             if (string.IsNullOrEmpty(input))
             {
                 result.IsValid = false;
-                result.Messages.Add(L._I("Please enter an email address"));
+                result.Messages.Add(L._I("Please enter an email address."));
                 return result;
             }
 
@@ -110,30 +110,30 @@ namespace Utilizr.WPF.Validation
             if (!regex.IsMatch(input))
             {
                 result.IsValid = false;
-                result.Messages.Add(L._I("Please enter a valid email address"));
+                result.Messages.Add(L._I("Please enter a valid email address."));
             }
             return result;
         }
 
-        static ValidationResult ValidateName(string input, int minLength)
+        static ValidationResult ValidateName(string? input, int minLength)
         {
             return ValidateMinimumLength(
                 input,
                 minLength,
-                L._I("Please enter a name"), 
-                L._I("Please enter a name (minimum {0} characters)", () => L.Args(minLength)));
+                L._I("Please enter a name."), 
+                L._I("Please enter a name (minimum {0} characters).", () => L.Args(minLength)));
         }
 
-        static ValidationResult ValidatePassword(string input, int minLength)
+        static ValidationResult ValidatePassword(string? input, int minLength)
         {
             return ValidateMinimumLength(
                 input,
                 minLength,
-                L._I("Please enter a password"),
-                L._I("Please enter a password (minimum {0} characters)", () => L.Args(minLength)));
+                L._I("Please enter a password."),
+                L._I("Please enter a password (minimum {0} characters).", () => L.Args(minLength)));
         }
 
-        static ValidationResult ValidateMinimumLength(string input, int minLength, ITranslatable noInputMessage, ITranslatable underMinLengthMessage)
+        static ValidationResult ValidateMinimumLength(string? input, int minLength, ITranslatable noInputMessage, ITranslatable underMinLengthMessage)
         {
             var result = new ValidationResult() { IsValid = true };
             if (string.IsNullOrEmpty(input))
@@ -152,7 +152,7 @@ namespace Utilizr.WPF.Validation
             return result;
         }
 
-        static ValidationResult ValidateInteger(string input, int? minimum, int? maximum)
+        static ValidationResult ValidateInteger(string? input, int? minimum, int? maximum)
         {
             var result = new ValidationResult() { IsValid = true };
             if (string.IsNullOrEmpty(input))
