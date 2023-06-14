@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Utilizr.WPF"
+             xmlns:c="clr-namespace:Utilizr.WPF.Converters"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="30"
@@ -336,6 +337,8 @@
         </Style>
     </UserControl.Resources>
 
+    <!--IsTabStop="{Binding Path=IsPassword, Converter={StaticResource InvertBooleanConverter}}"-->
+    
     <TextBox x:Name="TextBox"
              Text="{Binding Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
              Foreground="{Binding Path=PlainTextForeground}"
@@ -343,7 +346,6 @@
              FontWeight="{Binding Path=FontWeight}"
              Background="{Binding Path=TextBoxBackground}"
              FocusVisualStyle="{x:Null}"
-             IsTabStop="{Binding Path=IsPassword, Converter={StaticResource InvertBooleanConverter}}"
              Padding="{Binding Path=Padding}"/>
 
 </UserControl>

@@ -3,12 +3,13 @@
                     xmlns:local="clr-namespace:Utilizr.WPF.Dictionary"
                     xmlns:wpf="clr-namespace:Utilizr.WPF">
 
+    <!--<Setter Property="WatermarkAlignment" Value="Left"/>-->
     <Style x:Key="DefaultTextboxStyle" TargetType="wpf:AppTextBox">
         <Setter Property="Foreground" Value="#555555"/>
         <Setter Property="Width" Value="260"/>
         <Setter Property="Height" Value="49"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
-        <Setter Property="WatermarkAlignment" Value="Left"/>
+
         <Setter Property="ImageWidth" Value="5"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Margin" Value="0,18,0,0"/>
