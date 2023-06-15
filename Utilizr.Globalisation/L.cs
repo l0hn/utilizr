@@ -100,7 +100,7 @@ namespace Utilizr.Globalisation
             }
         }
 
-        public static void SetLanguage(string ietfLanguageTag)
+        public static void SetLanguage(string? ietfLanguageTag)
         {
             ietfLanguageTag = ietfLanguageTag.ToLower();
             if (string.IsNullOrEmpty(ietfLanguageTag))
