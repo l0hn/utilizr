@@ -198,7 +198,15 @@ namespace Utilizr.WPF.Util
         public static string GetRawSvgSource(string resourceKey)
         {
             // todo: GetRawSvgSource() needs a better implemention, but good enough for now
-            var path = Path.Combine(AppInfo.AppDirectory, _resourceDir);
+            var rootPath = AppInfo.AppDirectory;
+            if (_inDesignMode == true)
+            {
+                //rootPath = Path.GetFullPath()
+                var uri = new Uri($"../../{_resourceDir}/{resourceKey}", UriKind.Relative);
+                rootPath = uri.AbsolutePath;
+            }
+
+            var path = Path.Combine(rootPath, _resourceDir);
             path = Path.Combine(path, resourceKey);
             return File.ReadAllText(path);
         }
