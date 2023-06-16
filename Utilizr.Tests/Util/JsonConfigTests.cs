@@ -1,8 +1,12 @@
+using NUnit.Framework;
+using System;
+using System.IO;
 using Utilizr.Util;
 
-namespace Utilizr.Tests.Loadable;
+namespace Utilizr.Tests.Util;
 
-public class LoadableTests
+[TestFixture]
+public class JsonConfigTests
 {
     [SetUp]
     public void Setup()
@@ -35,5 +39,27 @@ public class LoadableTests
         Assert.That(JsonConfig<DummyLoadable>.Instance.SomeName, Is.EqualTo(name));
         Assert.That(JsonConfig<DummyLoadable>.Instance.SomeNumber, Is.EqualTo(num));
         Assert.That(JsonConfig<DummyLoadable>.Instance.SomeDateTime, Is.EqualTo(dt));
+    }
+}
+
+public class DummyLoadable : Loadable<DummyLoadable>
+{
+    public string? SomeName { get; set; }
+    public int SomeNumber { get; set; }
+    public DateTime SomeDateTime { get; set; }
+
+    protected override string CustomDeserializeStep(string source)
+    {
+        return source;
+    }
+
+    protected override string CustomSerializeStep(string source)
+    {
+        return source;
+    }
+
+    protected override string GetLoadPath()
+    {
+        return Path.GetFullPath(Path.Combine("UnitTestData", "Dummy.Loadable"));
     }
 }
