@@ -4,7 +4,7 @@
                     xmlns:wpf="clr-namespace:Utilizr.WPF">
 
     <!--<Setter Property="WatermarkAlignment" Value="Left"/>-->
-    <Style x:Key="DefaultTextboxStyle" TargetType="wpf:AppTextBox">
+    <!--<Style x:Key="DefaultTextboxStyle" TargetType="wpf:AppTextBox">
         <Setter Property="Foreground" Value="#555555"/>
         <Setter Property="Width" Value="260"/>
         <Setter Property="Height" Value="49"/>
@@ -13,7 +13,7 @@
         <Setter Property="ImageWidth" Value="5"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Margin" Value="0,18,0,0"/>
-    </Style>
+    </Style>-->
 
     <Style x:Key="DefaultTextboxBorderStyle"
            TargetType="Border">
