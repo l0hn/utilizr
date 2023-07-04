@@ -26,6 +26,7 @@ namespace Utilizr.WPF.Converters
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var first = values.First();
+            
             return values.All(first.Equals);
         }
 
