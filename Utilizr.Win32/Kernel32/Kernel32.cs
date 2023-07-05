@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.Kernel32.Structs;
+using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace Utilizr.Win32.Kernel32
 {
@@ -199,5 +200,34 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        public struct SYSTEMTIME
+        {
+            public Int16 Year;
+            public Int16 Month;
+            public Int16 DayOfWeek;
+            public Int16 Day;
+            public Int16 Hour;
+            public Int16 Minute;
+            public Int16 Second;
+            public Int16 Milliseconds;
+        }
+
+        [DllImport(KERNEL32_DLL, CharSet = CharSet.Auto)]
+        static extern bool FileTimeToSystemTime(ref FILETIME FileTime, ref SYSTEMTIME SystemTime);
+
+
+        /// <summary>
+        /// Converts a file time to DateTime format.
+        /// </summary>
+        /// <param name="filetime">FILETIME structure</param>
+        /// <returns>DateTime structure</returns>
+        public static DateTime FileTimeToDateTime(FILETIME filetime)
+        {
+            SYSTEMTIME st = new SYSTEMTIME();
+            FileTimeToSystemTime(ref filetime, ref st);
+            return new DateTime(st.Year, st.Month, st.Day, st.Hour, st.Minute, st.Second, st.Milliseconds);
+
+        }
     }
 }
