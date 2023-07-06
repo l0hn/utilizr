@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Utilizr.Win32.Advapi32.Flags;
 using Utilizr.Win32.Advapi32.Structs;
