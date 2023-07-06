@@ -9,7 +9,6 @@ namespace Utilizr.Win32.Advapi32
 {
     public static class Advapi32
     {
-        public const Int32 TOKEN_QUERY = 0x00000008;
         const string ADVAPI32_DLL = "advapi32.dll";
 
         [DllImport(ADVAPI32_DLL, SetLastError = true)]
