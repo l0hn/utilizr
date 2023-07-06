@@ -1,22 +1,20 @@
-﻿#if !MONO
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Text;
-using Utilizr.Info;
 using Utilizr.Logging;
 
 
-namespace Utilizr.Windows
+namespace Utilizr.Win.Util
 {
     public static class RegistryHelper
     {
         /// <summary>
         /// Defaults to bitness view of the OS
         /// </summary>
-        public static RegistryKey GetKeyFromPath(string path, string userSID = "", bool isWritable = false)
+        public static RegistryKey? GetKeyFromPath(string path, string userSID = "", bool isWritable = false)
         {
             bool isCurrentUserOrUsersHive;
-            RegistryKey key = GetHiveFromPath(path, out string uri, out isCurrentUserOrUsersHive);
+            var key = GetHiveFromPath(path, out string uri, out isCurrentUserOrUsersHive);
 
             if (isCurrentUserOrUsersHive)
             {
@@ -25,15 +23,15 @@ namespace Utilizr.Windows
 
                 key = OpenCurrentUserKey(userSID, isWritable);
             }
-            
-            RegistryKey result = key.OpenSubKey(uri, isWritable);
+
+            var result = key?.OpenSubKey(uri, isWritable);
             return result; //null if path doesn't exist
         }
 
         /// <summary>
         /// Defaults to bitness view of the OS
         /// </summary>
-        public static RegistryKey OpenCurrentUserKey(string sid = "", bool isWritable = false)
+        public static RegistryKey? OpenCurrentUserKey(string sid = "", bool isWritable = false)
         {
             if (string.IsNullOrEmpty(sid))
                 return Registry.CurrentUser;
@@ -41,7 +39,7 @@ namespace Utilizr.Windows
             return Registry.Users.OpenSubKey(sid, isWritable);
         }
 
-        private static RegistryKey GetHiveFromPath(string path, out string uri, out bool isCurrentUserOrUsersHive)
+        private static RegistryKey? GetHiveFromPath(string path, out string uri, out bool isCurrentUserOrUsersHive)
         {
             isCurrentUserOrUsersHive = false;
 
@@ -83,23 +81,16 @@ namespace Utilizr.Windows
 
         public static RegistryValueKind GetRegistryValueKind(string typeStr)
         {
-            switch (typeStr.ToLower())
+            return typeStr.ToLower() switch
             {
-                case "binary":
-                    return RegistryValueKind.Binary;
-                case "dword":
-                    return RegistryValueKind.DWord;
-                case "expandstring":
-                    return RegistryValueKind.ExpandString;
-                case "multistring":
-                    return RegistryValueKind.MultiString;
-                case "qword":
-                    return RegistryValueKind.QWord;
-                case "string":
-                    return RegistryValueKind.String;
-                default:
-                    return RegistryValueKind.Unknown;
-            }
+                "binary" => RegistryValueKind.Binary,
+                "dword" => RegistryValueKind.DWord,
+                "expandstring" => RegistryValueKind.ExpandString,
+                "multistring" => RegistryValueKind.MultiString,
+                "qword" => RegistryValueKind.QWord,
+                "string" => RegistryValueKind.String,
+                _ => RegistryValueKind.Unknown,
+            };
         }
 
         public static object ConvertToCorrectType(string value, string registryType)
@@ -142,29 +133,33 @@ namespace Utilizr.Windows
             switch (dataType)
             {
                 case RegistryValueKind.Binary:
-                    byte[] binary = key.GetValue(valueName) as byte[];
-                    result = BitConverter.ToString(binary);
+                    if (key.GetValue(valueName) is byte[] binary)
+                        result = BitConverter.ToString(binary);
                     break;
                 case RegistryValueKind.ExpandString:
-                    result = key.GetValue(valueName, result, RegistryValueOptions.DoNotExpandEnvironmentNames)?.ToString();
+                    var expandStringVal = key.GetValue(valueName, result, RegistryValueOptions.DoNotExpandEnvironmentNames)?.ToString();
+                    if (expandStringVal != null)
+                        result = expandStringVal;
                     break;
                 case RegistryValueKind.MultiString:
-                    string[] multi = key.GetValue(valueName) as string[];
-                    result = string.Join(",", multi);
+                    if (key.GetValue(valueName) is string[] multi)
+                        result = string.Join(",", multi);
                     break;
                 case RegistryValueKind.DWord:
                 case RegistryValueKind.QWord:
                 case RegistryValueKind.String:
                 case RegistryValueKind.Unknown:
                 default:
-                    result = key.GetValue(valueName)?.ToString();
+                    var unkownVal = key.GetValue(valueName)?.ToString();
+                    if (unkownVal != null)
+                        result = unkownVal;
                     break;
             }
 
-            return result.ToLower();
+            return result.ToLowerInvariant();
         }
 
-        public static string GetUserExplorerShellFolder(string keyName)
+        public static string? GetUserExplorerShellFolder(string keyName)
         {
             try
             {
@@ -173,74 +168,16 @@ namespace Utilizr.Windows
                 {
                     if (key != null)
                     {
-                        return key.GetValue(keyName).ToString();
+                        return key.GetValue(keyName)?.ToString();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Exception("UTILIZR", ex);
+                Log.Exception(nameof(RegistryHelper), ex);
             }
 
             return string.Empty;
         }
-
-        /// <summary>
-        /// Create startup registry item 64 and 32 bit compatible
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="name"></param>
-        /// <param name="alternativeName"></param>
-        /// <returns></returns>
-        public static bool CreateRegistryStartupKey(string path, string name, string alternativeName = null)
-        {
-            try
-            {
-                RegistryKey startupKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
-
-                //Check to if the alternativeName value exists
-                if (alternativeName != null)
-                {
-                    if (startupKey.GetValue(alternativeName) != null)
-                        return true; //already added
-                }
-
-                //Only add if value is not already added
-                if (startupKey.GetValue(name) == null)
-                    startupKey.SetValue(name, path);
-
-                startupKey.Close();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log.Exception("UTILIZR", e, $"Create startup key {name} failed");
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Delete startup registry item 64 and 32 bit compatible
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static bool DeleteRegistryStartupKey(string name)
-        {
-            try
-            {
-                RegistryKey startupKey = Registry.LocalMachine.OpenSubKey($"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
-                startupKey.DeleteValue(name);
-                startupKey.Close();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log.Exception("UTILIZR", e, $"Delete startup key {name} failed");
-            }
-
-            return false;
-        }
     }
 }
-#endif

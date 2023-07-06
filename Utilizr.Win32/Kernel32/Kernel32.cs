@@ -42,11 +42,11 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr CreateFileW(
             string lpFileName,
-            uint dwDesiredAccess,
-            uint dwShareMode,
+            FileAccessRightsFlags dwDesiredAccess,
+            FileShareRightsFlags dwShareMode,
             IntPtr lpSecurityAttributes,
-            uint dwCreationDisposition,
-            uint dwFlagsAndAttributes,
+            FileCreationDispositionFlags dwCreationDisposition,
+            FileAttributeFlags dwFlagsAndAttributes,
             IntPtr hTemplateFile);
 
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -150,6 +150,11 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS infoClass, out FILE_ID_BOTH_DIR_INFO dirInfo, uint dwBufferSize);
 
+        [DllImport(KERNEL32_DLL, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetFileAttributesEx(string lpFileName, GET_FILEEX_INFO_LEVELS fInfoLevelId, out FILE_ATTRIBUTE_DATA fileData);
+
+
         [DllImport(KERNEL32_DLL)]
         public static extern uint GetConsoleOutputCP();
 
@@ -201,33 +206,7 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
-        public struct SYSTEMTIME
-        {
-            public Int16 Year;
-            public Int16 Month;
-            public Int16 DayOfWeek;
-            public Int16 Day;
-            public Int16 Hour;
-            public Int16 Minute;
-            public Int16 Second;
-            public Int16 Milliseconds;
-        }
-
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Auto)]
-        static extern bool FileTimeToSystemTime(ref FILETIME FileTime, ref SYSTEMTIME SystemTime);
-
-
-        /// <summary>
-        /// Converts a file time to DateTime format.
-        /// </summary>
-        /// <param name="filetime">FILETIME structure</param>
-        /// <returns>DateTime structure</returns>
-        public static DateTime FileTimeToDateTime(FILETIME filetime)
-        {
-            SYSTEMTIME st = new SYSTEMTIME();
-            FileTimeToSystemTime(ref filetime, ref st);
-            return new DateTime(st.Year, st.Month, st.Day, st.Hour, st.Minute, st.Second, st.Milliseconds);
-
-        }
+        public static extern bool FileTimeToSystemTime(ref FILETIME FileTime, ref SYSTEMTIME SystemTime);
     }
 }

@@ -10,18 +10,6 @@ namespace Utilizr.Win32.Advapi32
     public static class Advapi32
     {
         public const Int32 TOKEN_QUERY = 0x00000008;
-        [StructLayout(LayoutKind.Sequential)]
-        public struct TOKEN_USER
-        {
-            public SID_AND_ATTRIBUTES User;
-        }
-        [StructLayout(LayoutKind.Sequential)]
-        public struct SID_AND_ATTRIBUTES
-        {
-            public IntPtr Sid;
-            public int Attributes;
-        }
-
         const string ADVAPI32_DLL = "advapi32.dll";
 
         [DllImport(ADVAPI32_DLL, SetLastError = true)]
@@ -79,51 +67,5 @@ namespace Utilizr.Win32.Advapi32
             IntPtr handle,
             ref ServiceStatus serviceStatus
         );
-
-        public static bool ProcessOwnedByUser(int pid, string userSID)
-        {
-            IntPtr pToken = IntPtr.Zero;
-            var process = Process.GetProcessById(pid);
-
-            if (OpenProcessToken(process.Handle, TOKEN_QUERY, ref pToken) != 0)
-            {
-                IntPtr pSidPtr = IntPtr.Zero;
-                if (ProcessTokenToSID(pToken, out pSidPtr))
-                {
-                    string pSidStr = string.Empty;
-                    ConvertSidToStringSid(pSidPtr, ref pSidStr);
-                    return userSID.Equals(pSidStr, StringComparison.OrdinalIgnoreCase);
-                }
-            }
-            return false;
-        }
-
-        private static bool ProcessTokenToSID(IntPtr token, out IntPtr pSID)
-        {
-            pSID = IntPtr.Zero;
-            TOKEN_USER tokUser;
-            const int bufLength = 256;
-            IntPtr tu = Marshal.AllocHGlobal(bufLength);
-            bool result = false;
-            try
-            {
-                int cb = bufLength;
-                result = GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenUser, tu, cb, ref cb);
-                if (result)
-                {
-                    tokUser = (TOKEN_USER)Marshal.PtrToStructure(tu, typeof(TOKEN_USER));
-                    pSID = tokUser.User.Sid;
-                }
-                return result;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(tu);
-            }
-        }
     }
 }

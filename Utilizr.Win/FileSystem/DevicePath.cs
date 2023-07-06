@@ -29,18 +29,6 @@ namespace Utilizr.Win.FileSystem
             return false;
         }
 
-        public static string Combine(string path1, string path2, params string[] morePaths)
-        {
-            string result = Path.Combine(path1, path2);
-
-            foreach (var path in morePaths)
-            {
-                result = Path.Combine(result, path);
-            }
-
-            return result;
-        }
-
         private static void EnsureDeviceMap()
         {
             if (_deviceMap == null)
@@ -73,25 +61,6 @@ namespace Utilizr.Win.FileSystem
                 return string.Concat(networkDevicePrefix, shareName);
             }
             return deviceName;
-        }
-
-        public static string? GetFileName(string filePath)
-        {
-            var trimmed = filePath?.TrimEnd(Path.DirectorySeparatorChar);
-            var dirCharIndex = trimmed?.LastIndexOf(Path.DirectorySeparatorChar);
-            if (dirCharIndex == null)
-                return null;
-
-            if (dirCharIndex < 0)
-            {
-                if (trimmed?.Length > 0)
-                    return trimmed;
-
-                return null;
-            }
-
-            var result = trimmed?.Substring(dirCharIndex.Value);
-            return result?.TrimStart(Path.DirectorySeparatorChar);
         }
     }
 }
