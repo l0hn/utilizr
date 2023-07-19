@@ -11,7 +11,7 @@ namespace Utilizr.WPF.Util
         [JsonProperty("_resources")]
         private readonly Dictionary<string, byte[]> _resources;
 
-        public override string EmbeddedResourceName => "RESOURCES.URES";
+        public override string EmbeddedResourceName => "RESOURCES_URES";
 
         public override bool ReadOnly => true;
 
