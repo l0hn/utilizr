@@ -51,8 +51,13 @@ namespace Utilizr.WPF.Attached
             if (!listBox.IsLoaded)
                 return;
 
-            var oldUiModel = e.RemovedItems[0];
-            var newUiModel = e.AddedItems[0];
+            object? oldUiModel = null;
+            if (e.RemovedItems.Count > 0)
+                oldUiModel = e.RemovedItems[0];
+
+            object? newUiModel = null;
+            if (e.AddedItems.Count > 0)
+                newUiModel = e.AddedItems[0];
 
             if (oldUiModel == null || newUiModel == null)
                 return;

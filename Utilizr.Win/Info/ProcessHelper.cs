@@ -2,11 +2,61 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Utilizr.Win32.Advapi32;
+using Utilizr.Win32.Advapi32.Flags;
+using Utilizr.Win32.Advapi32.Structs;
 
 namespace Utilizr.Win.Info
 {
     public static class ProcessHelper
     {
+        public static bool ProcessOwnedByUser(int pid, string userSID)
+        {
+            IntPtr pToken = IntPtr.Zero;
+            var process = Process.GetProcessById(pid);
+
+            if (Advapi32.OpenProcessToken(process.Handle, (uint)TOKEN_PRIVILEGE_FLAGS.TOKEN_QUERY, ref pToken) != 0)
+            {
+                IntPtr pSidPtr = IntPtr.Zero;
+                if (ProcessTokenToSID(pToken, out pSidPtr))
+                {
+                    string pSidStr = string.Empty;
+                    Advapi32.ConvertSidToStringSid(pSidPtr, ref pSidStr);
+                    return userSID.Equals(pSidStr, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return false;
+        }
+
+        private static bool ProcessTokenToSID(IntPtr token, out IntPtr pSID)
+        {
+            pSID = IntPtr.Zero;
+            TOKEN_USER tokUser;
+            const int bufLength = 256;
+            IntPtr tu = Marshal.AllocHGlobal(bufLength);
+            bool result = false;
+            try
+            {
+                int cb = bufLength;
+                result = Advapi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenUser, tu, cb, ref cb);
+                if (result)
+                {
+                    tokUser = (TOKEN_USER)Marshal.PtrToStructure(tu, typeof(TOKEN_USER));
+                    pSID = tokUser.User.Sid;
+                }
+                return result;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(tu);
+            }
+        }
+
         public static WMIProcessInfo? GetRunningProcess(string processName)
         {
             return GetRunningProcesses(processName).FirstOrDefault();
