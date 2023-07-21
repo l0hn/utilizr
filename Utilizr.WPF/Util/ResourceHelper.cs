@@ -222,7 +222,14 @@ namespace Utilizr.WPF.Util
 #if DEBUG
                 throw;
 #endif
+                return GetDefaultSvgPlaceholder();
             }
+        }
+
+        static string GetDefaultSvgPlaceholder()
+        {
+            // small valid svg
+            return "<svg width=\"0\" height=\"0\"><rect width=\"0\" height=\"0\"/></svg>";
         }
 
         static void CheckDesignMode()
