@@ -197,18 +197,32 @@ namespace Utilizr.WPF.Util
 
         public static string GetRawSvgSource(string resourceKey)
         {
-            // todo: GetRawSvgSource() needs a better implemention, but good enough for now
-            var rootPath = AppInfo.AppDirectory;
-            if (_inDesignMode == true)
+            try
             {
-                //rootPath = Path.GetFullPath()
-                var uri = new Uri($"../../{_resourceDir}/{resourceKey}", UriKind.Relative);
-                rootPath = uri.AbsolutePath;
-            }
+                CheckDesignMode();
 
-            var path = Path.Combine(rootPath, _resourceDir);
-            path = Path.Combine(path, resourceKey);
-            return File.ReadAllText(path);
+                var result = ImageCache.GetSvgSource(resourceKey);
+                if (result != null)
+                    return result;
+
+                var rootPath = AppInfo.AppDirectory;
+                if (_inDesignMode == true)
+                {
+                    var uri = new Uri($"../../{_resourceDir}/{resourceKey}", UriKind.Relative);
+                    rootPath = uri.AbsolutePath;
+                }
+
+                var path = Path.Combine(rootPath, _resourceDir);
+                path = Path.Combine(path, resourceKey);
+                return File.ReadAllText(path);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex, $"Failed to load resource for key {resourceKey}");
+#if DEBUG
+                throw;
+#endif
+            }
         }
 
         static void CheckDesignMode()
