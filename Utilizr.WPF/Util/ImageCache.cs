@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Windows.Media.Imaging;
 
 namespace Utilizr.WPF.Util
@@ -9,9 +10,13 @@ namespace Utilizr.WPF.Util
         private static readonly object LOCK = new();
         private static readonly Dictionary<string, BitmapFrame> _cache;
 
+        private static readonly object LOCK_SVG = new();
+        private static readonly Dictionary<string, string> _cacheSvg;
+
         static ImageCache()
         {
             _cache = new Dictionary<string, BitmapFrame>();
+            _cacheSvg = new Dictionary<string, string>();
         }
 
         internal static BitmapFrame? Get(string resource)
@@ -34,6 +39,24 @@ namespace Utilizr.WPF.Util
             }
 
             return result;
+        }
+
+        internal static string? GetSvgSource(string resource)
+        {
+            if (_cacheSvg.TryGetValue(resource, out string? rawSvg))
+                return rawSvg;
+
+            var data = ResourceLoadable.Instance?.Get(resource);
+            if (data != null)
+            {
+                rawSvg = Encoding.UTF8.GetString(data);
+                lock (LOCK_SVG)
+                {
+                    _cacheSvg[resource] = rawSvg;
+                }
+            }
+
+            return rawSvg;
         }
     }
 }
