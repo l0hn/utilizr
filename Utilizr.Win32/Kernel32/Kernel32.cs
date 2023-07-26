@@ -173,6 +173,15 @@ namespace Utilizr.Win32.Kernel32
         public static extern IntPtr OpenProcess(ProcessAccessFlags dwDesiredAccess, bool blnheritHandle, uint dwAppProcessId);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr OpenThread(ThreadAccess dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern uint SuspendThread(IntPtr hThread);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern int ResumeThread(IntPtr hThread);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool QueryFullProcessImageName(
               [In] IntPtr hProcess,
               [In] int dwFlags,

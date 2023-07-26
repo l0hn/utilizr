@@ -10,7 +10,7 @@ namespace Utilizr.Win.Util;
 public abstract class LoadableEmbedded<T>: Loadable<T> where T : Loadable<T>, new()
 {
     public virtual string? EmbeddedResourceName { get; }
-    
+
     public override string? RawLoad(string customLoadPath = "")
     {
         if (!string.IsNullOrEmpty(EmbeddedResourceName))

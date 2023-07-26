@@ -8,8 +8,8 @@ namespace Utilizr.Win32.Kernel32.Structs
     {
         public uint cb;
         public string lpReserved;
-        public string lpDesktop;
-        public string lpTitle;
+        public string? lpDesktop;
+        public string? lpTitle;
         public uint dwX;
         public uint dwY;
         public uint dwXSize;
