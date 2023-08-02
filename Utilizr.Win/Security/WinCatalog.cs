@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Utilizr.Win32.Kernel32;
+using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.WinTrust;
 using Utilizr.Win32.WinTrust.Structs;
 using DWORD = System.UInt32;
@@ -114,12 +115,18 @@ namespace Utilizr.Win.Security
                 throw new Exception("Unable to acquire hash algorithm context");
             }
 
-            DWORD GENERIC_READ = 0x80000000;
-            DWORD OPEN_EXISTING = 3;
             IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
             // Open the file that is to be hashed for reading and get its handle
-            IntPtr fileHandle = Kernel32.CreateFileW(filePath, GENERIC_READ, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+            IntPtr fileHandle = Kernel32.CreateFileW(
+                filePath,
+                FileAccessRightsFlags.GENERIC_READ,
+                FileShareRightsFlags.FILE_SHARE_NONE,
+                IntPtr.Zero,
+                FileCreationDispositionFlags.OPEN_EXISTING,
+                FileAttributeFlags.NORMAL,
+                IntPtr.Zero
+            );
             if (fileHandle != INVALID_HANDLE_VALUE)
             {
                 try

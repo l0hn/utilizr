@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
+using Utilizr.Logging;
 using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Flags;
 
@@ -147,6 +148,22 @@ namespace Utilizr.Win.Extensions
             return success
                 ? builder.ToString()
                 : string.Empty;
+        }
+
+        public static void ResumeProcess(this Process p)
+        {
+            foreach (ProcessThread processThread in p.Threads)
+            {
+                var pThread = Kernel32.OpenThread(ThreadAccess.SUSPEND_RESUME, false, (uint)processThread.Id);
+                if (pThread == IntPtr.Zero)
+                {
+                    Log.Info(nameof(ProcessEx), "Resuming process thread");
+                    continue;
+                }
+
+                Kernel32.ResumeThread(pThread);
+                Kernel32.CloseHandle(pThread);
+            }
         }
     }
 }

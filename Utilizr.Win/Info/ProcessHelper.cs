@@ -1,12 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Utilizr.Logging;
+using Utilizr.Win32.Advapi32;
+using Utilizr.Win32.Advapi32.Flags;
+using Utilizr.Win32.Advapi32.Structs;
+using Utilizr.Win32.Kernel32;
+using Utilizr.Win32.Kernel32.Flags;
+using Utilizr.Win32.Kernel32.Structs;
+using Utilizr.Win32.Userenv;
 
 namespace Utilizr.Win.Info
 {
     public static class ProcessHelper
     {
+        public static bool ProcessOwnedByUser(int pid, string userSID)
+        {
+            IntPtr pToken = IntPtr.Zero;
+            var process = Process.GetProcessById(pid);
+
+            if (Advapi32.OpenProcessToken(process.Handle, (uint)TOKEN_PRIVILEGE_FLAGS.TOKEN_QUERY, ref pToken) != 0)
+            {
+                IntPtr pSidPtr = IntPtr.Zero;
+                if (ProcessTokenToSID(pToken, out pSidPtr))
+                {
+                    string pSidStr = string.Empty;
+                    Advapi32.ConvertSidToStringSid(pSidPtr, ref pSidStr);
+                    return userSID.Equals(pSidStr, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return false;
+        }
+
+        private static bool ProcessTokenToSID(IntPtr token, out IntPtr pSID)
+        {
+            pSID = IntPtr.Zero;
+            TOKEN_USER tokUser;
+            const int bufLength = 256;
+            IntPtr tu = Marshal.AllocHGlobal(bufLength);
+            bool result = false;
+            try
+            {
+                int cb = bufLength;
+                result = Advapi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenUser, tu, cb, ref cb);
+                if (result)
+                {
+                    tokUser = (TOKEN_USER)Marshal.PtrToStructure(tu, typeof(TOKEN_USER));
+                    pSID = tokUser.User.Sid;
+                }
+                return result;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(tu);
+            }
+        }
+
         public static WMIProcessInfo? GetRunningProcess(string processName)
         {
             return GetRunningProcesses(processName).FirstOrDefault();
@@ -92,6 +148,127 @@ namespace Utilizr.Win.Info
             return results;
         }
 
+        public static nint GetEnvironmentBlock(nint token)
+        {
+            IntPtr envBlock = IntPtr.Zero;
+            Environment.SetEnvironmentVariable("__compat_layer", "RunAsInvoker");
+            bool retVal = Userenv.CreateEnvironmentBlock(ref envBlock, token, true);
+            if (retVal == false)
+            {
+                //Environment Block, things like common paths to My Documents etc.
+                //Will not be created if "false"
+                //It should not adversely affect CreateProcessAsUser.
+                Log.Exception(new Win32Exception(Marshal.GetLastWin32Error()), $"{nameof(Userenv.CreateEnvironmentBlock)} Error");
+            }
+            return envBlock;
+        }
+
+        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit)
+        {
+            return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _);
+        }
+
+        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode)
+        {
+            bool result = false;
+            exitCode = null;
+
+            var pi = new PROCESS_INFORMATION();
+            var saProcess = new SECURITY_ATTRIBUTES();
+            var saThread = new SECURITY_ATTRIBUTES();
+            saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
+            saThread.nLength = (uint)Marshal.SizeOf(saThread);
+
+            STARTUPINFO si = new STARTUPINFO();
+
+            si.cb = (uint)Marshal.SizeOf(si);
+
+            //if this member is NULL, the new process inherits the desktop
+            //and window station of its parent process. If this member is
+            //an empty string, the process does not inherit the desktop and
+            //window station of its parent process; instead, the system
+            //determines if a new desktop and window station need to be created.
+            //If the impersonated user already has a desktop, the system uses the
+            //existing desktop.
+
+            //si.lpDesktop = @"winsta0\default"; //Modify as needed
+            si.lpDesktop = null;
+            si.dwFlags = (uint)(STARTUPINFO_FLAGS.STARTF_USESHOWWINDOW | STARTUPINFO_FLAGS.STARTF_FORCEONFEEDBACK);
+            si.wShowWindow =  ShowWindowFlags.SW_SHOW;
+            si.hStdError = IntPtr.Zero;
+            si.hStdInput = IntPtr.Zero;
+            si.hStdOutput = IntPtr.Zero;
+            si.lpReserved2 = IntPtr.Zero;
+            si.cbReserved2 = 0;
+            si.lpTitle = null;
+
+
+            //When INTERACTIVE, service run locally, and needs to use CreateProcess since service 
+            //running under logged in user's context, not local system. Account will not have
+            //SE_INCREASE_QUOTA_NAME, and will fail with ERROR_PRIVILEGE_NOT_HELD (1314)
+
+
+            // Environment.UserInteractive always return true for .net core, expose so callee
+            // can set explicitly: https://github.com/dotnet/runtime/issues/770
+
+            if (userInteractive)
+            {
+                result = Kernel32.CreateProcess(
+                    null,
+                    cmdLine,
+                    ref saProcess,
+                    ref saThread,
+                    false,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE,
+                    envBlock,
+                    null,
+                    ref si,
+                    out pi
+                );
+            }
+            else
+            {
+                result = Advapi32.CreateProcessAsUser(
+                    token,
+                    null,
+                    cmdLine,
+                    ref saProcess,
+                    ref saThread,
+                    false,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT,
+                    envBlock,
+                    null,
+                    ref si,
+                    out pi
+                );
+            }
+
+            if (result == false)
+            {
+                int error = Marshal.GetLastWin32Error();
+                Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
+                return result;
+            }
+
+            if (!waitForExit)
+            {
+                return true;
+            }
+
+            Kernel32.WaitForSingleObject(pi.hProcess, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+
+            result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
+            Kernel32.CloseHandle(pi.hProcess);
+            exitCode = ec;
+
+            if (exitCode != 0)
+            {
+                Log.Exception(new Exception($"Started {cmdLine} but exited with {exitCode}"));
+                return false;
+            }
+
+            return result;
+        }
 
         [DebuggerDisplay("ExecutablePath={ExecutablePath}")]
         public class WMIProcessInfo

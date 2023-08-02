@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.Kernel32.Structs;
+using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace Utilizr.Win32.Kernel32
 {
@@ -41,11 +42,11 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr CreateFileW(
             string lpFileName,
-            uint dwDesiredAccess,
-            uint dwShareMode,
+            FileAccessRightsFlags dwDesiredAccess,
+            FileShareRightsFlags dwShareMode,
             IntPtr lpSecurityAttributes,
-            uint dwCreationDisposition,
-            uint dwFlagsAndAttributes,
+            FileCreationDispositionFlags dwCreationDisposition,
+            FileAttributeFlags dwFlagsAndAttributes,
             IntPtr hTemplateFile);
 
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -149,6 +150,11 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS infoClass, out FILE_ID_BOTH_DIR_INFO dirInfo, uint dwBufferSize);
 
+        [DllImport(KERNEL32_DLL, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetFileAttributesEx(string lpFileName, GET_FILEEX_INFO_LEVELS fInfoLevelId, out FILE_ATTRIBUTE_DATA fileData);
+
+
         [DllImport(KERNEL32_DLL)]
         public static extern uint GetConsoleOutputCP();
 
@@ -165,6 +171,15 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern IntPtr OpenProcess(ProcessAccessFlags dwDesiredAccess, bool blnheritHandle, uint dwAppProcessId);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr OpenThread(ThreadAccess dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern uint SuspendThread(IntPtr hThread);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern int ResumeThread(IntPtr hThread);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool QueryFullProcessImageName(
@@ -199,5 +214,8 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        [DllImport(KERNEL32_DLL, CharSet = CharSet.Auto)]
+        public static extern bool FileTimeToSystemTime(ref FILETIME FileTime, ref SYSTEMTIME SystemTime);
     }
 }
