@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
+    <ProjectReference Include="..\Utilizr.Logging\Utilizr.Logging.csproj" />
+    <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
+    <ProjectReference Include="..\Utilizr\Utilizr.csproj" />
+  </ItemGroup>
+
+</Project>
