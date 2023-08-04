@@ -5,7 +5,7 @@ using Utilizr.Util;
 namespace Utilizr.Vpn
 {
 
-    public class VPNController : IVpnController
+    public class VpnController : IVpnController
     {
         const string LOG_CAT = "vpn-controller";
 
@@ -30,7 +30,7 @@ namespace Utilizr.Vpn
 
         public bool SupressErrors { get; set; }
 
-        public VPNController(UserPassHandler authenticationHandler, bool initializeNow = true, params IVpnProvider[] providers)
+        public VPNController(UserPassHandler? authenticationHandler, bool initializeNow = true, params IVpnProvider[] providers)
         {
             _userPassHandler = authenticationHandler;
             Providers = providers;
@@ -84,7 +84,7 @@ namespace Utilizr.Vpn
         public event ConnectionStateHandler ConnectError;
         public event EventHandler DurationUpdate;
 
-        public Task ConnectAsync(IConnectionStartParams startParams)
+        public Task ConnectAsync(IConnectionStartParams? startParams)
         {
             return Task.Run(() => Connect(startParams));
         }
@@ -271,7 +271,7 @@ namespace Utilizr.Vpn
             Connecting?.Invoke(this, host, null, userContext);
         }
 
-        protected virtual void OnConnectionError(Exception error, object userContext)
+        protected virtual void OnConnectionError(Exception? error, object userContext)
         {
             LastError = error;
             if (SupressErrors)
@@ -296,7 +296,7 @@ namespace Utilizr.Vpn
             DurationUpdate?.Invoke(this, new EventArgs());
         }
 
-        protected virtual void OnBandwidthUpdated(BandwidthUsage usage)
+        protected virtual void OnBandwidthUpdated(BandwidthUsage? usage)
         {
             BandwidthUpdated?.Invoke(this, usage);
         }

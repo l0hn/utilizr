@@ -8,22 +8,15 @@
 
         public event ConnectionStateHandler DialStepFailed;
 
-        public AutoDialer(IVpnController controller, List<ConnectionType> connectionTypesAllowed = null )
+        public AutoDialer(IVpnController controller, List<ConnectionType>? connectionTypesAllowed = null)
         {
             _vpnController = controller;
             ConnectionTypes = connectionTypesAllowed ?? controller.GetAvailableProtocols().ToList();
         }
 
-        public IAsyncResult BeginAutoDial(IConnectionStartParams startParams, AsyncCallback callback=null)
+        public Task BeginAutoDial(IConnectionStartParams startParams)
         {
-            var r = Task.Run(() => AutoDial(startParams));
-            callback?.Invoke(r);
-            return r;
-        }
-
-        public void EndAutoDial(IAsyncResult result)
-        {
-            //AsyncHelper.EndExecute(result);
+            return Task.Run(() => AutoDial(startParams));
         }
         
         public void AbortAutoDial()
@@ -74,7 +67,7 @@
             }
         }
 
-        protected virtual void OnDialStepFailed(string host, Exception ex, object userContext=null)
+        protected virtual void OnDialStepFailed(string host, Exception ex, object? userContext=null)
         {
             DialStepFailed?.Invoke(this, host, ex, userContext);
         }

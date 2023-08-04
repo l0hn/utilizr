@@ -1,27 +1,21 @@
 ﻿//TODO: fixup for netcore
-
 using System;
-#if !NETCOREAPP
-using System.Net.Configuration;    
-#endif
+//using System.Net.Configuration;
 
 using Utilizr.Logging;
 
-namespace Utilizr.VPN.Win
+namespace Utilizr.Vpn
 {
     public class Ipv6Helper
     {
-        private static Ipv6Helper _instance;
-        public static Ipv6Helper Instance => _instance ?? (_instance = new Ipv6Helper());
+        private static Ipv6Helper? _instance;
+        public static Ipv6Helper Instance => _instance ??= new Ipv6Helper();
 
-#if NETCOREAPP
         public bool IsEnabled => false;
-#else        
-        private readonly Ipv6Element _ipv6Element = new Ipv6Element();
-        public bool IsEnabled => _ipv6Element.Enabled;
-#endif
+        //private readonly Ipv6Element _ipv6Element = new Ipv6Element();
+        //public bool IsEnabled => _ipv6Element.Enabled;
         
-        private readonly bool _originallyEnabled;        
+        private readonly bool _originallyEnabled;
 
         private Ipv6Helper()
         {
@@ -32,11 +26,7 @@ namespace Utilizr.VPN.Win
         {
             try
             {
-#if NETCOREAPP
                 //_ipv6Element.Enabled = true;
-#else
-                _ipv6Element.Enabled = true;
-#endif
             }
             catch (Exception ex)
             {
@@ -48,11 +38,7 @@ namespace Utilizr.VPN.Win
         {
             try
             {
-#if NETCOREAPP
                 // _ipv6Element.Enabled = false;
-#else
-                _ipv6Element.Enabled = false;
-#endif
             }
             catch (Exception ex)
             {
