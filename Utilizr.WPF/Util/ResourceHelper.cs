@@ -220,7 +220,8 @@ namespace Utilizr.WPF.Util
             {
                 Log.Exception(ex, $"Failed to load resource for key {resourceKey}");
 #if DEBUG
-                throw;
+                if (_inDesignMode != true)
+                    throw; // Make sure we have all images during development, no typos, etc
 #endif
                 return GetDefaultSvgPlaceholder();
             }

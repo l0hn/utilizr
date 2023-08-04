@@ -84,7 +84,7 @@ namespace Utilizr.Vpn.OpenVpn
 
             _openVpnHelper.AuthenticationFailed += (sender, args) =>
             {
-                OnConnectionError(new OpenVPNAuthenticationException(args.VerificationFailureMessage), _currentContext);
+                OnConnectionError(new OpenVpnAuthenticationException(args.VerificationFailureMessage), _currentContext);
                 OnDisconnected(_currentServer, _currentContext);
             };
             _openVpnHelper.StateChanged += (sender, args) =>
@@ -107,7 +107,7 @@ namespace Utilizr.Vpn.OpenVpn
             };
             _openVpnHelper.FatalError += (sender, args) =>
             {
-                OnConnectionError(new OpenVPNException(args.Message), _currentContext);
+                OnConnectionError(new OpenVpnException(args.Message), _currentContext);
                 OnDisconnected(_lastOpenVPNServer ?? _currentServer, _currentContext, args.Error);
                 _openVpnDialerDone.Set();
             };
@@ -119,7 +119,7 @@ namespace Utilizr.Vpn.OpenVpn
             _openVpnHelper.TapDriverInstallationRequired += (sender, args) =>
             {
                 //raise an event for a ui popup to confirm tap installation
-                OnConnectionError(new OpenVPNException(L._("TAP Windows drivers need to be installed on this system")), _currentContext);
+                OnConnectionError(new OpenVpnException(L._("TAP Windows drivers need to be installed on this system")), _currentContext);
                 OnTapDriverInstallRequired();
                 _openVpnHelper.KillAllOpenVPNConnections();
 

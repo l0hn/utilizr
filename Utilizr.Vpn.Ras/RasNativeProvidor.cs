@@ -113,7 +113,7 @@ namespace Utilizr.Vpn.Ras
                 if (error == ERROR_AUTHENTICATION_FAILURE ||
                     error == EAP_E_USER_NAME_PASSWORD_REJECTED)
                 {
-                    OnConnectError(new IkevVPNAuthenticationException(L._("Authentication failure during connection attempt.")), _context);
+                    OnConnectError(new IkevVpnAuthenticationException(L._("Authentication failure during connection attempt.")), _context);
                 }
                 else
                 {
@@ -342,9 +342,9 @@ namespace Utilizr.Vpn.Ras
         }
     }
 
-    public class IkevVPNAuthenticationException : Exception
+    public class IkevVpnAuthenticationException : Exception
     {
-        public IkevVPNAuthenticationException(string message) : base(message)
+        public IkevVpnAuthenticationException(string message) : base(message)
         {
 
         }

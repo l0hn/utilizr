@@ -20,14 +20,14 @@ namespace Utilizr.Vpn.OpenVpn
         /// <param name="proto"></param>
         /// <param name="pingTimeout"></param>
         /// <returns></returns>
-        public static int LaunchOpenVPN(string remote, string caFile, string proto = "udp", int port = 1194, int pingTimeout = 30, string upScript = null, string downScript = null)
+        public static int LaunchOpenVPN(string remote, string caFile, string proto = "udp", int port = 1194, int pingTimeout = 30, string? upScript = null, string? downScript = null)
         {
             StopAllOpenVPNProcesses();
             CurrentProcess = OVPNProcess.WithCAFile(remote, caFile, proto, pingTimeout, upScript, downScript);
             return CurrentProcess.ManagementPort;
         }
 
-        public static int LaunchOpenVPNWithConfig(string remote, string configFile, string upScript = null, string downScript = null, int pingTimeout = 30, string managementPwd = null, int port = 1194, string protocol = "udp")
+        public static int LaunchOpenVPNWithConfig(string remote, string configFile, string? upScript = null, string? downScript = null, int pingTimeout = 30, string? managementPwd = null, int port = 1194, string protocol = "udp")
         {
             StopAllOpenVPNProcesses();
             CurrentProcess = OVPNProcess.FromConfig(remote, configFile, upScript, downScript, pingTimeout, managementPwd, port, protocol);

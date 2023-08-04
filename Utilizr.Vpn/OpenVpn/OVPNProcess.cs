@@ -21,7 +21,7 @@ namespace Utilizr.Vpn.OpenVpn
 
         //StreamWriter _standardInput;
 
-        string CreateCommandLineArgs(Dictionary<string, string> customOptions, string managementPwd)
+        string CreateCommandLineArgs(Dictionary<string, string> customOptions, string? managementPwd)
         {
             var argsDict = new Dictionary<string, string>();
             foreach (var customOption in customOptions)
@@ -66,7 +66,7 @@ namespace Utilizr.Vpn.OpenVpn
                 }
             }
 
-            if (managementPwd.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(managementPwd))
             {
                 mandatoryOptions.Add("--management", $"127.0.0.1 {ManagementPort}");
             }
@@ -78,7 +78,7 @@ namespace Utilizr.Vpn.OpenVpn
                     File.WriteAllText(pwFile, managementPwd);
                     mandatoryOptions.Add("--management", $"127.0.0.1 {ManagementPort} {EscapeAndQuotePath(pwFile)}");
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     mandatoryOptions.Add("--management", $"127.0.0.1 {ManagementPort}");
                 }
@@ -155,7 +155,7 @@ namespace Utilizr.Vpn.OpenVpn
             }
         }
 
-        void Start(Dictionary<string, string> options, string managementPwd)
+        void Start(Dictionary<string, string> options, string? managementPwd)
         {
             try
             {
@@ -229,9 +229,9 @@ namespace Utilizr.Vpn.OpenVpn
         }
 
 
-        public static OVPNProcess FromConfig(string remote, string config, string upScript = null, string downscript = null, int pingTimeout = 30, string managementPwd = null, int port = 1194, string protocol = "udp")
+        public static OVPNProcess FromConfig(string remote, string config, string? upScript = null, string? downScript = null, int pingTimeout = 30, string? managementPwd = null, int port = 1194, string protocol = "udp")
         {
-            return new OVPNProcess(remote, config, upScript, downscript, pingTimeout, managementPwd, port, protocol);
+            return new OVPNProcess(remote, config, upScript, downScript, pingTimeout, managementPwd, port, protocol);
         }
 
         public static OVPNProcess WithCAFile(string remote, string caFile, string proto="udp", int pingTimeout=30, string upScript = null, string downscript = null, string managementPwd = null)
@@ -272,7 +272,7 @@ namespace Utilizr.Vpn.OpenVpn
             Start(args, managementPwd);
         }
 
-        private OVPNProcess(string remote, string configFile, string upScript, string downScript, int pingTimeout = 30, string managementPwd = null, int port = 1194, string proto = "udp")
+        private OVPNProcess(string remote, string configFile, string? upScript, string? downScript, int pingTimeout = 30, string? managementPwd = null, int port = 1194, string proto = "udp")
         {
             RemoteHost = remote;
             var args = new Dictionary<string, string>()
@@ -282,10 +282,10 @@ namespace Utilizr.Vpn.OpenVpn
                 {"--proto", proto }
             };
 
-            if (upScript.IsNotNullOrEmpty())
+            if (!string.IsNullOrEmpty(upScript))
                 args["--up"] = EscapeAndQuotePath(upScript);
 
-            if (downScript.IsNotNullOrEmpty())
+            if (!string.IsNullOrEmpty(downScript))
                 args["--down"] = EscapeAndQuotePath(downScript);
 
             args["--ping-exit"] = pingTimeout.ToString();

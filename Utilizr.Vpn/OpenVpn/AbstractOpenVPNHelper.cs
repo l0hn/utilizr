@@ -10,8 +10,8 @@ namespace Utilizr.Vpn.OpenVpn
         private AutoResetEvent _connectingDone;
         private bool _abortTimeout;
 
-        public delegate void ConnectWorkCallback(CallbackHandlerArgs args, Exception error);
-        public delegate void KillConnectionCallback(Exception error);
+        public delegate void ConnectWorkCallback(CallbackHandlerArgs args, Exception? error);
+        public delegate void KillConnectionCallback(Exception? error);
 
         public event EventHandler<BandwidthUsage> BandwidthUpdate;
         public event EventHandler<StateArgs> StateChanged;
@@ -394,18 +394,18 @@ namespace Utilizr.Vpn.OpenVpn
         }
     }
 
-    public class OpenVPNException : Exception
+    public class OpenVpnException : Exception
     {
-        public OpenVPNException(string message)
+        public OpenVpnException(string message)
             : base(message)
         {
 
         }
     }
 
-    public class OpenVPNAuthenticationException : OpenVPNException
+    public class OpenVpnAuthenticationException : OpenVpnException
     {
-        public OpenVPNAuthenticationException(string message) : base(message)
+        public OpenVpnAuthenticationException(string message) : base(message)
         {
         }
     }

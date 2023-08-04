@@ -102,10 +102,10 @@ namespace Utilizr.Globalisation
 
         public static void SetLanguage(string? ietfLanguageTag)
         {
-            ietfLanguageTag = ietfLanguageTag.ToLower();
-            if (string.IsNullOrEmpty(ietfLanguageTag))
+            var ietfLangTag = ietfLanguageTag?.ToLowerInvariant();
+            if (string.IsNullOrEmpty(ietfLangTag))
             {
-                ietfLanguageTag = Thread.CurrentThread.CurrentCulture.IetfLanguageTag;
+                ietfLangTag = Thread.CurrentThread.CurrentCulture.IetfLanguageTag;
             }
 
             if (!_indexedMoFiles)
@@ -113,14 +113,14 @@ namespace Utilizr.Globalisation
                 IndexMoFiles();
             }
 
-            PreloadLanguage(ietfLanguageTag);
+            PreloadLanguage(ietfLangTag);
 
             bool changed = false;
-            if (CurrentLanguage != ietfLanguageTag)
+            if (CurrentLanguage != ietfLangTag)
             {
                 changed = true;
             }
-            CurrentLanguage = ietfLanguageTag;
+            CurrentLanguage = ietfLangTag;
             if (changed && LocaleChanged != null)
             {
                 LocaleChanged.RaiseEvent();
