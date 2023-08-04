@@ -36,7 +36,6 @@ namespace Utilzr.WPF.Model
         /// <summary>
         /// The view which the lightbox will host
         /// </summary>
-
         public UIElement? View
         {
             get { return _view; }
