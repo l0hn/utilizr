@@ -73,6 +73,36 @@ namespace Utilizr.WPF.Controls
         }
 
 
+        public static readonly DependencyProperty EnterKeyPressedCommandProperty =
+            DependencyProperty.Register(
+                nameof(EnterKeyPressedCommand),
+                typeof(ICommand),
+                typeof(ClickableBorder),
+                new PropertyMetadata(default)
+            );
+
+        public ICommand EnterKeyPressedCommand
+        {
+            get { return (ICommand)GetValue(EnterKeyPressedCommandProperty); }
+            set { SetValue(EnterKeyPressedCommandProperty, value); }
+        }
+
+
+
+        public static readonly DependencyProperty EnterKeyPressedCommandParameterProperty =
+            DependencyProperty.Register(
+                nameof(EnterKeyPressedCommandParameter),
+                typeof(object),
+                typeof(ClickableBorder),
+                new PropertyMetadata(default)
+            );
+
+        public object EnterKeyPressedCommandParameter
+        {
+            get { return (object)GetValue(EnterKeyPressedCommandParameterProperty); }
+            set { SetValue(EnterKeyPressedCommandParameterProperty, value); }
+        }
+
 
 
         public ClickableBorder()
@@ -82,7 +112,7 @@ namespace Utilizr.WPF.Controls
                 if (e.Handled)
                     return;
 
-                if( Command?.CanExecute(CommandParameter) == true)
+                if (Command?.CanExecute(CommandParameter) == true)
                     Command?.Execute(CommandParameter);
             };
 
@@ -93,6 +123,18 @@ namespace Utilizr.WPF.Controls
 
                 if (MouseDownCommand?.CanExecute(MouseDownCommandParameter) == true)
                     MouseDownCommand?.Execute(MouseDownCommandParameter);
+            };
+
+            KeyUp += (s, e) =>
+            {
+                if (e.Key != Key.Enter)
+                    return;
+
+                if (e.Handled)
+                    return;
+
+                if (EnterKeyPressedCommand?.CanExecute(EnterKeyPressedCommandParameter) == true)
+                    EnterKeyPressedCommand?.Execute(EnterKeyPressedCommandParameter);
             };
         }
     }

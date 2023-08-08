@@ -84,7 +84,7 @@ namespace Utilizr.Vpn
         public event ConnectionStateHandler ConnectError;
         public event EventHandler DurationUpdate;
 
-        public Task ConnectAsync(IConnectionStartParams? startParams)
+        public Task ConnectAsync(IConnectionStartParams startParams)
         {
             return Task.Run(() => Connect(startParams));
         }
