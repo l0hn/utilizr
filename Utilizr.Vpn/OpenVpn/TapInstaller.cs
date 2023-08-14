@@ -56,7 +56,7 @@ namespace Utilizr.Vpn.OpenVpn
 
         static string GetDriverDir()
         {
-            var driverDir = Path.Combine(AppInfo.AppDirectory, "driver");
+            var driverDir = Path.Combine(AppInfo.AppDirectory, "OpenVpn", "driver");
             driverDir = Path.Combine(driverDir, Platform.Is64BitOS ? "amd64" : "i386");
             return driverDir;
         }
