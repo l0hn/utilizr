@@ -113,7 +113,10 @@ namespace Utilizr.WPF.Controls
                     return;
 
                 if (Command?.CanExecute(CommandParameter) == true)
+                {
                     Command?.Execute(CommandParameter);
+                    e.Handled = true;
+                }
             };
 
             MouseLeftButtonDown += (s, e) =>
@@ -122,7 +125,10 @@ namespace Utilizr.WPF.Controls
                     return;
 
                 if (MouseDownCommand?.CanExecute(MouseDownCommandParameter) == true)
+                {
                     MouseDownCommand?.Execute(MouseDownCommandParameter);
+                    e.Handled = true;
+                }
             };
 
             KeyUp += (s, e) =>
@@ -134,7 +140,10 @@ namespace Utilizr.WPF.Controls
                     return;
 
                 if (EnterKeyPressedCommand?.CanExecute(EnterKeyPressedCommandParameter) == true)
+                {
                     EnterKeyPressedCommand?.Execute(EnterKeyPressedCommandParameter);
+                    e.Handled = true;
+                }
             };
         }
     }
