@@ -147,7 +147,7 @@ namespace Utilizr.Vpn.OpenVpn
             {
                 string command = Platform.IsWindows ? "openvpn.exe" : "openvpn";
 
-                var file = Path.Combine(AppInfo.AppDirectory, "ovpn");
+                var file = Path.Combine(AppInfo.AppDirectory, "OpenVpn", "ovpn");
 
                 file = Path.Combine(file, command);
 
@@ -161,7 +161,7 @@ namespace Utilizr.Vpn.OpenVpn
             {
                 Shell.Exec("netsh", null, "interface", "ip", "delete", "destinationcache");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 
             }
@@ -229,12 +229,27 @@ namespace Utilizr.Vpn.OpenVpn
         }
 
 
-        public static OVPNProcess FromConfig(string remote, string config, string? upScript = null, string? downScript = null, int pingTimeout = 30, string? managementPwd = null, int port = 1194, string protocol = "udp")
+        public static OVPNProcess FromConfig(
+            string remote,
+            string config,
+            string? upScript = null,
+            string? downScript = null,
+            int pingTimeout = 30,
+            string? managementPwd = null,
+            int port = 1194,
+            string protocol = "udp")
         {
             return new OVPNProcess(remote, config, upScript, downScript, pingTimeout, managementPwd, port, protocol);
         }
 
-        public static OVPNProcess WithCAFile(string remote, string caFile, string proto="udp", int pingTimeout=30, string upScript = null, string downscript = null, string managementPwd = null)
+        public static OVPNProcess WithCAFile(
+            string remote,
+            string caFile,
+            string proto="udp",
+            int pingTimeout=30,
+            string? upScript = null,
+            string? downscript = null,
+            string? managementPwd = null)
         {
             return new OVPNProcess(remote, caFile, proto, pingTimeout, upScript, downscript, managementPwd);
         }
@@ -249,7 +264,15 @@ namespace Utilizr.Vpn.OpenVpn
         /// <param name="proto">udp / tcp</param>
         /// <param name="upScript">optional bat file to run on up</param>
         /// <param name="downScript">optional bat file to run on down</param>
-        private OVPNProcess(string remote, string caFile, string proto, int pingTimeout, string upScript, string downScript, string managementPwd = null, int port = 1194)
+        private OVPNProcess(
+            string remote,
+            string caFile,
+            string proto,
+            int pingTimeout,
+            string? upScript,
+            string? downScript,
+            string? managementPwd = null,
+            int port = 1194)
         {
             RemoteHost = remote;
             var args = new Dictionary<string, string>()
@@ -262,17 +285,25 @@ namespace Utilizr.Vpn.OpenVpn
                 {"--port", $"{port}" },
             };
 
-            if (upScript.IsNotNullOrEmpty())
+            if (!string.IsNullOrEmpty(upScript))
                 args["--up"] = EscapeAndQuotePath(upScript);
 
-            if (downScript.IsNotNullOrEmpty())
+            if (!string.IsNullOrEmpty(downScript))
                 args["--down"] = EscapeAndQuotePath(downScript);
 
 
             Start(args, managementPwd);
         }
 
-        private OVPNProcess(string remote, string configFile, string? upScript, string? downScript, int pingTimeout = 30, string? managementPwd = null, int port = 1194, string proto = "udp")
+        private OVPNProcess(
+            string remote,
+            string configFile,
+            string? upScript,
+            string? downScript,
+            int pingTimeout = 30,
+            string? managementPwd = null,
+            int port = 1194,
+            string proto = "udp")
         {
             RemoteHost = remote;
             var args = new Dictionary<string, string>()

@@ -81,8 +81,21 @@ namespace Utilizr.Vpn.OpenVpn
         private DateTime _connectionStartedTime;
 
 
-        protected abstract void ConnectWorkWithCA(string host, string caFilePath, string mode, int port, ConnectWorkCallback callback);
-        protected abstract void ConnectWorkWithConfig(string host, string configFile, string protocol, int port, string managementPwd, ConnectWorkCallback callback);
+        protected abstract void ConnectWorkWithCA(
+            string host,
+            string caFilePath,
+            string mode,
+            int port,
+            ConnectWorkCallback callback);
+
+        protected abstract void ConnectWorkWithConfig(
+            string host,
+            string configFile,
+            string protocol,
+            int port,
+            string? managementPwd,
+            ConnectWorkCallback? callback);
+
         protected abstract void KillAllOpenVPNConnectionsWork(KillConnectionCallback callback);
 
         protected AbstractOpenVPNHelper()
@@ -96,7 +109,13 @@ namespace Utilizr.Vpn.OpenVpn
             _userPassHandler = handler;
         }
 
-        public void ConnectWithConfigFile(string host, string configFile, string protocol = "udp", int port = 1194, string managementPwd = null, ConnectWorkCallback callback = null)
+        public void ConnectWithConfigFile(
+            string host,
+            string configFile,
+            string protocol = "udp",
+            int port = 1194,
+            string? managementPwd = null,
+            ConnectWorkCallback? callback = null)
         {
             try
             {
@@ -118,7 +137,7 @@ namespace Utilizr.Vpn.OpenVpn
             }
         }
 
-        private void ConnectWorkCallbackHandler(CallbackHandlerArgs args, Exception ex, ConnectWorkCallback callback = null)
+        private void ConnectWorkCallbackHandler(CallbackHandlerArgs args, Exception? ex, ConnectWorkCallback? callback = null)
         {
             LastBandwidthUsage.Reset();
             if (args.Port > -1 && ex == null)
@@ -166,7 +185,7 @@ namespace Utilizr.Vpn.OpenVpn
 
         public string LastInterface { get; private set; }
 
-        protected void SetupManagementClient(int port, string mangementPwd)
+        protected async void SetupManagementClient(int port, string? mangementPwd)
         {
             var _managementClient = new ManagementClient(port, mangementPwd);
             _lastManagementClient = _managementClient;
@@ -229,53 +248,51 @@ namespace Utilizr.Vpn.OpenVpn
                 Log.Info("OPEN_VPN", $"Success: {args.Message}");
             };
 
-            _managementClient.Connect(ar =>
+            await _managementClient.Connect();
+            Log.Info("OPEN_VPN", "management client connect waited");
+            try
             {
-                Log.Info("OPEN_VPN", "management client connect called back");
-                try
+                // AsyncHelper.EndExecute(ar);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("OPEN_VPN", ex);
+                OnFatalError(new MessageArgs()
                 {
-                    // AsyncHelper.EndExecute(ar);
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception("OPEN_VPN", ex);
-                    OnFatalError(new MessageArgs()
-                    {
-                        Message = L._("OpenVPN Interface Error: {0}", ex.Message)
-                    });
-                    return;
-                }
+                    Message = L._("OpenVPN Interface Error: {0}", ex.Message)
+                });
+                return;
+            }
 
-                if (_managementClient == null)
-                {
-                    OnFatalError(new MessageArgs() { Message = "THIS SHOULDN'T HAPPEN" });
-                    return;
-                }
+            if (_managementClient == null)
+            {
+                OnFatalError(new MessageArgs() { Message = "THIS SHOULDN'T HAPPEN" });
+                return;
+            }
 
-                Log.Info("OPEN_VPN", $"waiting for hold release = {_managementClient.IsWaitingForHoldRelease}");
+            Log.Info("OPEN_VPN", $"waiting for hold release = {_managementClient.IsWaitingForHoldRelease}");
+            if (_managementClient.IsWaitingForHoldRelease)
+            {
+                Log.Info("OPEN_VPN", "releasing hold");
+                ReleaseHoldAndSetupOptions(_managementClient);
+            }
+            else
+            {
+                _managementClient.WaitingForHoldRelease += ManagementClientOnWaitingForHoldRelease;
+                //double checking incase we missed the wait for release hold message while subscribing to the event
+                Log.Info("OPEN_VPN", $"post-event subdcribe waiting for hold release = {_managementClient.IsWaitingForHoldRelease}");
                 if (_managementClient.IsWaitingForHoldRelease)
                 {
-                    Log.Info("OPEN_VPN", "releasing hold");
+                    //remove the event handler
+                    _managementClient.WaitingForHoldRelease -= ManagementClientOnWaitingForHoldRelease;
                     ReleaseHoldAndSetupOptions(_managementClient);
                 }
-                else
-                {
-                    _managementClient.WaitingForHoldRelease += ManagementClientOnWaitingForHoldRelease;
-                    //double checking incase we missed the wait for release hold message while subscribing to the event
-                    Log.Info("OPEN_VPN", $"post-event subdcribe waiting for hold release = {_managementClient.IsWaitingForHoldRelease}");
-                    if (_managementClient.IsWaitingForHoldRelease)
-                    {
-                        //remove the event handler
-                        _managementClient.WaitingForHoldRelease -= ManagementClientOnWaitingForHoldRelease;
-                        ReleaseHoldAndSetupOptions(_managementClient);
-                    }
-                }
+            }
 
-                _managementClient.ConnectedWithErrors += (sender, args) =>
-                {
-                    OnConnectedWithErrors();
-                };
-            });
+            _managementClient.ConnectedWithErrors += (sender, args) =>
+            {
+                OnConnectedWithErrors();
+            };
         }
 
         void ReleaseHoldAndSetupOptions(ManagementClient _managementClient)
@@ -413,7 +430,7 @@ namespace Utilizr.Vpn.OpenVpn
     public class CallbackHandlerArgs
     {
         public int Port { get; set; }
-        public string ManagementPwd { get; set; }
+        public string? ManagementPwd { get; set; }
     }
 }
 

@@ -9,7 +9,7 @@
         /// Same as <see cref="Disconnect"/> but will always fire disconnecting / disconnected events.
         /// </summary>
         void Abort();
-        void Connect(IConnectionStartParams startParams);
+        Task Connect(IConnectionStartParams startParams);
         BandwidthUsage Usage { get; }
         TimeSpan ConnectedDuration { get; }
         bool IsConnected { get; }

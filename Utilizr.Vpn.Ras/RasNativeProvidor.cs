@@ -193,47 +193,50 @@ namespace Utilizr.Vpn.Ras
             Disconnect();
         }
 
-        public void Connect(IConnectionStartParams startParams)
+        public Task Connect(IConnectionStartParams startParams)
         {
-            var rasParams = (RasConnectionStartParams)startParams;
-
-            ConnectedDuration = TimeSpan.Zero;
-            Usage.Reset();
-
-            OnConnecting(startParams.Context, rasParams.Hostname);
-
-            try
+            return Task.Run(() =>
             {
-                _context = startParams.Context;
-                _currentServer = rasParams.Hostname;
+                var rasParams = (RasConnectionStartParams)startParams;
 
-                var credentials = _userPassHandler(ConnectionType.IKEV2);
+                ConnectedDuration = TimeSpan.Zero;
+                Usage.Reset();
 
-                _rasDialerDone.Reset();
-                _rasDialer.ResetAbort();
+                OnConnecting(startParams.Context, rasParams.Hostname);
 
-                RasmanRunning();
-                Log.Info(LOG_CAT, $"rasdialer connecting to {rasParams.Hostname}");
+                try
+                {
+                    _context = startParams.Context;
+                    _currentServer = rasParams.Hostname;
 
-                _rasDialer.Connect(
-                    _deviceName,
-                    rasParams.Hostname,
-                    credentials.Username,
-                    credentials.Password.ToUnsecureString()
-                );
+                    var credentials = _userPassHandler(ConnectionType.IKEV2);
 
-                Log.Info(LOG_CAT, "waiting for rasDialer complete..");
-                _rasDialerDone.WaitOne();
+                    _rasDialerDone.Reset();
+                    _rasDialer.ResetAbort();
 
-                Log.Info(LOG_CAT, "rasdialer completed");
-            }
-            catch (Exception e)
-            {
-                Log.Exception(LOG_CAT, e);
-                OnConnectError(e, _context);
-                OnDisconnected(_currentServer, _context);
-                _rasDialerDone.Set();
-            }
+                    RasmanRunning();
+                    Log.Info(LOG_CAT, $"rasdialer connecting to {rasParams.Hostname}");
+
+                    _rasDialer.Connect(
+                        _deviceName,
+                        rasParams.Hostname,
+                        credentials.Username,
+                        credentials.Password.ToUnsecureString()
+                    );
+
+                    Log.Info(LOG_CAT, "waiting for rasDialer complete..");
+                    _rasDialerDone.WaitOne();
+
+                    Log.Info(LOG_CAT, "rasdialer completed");
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(LOG_CAT, e);
+                    OnConnectError(e, _context);
+                    OnDisconnected(_currentServer, _context);
+                    _rasDialerDone.Set();
+                }
+            });
         }
 
         /// <summary>

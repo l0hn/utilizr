@@ -43,7 +43,7 @@ namespace Utilizr.Network
         /// </summary>
         public List<string> MagicPhrases { get; }
 
-        public TelnetClient(string host, int port, int sendTimeout = 0, int recieveTimeout = 0)
+        public TelnetClient(string host, int port, int sendTimeout = 0, int receiveTimeout = 0)
         {
             Router = new MessageRouter(this);
             _sendReady = new ManualResetEvent(false);
@@ -55,7 +55,7 @@ namespace Utilizr.Network
             _tcpClient = new TcpClient
             {
                 SendTimeout = sendTimeout,
-                ReceiveTimeout = recieveTimeout
+                ReceiveTimeout = receiveTimeout
             };
             MagicPhrases = new List<string>();
         }
