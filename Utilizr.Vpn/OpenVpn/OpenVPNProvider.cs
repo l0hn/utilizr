@@ -1,4 +1,5 @@
 ﻿using Utilizr.Globalisation;
+using Utilizr.Win.Extensions;
 
 namespace Utilizr.Vpn.OpenVpn
 {
@@ -37,13 +38,12 @@ namespace Utilizr.Vpn.OpenVpn
         public string CurrentServer => _currentServer;
         public object CurrentUserContext => _currentContext;
 
-        public void Connect(IConnectionStartParams startParams)
+        public async Task Connect(IConnectionStartParams startParams)
         {
             _currentServer = startParams.Hostname;
             _currentContext = startParams.Context;
 
-            var ar = ConnectOpenVPNAsync(startParams);
-            //AsyncHelper.EndExecute(ar);
+            await ConnectOpenVPNAsync(startParams);
         }
 
         public void Disconnect()
@@ -74,7 +74,7 @@ namespace Utilizr.Vpn.OpenVpn
             OnDisconnected(_currentServer, _currentContext);
         }
 
-        private Exception StoredException;
+        private Exception? _storedException;
 
         protected AbstractOpenVPNHelper Helper => _openVpnHelper;
 
@@ -156,9 +156,9 @@ namespace Utilizr.Vpn.OpenVpn
 
         private void ConnectOpenVPN(IConnectionStartParams startParams)
         {
-            OpenVpnConnectionStartParams ovpnParams = (OpenVpnConnectionStartParams)startParams;
+            var ovpnParams = (OpenVpnConnectionStartParams)startParams;
 
-            StoredException = null;
+            _storedException = null;
 
             Disconnect();
 
@@ -171,7 +171,7 @@ namespace Utilizr.Vpn.OpenVpn
                 else
                     _openVpnHelper.Connect(startParams.Hostname, _providerConfig.CertificateHandler(), ovpnParams.Protocol, ovpnParams.OpenVpnPort);
 
-                _openVpnDialerDone.WaitOne();
+                _openVpnDialerDone.SafeWaitOne();
             }
             catch (Exception ex)
             {
@@ -194,7 +194,7 @@ namespace Utilizr.Vpn.OpenVpn
         public event ConnectionStateHandler ConnectError;
         public event EventHandler<BandwidthUsage> BandwidthUsageUpdated;
 
-        private IAsyncResult ConnectOpenVPNAsync(IConnectionStartParams startParams, AsyncCallback callback = null)
+        private Task ConnectOpenVPNAsync(IConnectionStartParams startParams)
         {
             return Task.Run(() => ConnectOpenVPN(startParams));
         }
@@ -204,7 +204,7 @@ namespace Utilizr.Vpn.OpenVpn
             ConnectError?.Invoke(this, _currentServer, error, userContext);
         }
 
-        protected virtual void OnDisconnected(string host, object userContext, Exception error = null)
+        protected virtual void OnDisconnected(string host, object userContext, Exception? error = null)
         {
             Disconnected?.Invoke(this, host, error, userContext);
         }

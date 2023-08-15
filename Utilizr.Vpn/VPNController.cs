@@ -89,7 +89,7 @@ namespace Utilizr.Vpn
             return Task.Run(() => Connect(startParams));
         }
 
-        void Connect(IConnectionStartParams startParams)
+        async Task Connect(IConnectionStartParams startParams)
         {
             try
             {
@@ -129,7 +129,7 @@ namespace Utilizr.Vpn
 
                 CurrentProvider = provider;
 
-                provider.Connect(startParams);
+                await provider.Connect(startParams);
             }
             catch (Exception ex)
             {

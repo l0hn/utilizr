@@ -35,15 +35,14 @@ namespace Utilizr.Vpn.OpenVpn
 
         public bool ReceivedExitNotification { get; private set; }
 
-        public ManagementClient(int port, string managementPwd)
+        public ManagementClient(int port, string? managementPwd)
         {
-            
             _telnetClient = new TelnetClient("localhost", port, 60000, 60000);
             _telnetClient.MagicPhrases.Add("ENTER PASSWORD:");
 
             _telnetClient.Router.AddHandler("ENTER PASSWORD:", args =>
             {
-                _telnetClient.Send(managementPwd);
+                _telnetClient.Send(managementPwd!);
             }, startswith:false, endswith:true);
             _telnetClient.Router.AddHandler(">ECHO:", args =>
             {
@@ -122,7 +121,7 @@ namespace Utilizr.Vpn.OpenVpn
             };
         }
 
-        public IAsyncResult Connect(AsyncCallback callback = null)
+        public Task Connect()
         {
             return _telnetClient.Connect();
         }
