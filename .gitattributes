@@ -1,0 +1,2 @@
+# Don't modify OpenVPN's .inf file as it will invalidate the hash / driver install.
+*OemWin2k.inf binary
