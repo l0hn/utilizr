@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -67,6 +68,7 @@ namespace Utilizr.WPF.Shapes
             get { return (double) GetValue(PercentProperty); }
             set { SetValue(PercentProperty, value); }
         }
+
 
         public static readonly DependencyProperty StartAngleDegreesProperty = 
             DependencyProperty.Register(
@@ -151,13 +153,9 @@ namespace Utilizr.WPF.Shapes
             set { SetValue(DirectionProperty, value); }
         }
 
+
         public PercentageArc()
         {
-            SizeChanged += (sender, args) =>
-            {
-                _actualHeight = VerticalAlignment == VerticalAlignment.Stretch ? ActualHeight : Height;
-                _actualWidth = HorizontalAlignment == HorizontalAlignment.Stretch ? ActualWidth : Width;
-            };
             Loaded += (sender, args) =>
             {
                 UpdateAngles();
@@ -182,6 +180,29 @@ namespace Utilizr.WPF.Shapes
                 return;
 
             self._strokeThickness = self.StrokeThickness;
+        }
+
+        /// <summary>
+        /// The RenderedGeometry property returns the final rendered geometry
+        /// </summary>
+        public override Geometry RenderedGeometry
+        {
+            get
+            {
+                // RenderedGeometry = defining geometry
+                return DefiningGeometry;
+            }
+        }
+
+        /// <summary>
+        /// Return the transformation applied to the geometry before rendering
+        /// </summary>
+        public override Transform GeometryTransform
+        {
+            get
+            {
+                return Transform.Identity;
+            }
         }
 
         private StreamGeometry _geometry = new();
@@ -246,10 +267,28 @@ namespace Utilizr.WPF.Shapes
                 {
                     _geometryContext.BeginFigure(_startPoint, false, false);
                     _geometryContext.ArcTo(_endPoint, _size, 1, _angleDegrees > 180, Direction, true, true);
+                    //Debug.WriteLine($"[{Tag}] Start: ({_startPoint}), End: ({_endPoint.X:N3},{_endPoint.Y:N3}), Size: ({_actualWidth},{_actualHeight})");
                 }
 
                 return _geometry;
             }
+        }
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+
+            if (double.IsInfinity(constraint.Width) || double.IsInfinity(constraint.Height))
+            {
+                _actualHeight = 100;
+                _actualWidth = 100;
+            }
+            else
+            {
+                _actualWidth = constraint.Width;
+                _actualHeight = constraint.Height;
+            }
+
+            return new Size(_actualWidth, _actualHeight);
         }
     }
 }
