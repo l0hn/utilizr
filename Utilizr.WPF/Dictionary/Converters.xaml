@@ -36,5 +36,6 @@
     <converters:UnixTimestampToFormattedStringConverter x:Key="UnixTimestampToFormattedStringConverter"/>
     <converters:UriToImageConverter x:Key="UriToImageConverter"/>
     <converters:UriToIconConverter x:Key="UriToIconConverter"/>
+    <converters:UriToImageFallbackConverter x:Key="UriToImageFallbackConverter"/>
     <converters:ValueConverterGroup x:Key="ValueConverterGroup"/>
 </ResourceDictionary>
