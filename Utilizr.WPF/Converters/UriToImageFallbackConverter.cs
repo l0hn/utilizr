@@ -17,9 +17,10 @@ namespace Utilizr.WPF.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var fullFilePath = (string)value;
+            string fallbackIcon = (string)parameter;
 
             if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable() == true)
-                return ResourceHelper.GetImageSource("logo-grey-error@2x.png");
+                return ResourceHelper.GetImageSource(fallbackIcon);
             
             BitmapImage bitmap = new BitmapImage();
             try
@@ -30,7 +31,7 @@ namespace Utilizr.WPF.Converters
             } 
             catch 
             {
-                return ResourceHelper.GetImageSource("logo-grey-error@2x.png");
+                return ResourceHelper.GetImageSource(fallbackIcon);
             }
 
             return bitmap;
