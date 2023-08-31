@@ -74,6 +74,126 @@ namespace Utilizr.Win.FileSystem
 
 
         /// <summary>
+        /// Same functionality as Path.GetDirectoryName but safe on long paths,
+        /// will not throw PathTooLongException.
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
+        public static string GetDirectoryName(string directory)
+        {
+            if (string.IsNullOrEmpty(directory))
+                return directory;
+
+            var dirSepIndex = directory.LastIndexOf(Path.DirectorySeparatorChar);
+            if (dirSepIndex >= 0)
+                return directory[..dirSepIndex];
+
+            var volSepIndex = directory.IndexOf(Path.VolumeSeparatorChar);
+            if (volSepIndex >= 0)
+                return directory[..volSepIndex];
+
+            return string.Empty;
+        }
+
+
+        /// <summary>
+        /// Same functionality as Path.GetFileName but safe on long paths,
+        /// will not throw PathTooLongException.
+        public static string? GetFileName(string filePath)
+        {
+            var trimmed = filePath?.TrimEnd(Path.DirectorySeparatorChar);
+            var dirCharIndex = trimmed?.LastIndexOf(Path.DirectorySeparatorChar);
+            if (dirCharIndex == null)
+                return null;
+
+            if (dirCharIndex < 0)
+            {
+                if (trimmed?.Length > 0 == true)
+                    return trimmed;
+
+                return null;
+            }
+
+            var result = trimmed?.Substring(dirCharIndex.Value);
+            return result?.TrimStart(Path.DirectorySeparatorChar);
+        }
+
+        /// <summary>
+        /// Increments filename with numbers, only returning when the file path doesn't exist.
+        /// The same path will be returned to that provided if the file doesn't already exist.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string DistinctlyNumberedFileName(string filePath)
+        {
+            var ext = Path.GetExtension(filePath); // handles long paths
+            var filePathNoExtension = filePath;
+            if (ext.Length < filePathNoExtension.Length)
+                filePathNoExtension = filePathNoExtension.Substring(0, filePathNoExtension.Length - ext.Length);
+
+            int count = 1;
+            while (FileExists(filePath))
+            {
+                filePath = $"{filePathNoExtension} - ({count}){ext}";
+                count++;
+            }
+
+            return filePath;
+        }
+
+        /// <summary>
+        /// Make an absolute path a subdirectory to the provided parameter.
+        /// E.g. F:\Homework\Maths\test.txt => C:\Users\student\Desktop\F\Homework\Maths\test.txt
+        /// </summary>
+        /// <param name="subPathRoot">The absolute path to a folder which will contain the subdirectory.</param>
+        /// <param name="absolutePath">The absolute path that will become a subdirectory within <paramref name="subPathRoot"/></param>
+        /// <returns></returns>
+        public static string AbsolutePathToSubdirectory(string subPathRoot, string absolutePath)
+        {
+            var root = GetPathRoot(absolutePath);
+            var rootAsFolder = root.TrimEnd(new char[] { Path.VolumeSeparatorChar, Path.DirectorySeparatorChar });
+
+            var combined = Path.Combine(subPathRoot, rootAsFolder);
+
+            if (root.Length < absolutePath.Length)
+            {
+                combined = Path.Combine(combined, absolutePath.Substring(root.Length));
+                combined = UncFullPath(combined);
+            }
+
+            return combined;
+        }
+
+        /// <summary>
+        /// Equivalent of File.Exists() but can accept long paths. Converts to UNC, safe if already UNC path.
+        /// </summary>
+        public static bool FileExists(string file)
+        {
+            file = UncFullPath(file);
+
+            if (!Kernel32.GetFileAttributesEx(file, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, out FILE_ATTRIBUTE_DATA fData))
+                return false;
+
+            return fData.dwFileAttributes != (int)FileAttributeFlags.INVALID &&
+                   (fData.dwFileAttributes & (int)FileAttributeFlags.DIRECTORY) == 0;
+        }
+
+        /// <summary>
+        /// Equivalent of Directory.Exists() but can accept long paths. Converts to UNC, safe if already UNC path.
+        /// </summary>
+        public static bool DirectoryExists(string directory)
+        {
+            directory = UncFullPath(directory);
+
+            if (!Kernel32.GetFileAttributesEx(directory, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, out FILE_ATTRIBUTE_DATA fData))
+                return false;
+
+            return fData.dwFileAttributes != (int)FileAttributeFlags.INVALID &&
+                   (fData.dwFileAttributes & (int)FileAttributeFlags.DIRECTORY) != 0;
+        }
+
+
+        /// <summary>
         /// Must be disposed after finished. Converts to UNC only if not already a UNC path.
         /// </summary>
         public static SafeFileHandle GetCreateFileForWrite(string file)
@@ -123,33 +243,6 @@ namespace Utilizr.Win.FileSystem
             }
         }
 
-        /// <summary>
-        /// Equivalent of File.Exists() but can accept long paths. Converts to UNC, safe if already UNC path.
-        /// </summary>
-        public static bool FileExists(string file)
-        {
-            file = UncFullPath(file);
-
-            if (!Kernel32.GetFileAttributesEx(file, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, out FILE_ATTRIBUTE_DATA fData))
-                return false;
-
-            return fData.dwFileAttributes != (int)FileAttributeFlags.INVALID &&
-                   (fData.dwFileAttributes & (int)FileAttributeFlags.DIRECTORY) == 0;
-        }
-
-        /// <summary>
-        /// Equivalent of Directory.Exists() but can accept long paths. Converts to UNC, safe if already UNC path.
-        /// </summary>
-        public static bool DirectoryExists(string directory)
-        {
-            directory = UncFullPath(directory);
-
-            if (!Kernel32.GetFileAttributesEx(directory, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, out FILE_ATTRIBUTE_DATA fData))
-                return false;
-
-            return fData.dwFileAttributes != (int)FileAttributeFlags.INVALID &&
-                   (fData.dwFileAttributes & (int)FileAttributeFlags.DIRECTORY) != 0;
-        }
 
         /// <summary>
         /// Highlights a file or folder within Windows's explorer. Handles long paths unlike
