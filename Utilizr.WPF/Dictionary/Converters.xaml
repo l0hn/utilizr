@@ -9,6 +9,7 @@
     <converters:AnyTrueConverter x:Key="AnyTrueConverter" />
     <converters:ArcProgressToArcAngleConverter x:Key="ArcProgressToArcAngleConverter"/>
     <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    <converters:BorderClipConverter x:Key="BorderClipConverter"/>
     <converters:DoubleToThicknessConverter x:Key="DoubleToThicknessConverter"/>
     <converters:EmptyICollectionToBooleanConverter x:Key="EmptyICollectionToBooleanConverter" />
     <converters:EmptyICollectionToVisibilityConverter x:Key="EmptyICollectionToVisibilityConverter" />
