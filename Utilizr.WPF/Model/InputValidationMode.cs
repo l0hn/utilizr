@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Utilzr.WPF.Model
+namespace Utilizr.WPF.Model
 {
     public enum InputValidationMode
     {

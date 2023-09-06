@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Utilzr.WPF.Model
+namespace Utilizr.WPF.Model
 {
     public class LightBoxInfo : INotifyPropertyChanged
     {

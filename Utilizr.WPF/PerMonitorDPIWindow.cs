@@ -6,7 +6,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using Utilizr.Logging;
 
-namespace Utilzr.WPF
+namespace Utilizr.WPF
 {
 
     public class PerMonitorDPIWindow: Window
