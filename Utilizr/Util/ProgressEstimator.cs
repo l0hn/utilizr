@@ -37,10 +37,10 @@ namespace Utilizr.Util
         }
 
         private bool _isPaused;
-        public bool IsPaused
+        public virtual bool IsPaused
         {
             get { return _isPaused; }
-            private set
+            protected set
             {
                 _isPaused = value;
                 OnPropertyChanged(nameof(IsPaused));
