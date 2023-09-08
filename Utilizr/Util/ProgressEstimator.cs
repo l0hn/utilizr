@@ -11,8 +11,9 @@ namespace Utilizr.Util
 {
     public class ProgressEstimator : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        public event EventHandler PercentChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
+        public event EventHandler? PercentChanged;
+        public event EventHandler? PauseResumeChanged;
 
         private double _percent;
         /// <summary>
@@ -35,7 +36,17 @@ namespace Utilizr.Util
             set { _timer.Interval = value; }
         }
 
-        public bool IsPaused { get; private set; }
+        private bool _isPaused;
+        public virtual bool IsPaused
+        {
+            get { return _isPaused; }
+            protected set
+            {
+                _isPaused = value;
+                OnPropertyChanged(nameof(IsPaused));
+                OnPauseResumeChanged();
+            }
+        }
 
         protected int CurrentSegmentIndex { get; private set; }
         protected ReadOnlyCollection<ProgressEstimatorSegment> Segments => _segments.AsReadOnly();
@@ -222,7 +233,12 @@ namespace Utilizr.Util
 
         protected virtual void OnPercentChanged()
         {
-            PercentChanged?.Invoke(this, new EventArgs());
+            PercentChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnPauseResumeChanged()
+        {
+            PauseResumeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual void OnPropertyChanged(string propertyName)
