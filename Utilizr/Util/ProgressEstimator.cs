@@ -55,7 +55,7 @@ namespace Utilizr.Util
         private DateTime _currentSegmentStarted;
         private DateTime _pauseStarted;
         private readonly List<ProgressEstimatorSegment> _segments;
-        private readonly object LOCK = new object();
+        private readonly object LOCK = new();
         private readonly Timer _timer;
 
         public ProgressEstimator()
@@ -171,7 +171,7 @@ namespace Utilizr.Util
         /// Whether <see cref="Percent"/> should be set to '1.0'.
         /// </summary>
         /// <param name="updatePercentValue"></param>
-        public void Finished(bool updatePercentValue = true)
+        public virtual void Finished(bool updatePercentValue = true)
         {
             lock (LOCK)
             {
