@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Utilizr.Win32.Shell32.Flags;
 
 namespace Utilizr.Win32.Shell32
 {
@@ -7,7 +8,7 @@ namespace Utilizr.Win32.Shell32
     {
         const string SHELL32_DLL = "shell32.dll";
 
-        [DllImport(SHELL32_DLL)]
+        [DllImport(SHELL32_DLL, SetLastError = true)]
         public static extern int SHGetKnownFolderPath(
             [MarshalAs(UnmanagedType.LPStruct)] Guid rfid,
             uint dwFlags,
@@ -30,5 +31,9 @@ namespace Utilizr.Win32.Shell32
             [Out] out IntPtr pidl,
             uint sfgaoIn,
             [Out] out uint psfgaoOut);
+
+
+        [DllImport(SHELL32_DLL, SetLastError = true)]
+        public static extern int SHQueryUserNotificationState(out UserNotificationState userNotificationState);
     }
 }
