@@ -5,7 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Utilizr.WPF.Util;
 
-namespace Utilizr.WPF
+namespace Utilizr.WPF.Controls
 {
     public class Bitmap : FrameworkElement
     {

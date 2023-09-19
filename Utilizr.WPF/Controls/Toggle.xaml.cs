@@ -9,7 +9,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Utilizr.WPF.Extension;
 
-namespace Utilizr.WPF
+namespace Utilizr.WPF.Controls
 {
     public partial class Toggle : UserControl, INotifyPropertyChanged
     {
