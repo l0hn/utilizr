@@ -1,0 +1,78 @@
+﻿<UserControl x:Class="Utilizr.WPF.Controls.TextBlockFilePath"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Utilizr.WPF.Controls">
+
+    <Grid x:Name="LayoutRoot"
+          Background="{Binding Path=Background}"
+          HorizontalAlignment="Stretch">
+        <Grid.Resources>
+            <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="Background"
+                        Value="Transparent"/>
+                <Setter Property="Foreground"
+                        Value="{Binding Path=Foreground}"/>
+                <Setter Property="FontSize"
+                        Value="{Binding Path=FontSize}"/>
+                <Setter Property="FontFamily"
+                        Value="{Binding Path=FontFamily}"/>
+                <Setter Property="FontStyle"
+                        Value="{Binding Path=FontStyle}"/>
+                <Setter Property="FontWeight"
+                        Value="{Binding Path=FontWeight}"/>
+                <Setter Property="FontStretch"
+                        Value="{Binding Path=FontStretch}"/>
+                <Setter Property="Margin"
+                        Value="0"/>
+                <Setter Property="Padding"
+                        Value="0"/>
+                <Setter Property="Visibility"
+                        Value="{Binding Path=IsTrimmed,
+                                        Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </Style>
+        </Grid.Resources>
+
+        <Grid Visibility="{Binding Path=IsMultiline,
+                                   Converter={StaticResource InvertBooleanToVisibilityConverter}}"
+              HorizontalAlignment="{Binding Path=TextHorizontalAlignment}"
+              MaxWidth="{Binding Path=MaxWidth,
+                                 RelativeSource={RelativeSource Mode=FindAncestor,
+                                                                AncestorType={x:Type local:TextBlockFilePath}}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Annoyingly the only way to center text as need to support other fonts
+            than just monospace. TrimmingString will not be in the middle otherwise-->
+            <TextBlock Grid.Column="0"
+                       Text="{Binding Path=TextLeft}"
+                       HorizontalAlignment="Right"/>
+            <TextBlock Text="{Binding Path=TrimmingString}"
+                       Grid.Column="1"/>
+            <TextBlock Grid.Column="2"
+                       Text="{Binding Path=TextRight}"
+                       HorizontalAlignment="Left"/>
+        </Grid>
+
+        <TextBlock HorizontalAlignment="{Binding Path=TextHorizontalAlignment}"
+                   TextWrapping="WrapWithOverflow"
+                   Text="{Binding Path=TextFilePath}">
+            <TextBlock.Visibility>
+                <MultiBinding Converter="{StaticResource AllToVisibilityConverter}">
+                    <Binding Path="IsTrimmed"/>
+                    <Binding Path="IsMultiline"/>
+                </MultiBinding>
+            </TextBlock.Visibility>
+        </TextBlock>
+
+        <TextBlock Text="{Binding Path=Text}"
+                   HorizontalAlignment="{Binding Path=TextHorizontalAlignment}"
+                   Visibility="{Binding Path=IsTrimmed, 
+                                        Converter={StaticResource InvertBooleanToVisibilityConverter}}"
+                   TextWrapping="Wrap"/>
+    </Grid>
+</UserControl>
