@@ -44,16 +44,23 @@ namespace Utilizr.Win.Util
             }
         }
 
-        public static void StartWindowsService(string serviceName)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns>True if service was already running before check</returns>
+        public static bool StartWindowsService(string serviceName)
         {
             using (var controller = new ServiceController(serviceName))
             {
-                if (controller.Status != ServiceControllerStatus.Running)
+                bool wasAlreadyRunning = controller.Status == ServiceControllerStatus.Running;
+                if (!wasAlreadyRunning)
                 {
                     Log.Info(LOG_CAT, $"Starting {serviceName} service");
                     controller.Start();
                     controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(120));
                 }
+                return wasAlreadyRunning;
             }
         }
 
