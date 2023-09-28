@@ -53,7 +53,7 @@ namespace Utilizr.Win.Util
         {
             using (var controller = new ServiceController(serviceName))
             {
-                bool wasAlreadyRunning = controller.Status != ServiceControllerStatus.Running;
+                bool wasAlreadyRunning = controller.Status == ServiceControllerStatus.Running;
                 if (!wasAlreadyRunning)
                 {
                     Log.Info(LOG_CAT, $"Starting {serviceName} service");
