@@ -5,46 +5,47 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Utilizr.WPF.Controls"
              mc:Ignorable="d" 
-             Width="52"
-             Height="32">
+             MinWidth="38"
+             MinHeight="24">
 
-    <UserControl.Resources>
+    <!--<UserControl.Resources>
         <Storyboard x:Key="OnStoryBoard">
             <ColorAnimation Storyboard.TargetName="Border"
                             Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)"
                             To="{Binding Path=BackgroundOn.Color,
                                          RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Toggle}}}"
-                            Duration="00:00:00.2" />
+                            Duration="00:00:00.2"
+                            FillBehavior="Stop"/>
         </Storyboard>
         <Storyboard x:Key="OffStoryBoard">
             <ColorAnimation Storyboard.TargetName="Border"
                             Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)"
                             To="{Binding Path=BackgroundOff.Color,
                                          RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Toggle}}}"
-                            Duration="00:00:00.2" />
+                            Duration="00:00:00.2"
+                            FillBehavior="Stop"/>
         </Storyboard>
-    </UserControl.Resources>
+    </UserControl.Resources>-->
 
     <Grid x:Name="LayoutRoot">
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">
                 <Style.Triggers>
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Opacity" Value="0.5"/>
+                    <Trigger Property="IsEnabled"
+                             Value="False">
+                        <Setter Property="Opacity"
+                                Value="0.5"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
         </Grid.Style>
-        <Border x:Name="Border"
-                CornerRadius="18"/>
+        
+        <Border x:Name="Border"/>
 
-        <Ellipse Width="26" 
-                 Height="26"
-                 Fill="{Binding Path=BackgroundHandle}"
+        <Ellipse Fill="{Binding Path=BackgroundHandle}"
                  StrokeThickness="0"
                  VerticalAlignment="Center"
                  x:Name="ToggleEllipse"
                  HorizontalAlignment="Left"/>
-
     </Grid>
 </UserControl>
