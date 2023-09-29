@@ -24,13 +24,22 @@ namespace Utilizr.WPF.Controls
                 nameof(BackgroundOn),
                 typeof(SolidColorBrush),
                 typeof(Toggle),
-                new PropertyMetadata(new SolidColorBrush(Colors.Green))
+                new PropertyMetadata(new SolidColorBrush("#FF0BC86D".ARGBToColor()), OnBackgroundOnChanged)
             );
+
+        private static void OnBackgroundOnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not Toggle toggle)
+                return;
+
+            toggle.SetupOnStoryboard();
+            toggle.UpdateBorderBackgroundWithoutAnimation(toggle.IsToggled);
+        }
 
         public SolidColorBrush BackgroundOn
         {
             get { return (SolidColorBrush)GetValue(BackgroundOnProperty); }
-            set { SetValue(BackgroundOnProperty, value.Clone()); }
+            set { SetValue(BackgroundOnProperty, value); }
         }
 
 
@@ -39,13 +48,22 @@ namespace Utilizr.WPF.Controls
                 nameof(BackgroundOff),
                 typeof(SolidColorBrush),
                 typeof(Toggle),
-                new PropertyMetadata(new SolidColorBrush(Colors.Red))
+                new PropertyMetadata(new SolidColorBrush("#FFDEDEDE".ARGBToColor()), OnBackgroundOffChanged)
             );
+
+        private static void OnBackgroundOffChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not Toggle toggle)
+                return;
+
+            toggle.SetupOffStoryboard();
+            toggle.UpdateBorderBackgroundWithoutAnimation(toggle.IsToggled);
+        }
 
         public SolidColorBrush BackgroundOff
         {
             get { return (SolidColorBrush)GetValue(BackgroundOffProperty); }
-            set { SetValue(BackgroundOffProperty, value.Clone()); }
+            set { SetValue(BackgroundOffProperty, value); }
         }
 
 
@@ -141,9 +159,8 @@ namespace Utilizr.WPF.Controls
         }
 
 
-        readonly Storyboard? _onStoryBoard;
-        readonly Storyboard? _offStoryBoard;
-        private Storyboard _currentBackgroundStoryboard;
+        Storyboard? _onStoryboard;
+        Storyboard? _offStoryboard;
 
         public Toggle()
         {
@@ -154,20 +171,101 @@ namespace Utilizr.WPF.Controls
                 return;
 #endif
 
-            _onStoryBoard = LayoutRoot.TryFindResource("OnStoryBoard") as Storyboard;
-            _offStoryBoard = LayoutRoot.TryFindResource("OffStoryBoard") as Storyboard;
             LayoutRoot.DataContext = this;
+            SetupOnStoryboard();
+            SetupOffStoryboard();
             SizeChanged += (sender, args) =>
             {
+                UpdateBorderCornerRadius();
+                UpdateHandleSize();
                 SetToggleMargin(IsToggled);
                 ToggleEllipse.Margin = ToggleMargin;
             };
             Loaded += (s, e) =>
             {
-                Border.Background = IsToggled
-                    ? BackgroundOn.Clone()
-                    : BackgroundOff.Clone();
+                UpdateBorderCornerRadius();
+                UpdateHandleSize();
+                UpdateBorderBackgroundWithoutAnimation(IsToggled);
+
+                SetToggleMargin(IsToggled);
+                ToggleEllipse.Margin = ToggleMargin;
             };
+        }
+
+        void SetupOnStoryboard()
+        {
+            if (_onStoryboard != null)
+                _onStoryboard.Completed -= Storyboard_Completed;
+
+            if (_onStoryboard == null)
+            {
+                var colourOnAnim = new ColorAnimation()
+                {
+                    To = BackgroundOn.Color,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+                    FillBehavior = FillBehavior.Stop,
+                };
+
+                Storyboard.SetTargetName(Border, Border.Name);
+                Storyboard.SetTargetProperty(colourOnAnim, new PropertyPath(Border.BackgroundProperty));
+
+                _onStoryboard = new Storyboard() { FillBehavior = FillBehavior.Stop };
+                _onStoryboard.Children.Add(colourOnAnim);
+            }
+
+            _onStoryboard.Completed += Storyboard_Completed;
+        }
+
+        void SetupOffStoryboard()
+        {
+            if (_offStoryboard != null)
+                _offStoryboard.Completed -= Storyboard_Completed;
+
+            if (_offStoryboard == null)
+            {
+                var colourOnAnim = new ColorAnimation()
+                {
+                    To = BackgroundOff.Color,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+                    FillBehavior = FillBehavior.Stop,
+                };
+
+                Storyboard.SetTargetName(Border, Border.Name);
+                Storyboard.SetTargetProperty(colourOnAnim, new PropertyPath(Border.BackgroundProperty));
+
+                _offStoryboard = new Storyboard() { FillBehavior = FillBehavior.Stop };
+                _offStoryboard.Children.Add(colourOnAnim);
+            }
+
+            _offStoryboard.Completed += Storyboard_Completed;
+        }
+
+        void Storyboard_Completed(object? sender, EventArgs e)
+        {
+            // Storyboard now not holding end value
+            UpdateBorderBackgroundWithoutAnimation(IsToggled);
+        }
+
+        void UpdateBorderBackgroundWithoutAnimation(bool isToggled)
+        {
+            Border.Background = isToggled
+                ? BackgroundOn.Clone()
+                : BackgroundOff.Clone();
+        }
+
+        void UpdateHandleSize()
+        {
+            var handlePadding = 6;
+            ToggleEllipse.Height = Math.Max(ActualHeight - handlePadding, 10);
+            ToggleEllipse.Width = Math.Max(ActualHeight - handlePadding, 10);
+        }
+
+        void UpdateBorderCornerRadius()
+        {
+            var uniform = ActualHeight < double.PositiveInfinity
+                ? ActualHeight / 2
+                : 0;
+            Border.CornerRadius = new CornerRadius(uniform);
         }
 
         void SetToggleMargin(bool toggled)
@@ -251,14 +349,13 @@ namespace Utilizr.WPF.Controls
         {
             try
             {
-                var startBoard = newToggledState ? _onStoryBoard : _offStoryBoard;
-                startBoard.Begin(this, HandoffBehavior.SnapshotAndReplace, true);
+                var storyboard = newToggledState ? _onStoryboard : _offStoryboard;
+                storyboard.Begin(this, HandoffBehavior.SnapshotAndReplace, true);
+
             }
             catch (Exception)
             {
-                Border.Background = newToggledState
-                    ? BackgroundOn.Clone()
-                    : BackgroundOff.Clone();
+                UpdateBorderBackgroundWithoutAnimation(newToggledState);
             }
         }
 
