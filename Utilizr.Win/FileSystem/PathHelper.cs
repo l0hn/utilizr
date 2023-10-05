@@ -196,7 +196,9 @@ namespace Utilizr.Win.FileSystem
         /// <summary>
         /// Must be disposed after finished. Converts to UNC only if not already a UNC path.
         /// </summary>
-        public static SafeFileHandle GetCreateFileForWrite(string file)
+        public static SafeFileHandle GetCreateFileForWrite(
+            string file,
+            FileShareRightsFlags shareRights = FileShareRightsFlags.FILE_SHARE_NONE)
         {
             file = UncFullPath(file);
 
