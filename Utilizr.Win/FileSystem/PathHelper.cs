@@ -205,7 +205,7 @@ namespace Utilizr.Win.FileSystem
             var hFile = Kernel32.CreateFileW(
                 file,
                 FileAccessRightsFlags.GENERIC_ALL,
-                FileShareRightsFlags.FILE_SHARE_NONE,
+                shareRights,
                 IntPtr.Zero,
                 FileCreationDispositionFlags.CREATE_NEW,
                 FileAttributeFlags.NORMAL,
