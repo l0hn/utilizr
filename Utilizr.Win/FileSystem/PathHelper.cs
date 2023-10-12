@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Utilizr.Extensions;
 using Utilizr.Logging;
@@ -286,6 +285,140 @@ namespace Utilizr.Win.FileSystem
             {
                 Log.Exception(nameof(PathHelper), ex);
             }
+        }
+
+
+        /// <summary>
+        /// Enumerate child folders for the given directory supporting long paths.
+        /// </summary>
+        public static IEnumerable<string> GetChildFolders(string sourceDirectory, bool includeReparsePoints = false)
+        {
+            return GetChildPaths(sourceDirectory, true, includeReparsePoints);
+        }
+
+        /// <summary>
+        /// Enumerate child files for the given directory supporting long paths.
+        /// </summary>
+        public static IEnumerable<string> GetChildFiles(string sourceDirectory, bool includeReparsePoints = false)
+        {
+            return GetChildPaths(sourceDirectory, false, includeReparsePoints);
+        }
+
+        static IEnumerable<string> GetChildPaths(string sourceDirectory, bool dirsOnly, bool includeReparsePoints)
+        {
+            var data = OpenPath(UncFullPath(sourceDirectory, "*"), out IntPtr handle);
+            do
+            {
+                if (!includeReparsePoints && (data.dwFileAttributes & (int)FileAttributeFlags.REPARSE_POINT) == (int)FileAttributeFlags.REPARSE_POINT)
+                    continue;
+
+                bool isDir = (data.dwFileAttributes & (int)FileAttributeFlags.DIRECTORY) == (int)FileAttributeFlags.DIRECTORY;
+
+                // avoid listening current and parent folder
+                if (isDir && (data.cFileName.EndsWith(".") || data.cFileName.EndsWith("..")))
+                    continue;
+
+                if (isDir && dirsOnly) // dir
+                    yield return Path.Combine(sourceDirectory, data.cFileName);
+
+                if (!isDir && !dirsOnly) // file
+                    yield return Path.Combine(sourceDirectory, data.cFileName);
+
+            } while (Kernel32.FindNextFileW(handle, out data));
+
+            OpenPathFinished(handle);
+        }
+
+        /// <summary>
+        /// Get FIND_DATAW struct returned from FindFirstFileW.
+        /// Important to call <see cref="OpenPathFinished(IntPtr)"/> when done.
+        /// </summary>
+        public static WIN32_FIND_DATAW OpenPath(string path, out IntPtr handle)
+        {
+            var data = new WIN32_FIND_DATAW();
+            handle = Kernel32.FindFirstFileW(UncFullPath(path), out data);
+
+            if (handle == new IntPtr(-1))
+            {
+                var error = Marshal.GetLastWin32Error();
+                var win32 = new Win32Exception(error, $"Unable to open {path} with native error code {error}.");
+
+                if (error == 5) // access denied
+                    throw new UnauthorizedAccessException($"Unable to open {path}", win32);
+
+                throw win32;
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// Close the handle from a path opened with <see cref="OpenPathFinished(IntPtr)"/>.
+        /// </summary>
+        /// <param name="handle"></param>
+        public static void OpenPathFinished(IntPtr handle)
+        {
+            if (handle == new IntPtr(-1))
+                return;
+
+            Kernel32.FindClose(handle);
+        }
+
+        /// <summary>
+        /// Calculates the total size of all files, and the number of all files within the given directory.
+        /// Supports long file paths.
+        /// </summary>
+        /// <param name="sourceDirectory">Source directory.</param>
+        /// <param name="fileCount">Variable that will contain the file count.</param>
+        /// <param name="fileByteCount">Variable that will contain the sum of all file sizes.</param>
+        /// <returns>Indicates whether one or more files were not included in the totals due to an error</returns>
+        public static bool CalculateChildren(string sourceDirectory, out long fileCount, out long fileByteCount)
+        {
+            fileCount = 0;
+            fileByteCount = 0;
+            bool allFilesIncluded = true;
+
+            var childDirs = new List<string>();
+            var data = OpenPath(UncFullPath(sourceDirectory, "*"), out IntPtr hFile);
+
+            do
+            {
+                if ((data.dwFileAttributes & (int)FileAttributeFlags.DIRECTORY) != (int)FileAttributeFlags.DIRECTORY)
+                {
+                    fileCount++;
+                    fileByteCount += data.GetSize();
+                }
+                else if (data.cFileName != "." && data.cFileName != "..")
+                {
+                    childDirs.Add(Path.Combine(sourceDirectory, data.cFileName));
+                }
+
+            } while (Kernel32.FindNextFileW(hFile, out data));
+
+            Kernel32.FindClose(hFile);
+
+            foreach (var childDir in childDirs)
+            {
+                try
+                {
+                    // don't short circuit
+                    allFilesIncluded = CalculateChildren(childDir, out long childDirFileCount, out long childDirFileByteCount) && allFilesIncluded;
+                    fileCount += childDirFileCount;
+                    fileByteCount += childDirFileByteCount;
+                }
+                catch (Exception ex)
+                {
+                    allFilesIncluded = false;
+
+                    Log.Exception(
+                        LoggingLevel.INFO,
+                        ex,
+                        $"Unable to include {sourceDirectory} in {nameof(fileCount)} and {nameof(fileByteCount)} totals."
+                    );
+                }
+            }
+
+            return allFilesIncluded;
         }
     }
 }
