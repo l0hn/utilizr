@@ -1,15 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows;
 
 namespace Utilizr.WPF.Attached
 {
     public static class ScrollViewerBehaviours
     {
+        public static readonly DependencyProperty ScrollHorizontalOffsetProperty =
+           DependencyProperty.RegisterAttached(
+               "ScrollHorizontalOffset",
+               typeof(double),
+               typeof(ScrollViewerBehaviours),
+               new FrameworkPropertyMetadata(0.0, OnScrollHorizontalOffsetChanged)
+            );
+
+        public static void OnScrollHorizontalOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ScrollViewer scrollViewer)
+                return;
+
+            if (e.NewValue is not double offset)
+                return;
+
+            scrollViewer.ScrollToHorizontalOffset(offset);
+        }
+
+        public static double GetScrollHorizontalOffset(DependencyObject obj)
+        {
+            return (double)obj.GetValue(ScrollHorizontalOffsetProperty);
+        }
+
+        public static void SetScrollHorizontalOffset(DependencyObject obj, double value)
+        {
+            obj.SetValue(ScrollHorizontalOffsetProperty, value);
+        }
+
+
+
         public static readonly DependencyProperty AutoScrollToTopProperty =
             DependencyProperty.RegisterAttached(
                 "AutoScrollToTop",
