@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Text;
+using Utilizr.Info;
 using Utilizr.Logging;
 
 
@@ -13,15 +14,22 @@ namespace Utilizr.Win.Util
         /// </summary>
         public static RegistryKey? GetKeyFromPath(string path, string userSID = "", bool isWritable = false)
         {
-            bool isCurrentUserOrUsersHive;
-            var key = GetHiveFromPath(path, out string uri, out isCurrentUserOrUsersHive);
+            return GetKeyFromPath(path, !Platform.Is64BitOS, userSID, isWritable);
+        }
+
+        /// <summary>
+        /// Manually specify the bitness view of the registry
+        /// </summary>
+        public static RegistryKey? GetKeyFromPath(string path, bool is32BitView, string userSID = "", bool isWritable = false)
+        {
+            var key = GetHiveFromPath(path, is32BitView, out string uri, out bool isCurrentUserOrUsersHive);
 
             if (isCurrentUserOrUsersHive)
             {
                 if (string.IsNullOrEmpty(userSID))
                     throw new InvalidOperationException("UserSID cannot be null when accessing HKCU under Local_System");
 
-                key = OpenCurrentUserKey(userSID, isWritable);
+                key = OpenCurrentUserKey(is32BitView, userSID, isWritable);
             }
 
             var result = key?.OpenSubKey(uri, isWritable);
@@ -33,31 +41,48 @@ namespace Utilizr.Win.Util
         /// </summary>
         public static RegistryKey? OpenCurrentUserKey(string sid = "", bool isWritable = false)
         {
-            if (string.IsNullOrEmpty(sid))
-                return Registry.CurrentUser;
-
-            return Registry.Users.OpenSubKey(sid, isWritable);
+            return OpenCurrentUserKey(!Platform.Is64BitOS, sid, isWritable);
         }
 
-        private static RegistryKey? GetHiveFromPath(string path, out string uri, out bool isCurrentUserOrUsersHive)
+        /// <summary>
+        /// Manually specify the bitness view of the registry
+        /// </summary>
+        public static RegistryKey? OpenCurrentUserKey(bool is32BitView, string sid = "", bool isWritable = false)
+        {
+            var regView = is32BitView
+                ? RegistryView.Registry32
+                : RegistryView.Registry64;
+
+            if (string.IsNullOrEmpty(sid))
+                return RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, regView);
+
+            var usersView = RegistryKey.OpenBaseKey(RegistryHive.Users, regView);
+            return usersView.OpenSubKey(sid, isWritable);
+        }
+
+        static RegistryKey? GetHiveFromPath(string path, bool is32BitView, out string uri, out bool isCurrentUserOrUsersHive)
         {
             isCurrentUserOrUsersHive = false;
+
+            var regView = is32BitView
+                ? RegistryView.Registry32
+                : RegistryView.Registry64;
 
             if (path.StartsWith(@"HKEY_CLASSES_ROOT\", StringComparison.OrdinalIgnoreCase))
             {
                 uri = path.Replace(@"HKEY_CLASSES_ROOT\", string.Empty);
-                return Registry.ClassesRoot;
+                return RegistryKey.OpenBaseKey(RegistryHive.ClassesRoot, regView);
             }
             else if (path.StartsWith(@"HKEY_CURRENT_USER\", StringComparison.OrdinalIgnoreCase))
             {
                 uri = path.Replace(@"HKEY_CURRENT_USER\", string.Empty);
                 isCurrentUserOrUsersHive = true;
-                return Registry.CurrentUser;
+                return RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, regView);
             }
             else if (path.StartsWith(@"HKEY_LOCAL_MACHINE\", StringComparison.OrdinalIgnoreCase))
             {
                 uri = path.Replace(@"HKEY_LOCAL_MACHINE\", string.Empty);
-                return Registry.LocalMachine;
+                return RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, regView);
             }
             else if (path.StartsWith("HKEY_USERS", StringComparison.OrdinalIgnoreCase))
             {
@@ -71,7 +96,7 @@ namespace Utilizr.Win.Util
 
                 uri = sb.ToString();
                 isCurrentUserOrUsersHive = true;
-                return Registry.CurrentUser;
+                return RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, regView);
             }
 
             uri = string.Empty;
