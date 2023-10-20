@@ -5,7 +5,7 @@ namespace Utilizr.Win32.Userenv
 {
     public static class Userenv
     {
-        const string USERENV_DLL = "msi.dll";
+        const string USERENV_DLL = "userenv.dll";
 
         [DllImport(USERENV_DLL, SetLastError = true)]
         public static extern bool CreateEnvironmentBlock(ref IntPtr lpEnvironment, IntPtr hToken, bool bInherit);
