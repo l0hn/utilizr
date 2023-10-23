@@ -250,7 +250,9 @@ namespace Utilizr.Win.Info
                 return null;
             }
 
-            var xxx = ProcessEx.GetChildProcesses((uint)pi.hProcess).ToList();
+            //var xxx = ProcessEx.GetChildProcesses((uint)pi.hProcess).ToList();
+
+            var xxx = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
 
             //foreach(var item in xxx)
             //{
