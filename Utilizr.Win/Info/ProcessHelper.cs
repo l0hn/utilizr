@@ -12,6 +12,7 @@ using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.Kernel32.Structs;
 using Utilizr.Win32.Userenv;
+using Utilizr.Win.Extensions;
 
 namespace Utilizr.Win.Info
 {
@@ -168,6 +169,100 @@ namespace Utilizr.Win.Info
             return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _);
         }
 
+        public static List<Process> LaunchAllProcessesAndWaitAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive)
+        {
+            bool result = false;
+
+            var pi = new PROCESS_INFORMATION();
+            var saProcess = new SECURITY_ATTRIBUTES();
+            var saThread = new SECURITY_ATTRIBUTES();
+            saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
+            saThread.nLength = (uint)Marshal.SizeOf(saThread);
+
+            STARTUPINFO si = new STARTUPINFO();
+
+            si.cb = (uint)Marshal.SizeOf(si);
+
+            //if this member is NULL, the new process inherits the desktop
+            //and window station of its parent process. If this member is
+            //an empty string, the process does not inherit the desktop and
+            //window station of its parent process; instead, the system
+            //determines if a new desktop and window station need to be created.
+            //If the impersonated user already has a desktop, the system uses the
+            //existing desktop.
+
+            //si.lpDesktop = @"winsta0\default"; //Modify as needed
+            si.lpDesktop = null;
+            si.dwFlags = (uint)(STARTUPINFO_FLAGS.STARTF_USESHOWWINDOW | STARTUPINFO_FLAGS.STARTF_FORCEONFEEDBACK);
+            si.wShowWindow = ShowWindowFlags.SW_SHOW;
+            si.hStdError = IntPtr.Zero;
+            si.hStdInput = IntPtr.Zero;
+            si.hStdOutput = IntPtr.Zero;
+            si.lpReserved2 = IntPtr.Zero;
+            si.cbReserved2 = 0;
+            si.lpTitle = null;
+
+
+            //When INTERACTIVE, service run locally, and needs to use CreateProcess since service 
+            //running under logged in user's context, not local system. Account will not have
+            //SE_INCREASE_QUOTA_NAME, and will fail with ERROR_PRIVILEGE_NOT_HELD (1314)
+
+
+            // Environment.UserInteractive always return true for .net core, expose so callee
+            // can set explicitly: https://github.com/dotnet/runtime/issues/770
+
+            if (userInteractive)
+            {
+                result = Kernel32.CreateProcess(
+                    null,
+                    cmdLine,
+                    ref saProcess,
+                    ref saThread,
+                    false,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE,
+                    envBlock,
+                    null,
+                    ref si,
+                    out pi
+                );
+            }
+            else
+            {
+                result = Advapi32.CreateProcessAsUser(
+                    token,
+                    null,
+                    cmdLine,
+                    ref saProcess,
+                    ref saThread,
+                    false,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT,
+                    envBlock,
+                    null,
+                    ref si,
+                    out pi
+                );
+            }
+
+            if (result == false)
+            {
+                int error = Marshal.GetLastWin32Error();
+                Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
+                return null;
+            }
+
+            var xxx = ProcessEx.GetChildProcesses((uint)pi.hProcess).ToList();
+
+            //foreach(var item in xxx)
+            //{
+            //    MessageBox 
+            //}
+
+
+
+
+            return xxx;
+        }
+
         public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode)
         {
             bool result = false;
@@ -242,7 +337,7 @@ namespace Utilizr.Win.Info
                     out pi
                 );
             }
-
+            
             if (result == false)
             {
                 int error = Marshal.GetLastWin32Error();
