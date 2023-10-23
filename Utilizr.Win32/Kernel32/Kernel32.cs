@@ -79,6 +79,17 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int MoveFileExW([MarshalAs(UnmanagedType.LPWStr)] string lpExistingFileName, [MarshalAs(UnmanagedType.LPWStr)] string lpNewFileName, int dwFlags);
 
+        [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr FindFirstFileW([MarshalAs(UnmanagedType.LPWStr)] string lpFileName, out WIN32_FIND_DATAW lpFindFileData);
+
+        [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool FindNextFileW(IntPtr hFindFile, out WIN32_FIND_DATAW lpFindFileData);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool FindClose(IntPtr hFindFile);
+
         [DllImport(KERNEL32_DLL, ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeviceIoControl(IntPtr hDevice, uint dwIoControlCode, IntPtr lpInBuffer, uint nInBufferSize,
