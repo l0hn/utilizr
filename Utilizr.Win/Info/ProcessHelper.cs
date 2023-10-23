@@ -169,9 +169,10 @@ namespace Utilizr.Win.Info
             return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _);
         }
 
-        public static List<Process> LaunchAllProcessesAndWaitAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive)
+        public static bool LaunchAllProcessesAndWaitAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive)
         {
             bool result = false;
+            bool success = true;
 
             var pi = new PROCESS_INFORMATION();
             var saProcess = new SECURITY_ATTRIBUTES();
@@ -247,22 +248,109 @@ namespace Utilizr.Win.Info
             {
                 int error = Marshal.GetLastWin32Error();
                 Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
-                return null;
+                return false;
             }
 
-            //var xxx = ProcessEx.GetChildProcesses((uint)pi.hProcess).ToList();
+            var childProcesses = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
 
-            var xxx = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
-
-            //foreach(var item in xxx)
-            //{
-            //    MessageBox 
-            //}
+            success = WaitOnChildren(childProcesses, cmdLine, true);
 
 
+            result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
+            Kernel32.CloseHandle(pi.hProcess);
 
 
-            return xxx;
+            return success;
+        }
+
+        public static bool WaitOnChildren(List<Process> children, string parentExe, bool recursiveWait = false)
+        {
+            bool success = true;
+
+            var idLookup = new Dictionary<int, string>();
+            void exitedHandler(object s, EventArgs e)
+            {
+                // Cannot just get the ExitCode from the process, since the childProcess
+                // object didn't start it. This is a hacky work around...
+
+                if (!(s is Process process))
+                    return;
+
+                idLookup.TryGetValue(process.Id, out string executablePath);
+
+                //success = success && process.ExitCode == 0;
+                //Log.Info(
+                //    LogCat,
+                //    "{0} process '{1}' returned {2} from parent '{3}'",
+                //    nameof(WaitOnChildren),
+                //    executablePath,
+                //    process.ExitCode,
+                //    logExeArgsInfo
+                //);
+            }
+
+            foreach (var childProcess in children)
+            {
+                var loopLocal = childProcess;
+                if (loopLocal.HasExited)
+                    continue;
+
+                if (IsUnsafeWaitProcess(loopLocal.ProcessName))
+                    continue;
+
+                try
+                {
+                    var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
+                    idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
+
+                    //Log.Info(
+                    //    LogCat,
+                    //    "Waiting on child process '{0}' from '{1}'",
+                    //    wmiInfo.ExecutablePath,
+                    //    logExeArgsInfo
+                    //);
+
+                    loopLocal.EnableRaisingEvents = true;
+                    loopLocal.Exited += exitedHandler;
+                    var grandChildren = loopLocal.GetChildProcesses().ToList();
+                    success = WaitOnChildren(grandChildren, wmiInfo.ExecutablePath, true) && success;
+                    loopLocal.WaitForExit();
+                }
+                catch (Exception ex)
+                {
+                    //Log.Exception(LogCat, ex);
+                }
+                finally
+                {
+                    loopLocal.Exited -= exitedHandler;
+                }
+            }
+
+
+
+            return false;
+        }
+
+        static bool IsUnsafeWaitProcess(string processName)
+        {
+            // Don't wait on Windows Explorer.
+            // Some uninstallers might fire feedback, etc, link the browser.
+            // Don't wait on the browsers
+            // Zoom also has an issue with ProcessTrace, causing it to fire until resources are consumed
+            // One of Zooms components [cptinstall] looks to be the perp
+
+            string lowerName = processName.ToLowerInvariant();
+            bool isUnsafe = lowerName.Contains("explorer") ||
+                lowerName.Contains("iexplore") ||
+                lowerName.Contains("chrome") ||
+                lowerName.Contains("firefox") ||
+                lowerName.Contains("opera") ||
+                lowerName.Contains("microsoftedge") ||
+                lowerName.Contains("cptinstall") ||
+                lowerName.Contains("zoom") ||
+                lowerName.Contains("msedge"); // chromium based edge
+
+            return isUnsafe;
         }
 
         public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode)
