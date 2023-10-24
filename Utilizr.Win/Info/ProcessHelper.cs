@@ -255,10 +255,16 @@ namespace Utilizr.Win.Info
 
             success = WaitOnChildren(childProcesses, cmdLine, true);
 
+            var ipd = childProcesses.Select(x => (nint)x.Id).ToArray();
+
+            Kernel32.WaitForMultipleObjects((uint)childProcesses.Count, ipd, true, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+
 
             result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
             Kernel32.CloseHandle(pi.hProcess);
 
+
+            
 
             return success;
         }
