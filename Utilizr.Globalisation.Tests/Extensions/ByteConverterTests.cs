@@ -27,7 +27,7 @@ namespace Utilizr.Globalisation.Tests.Extensions
         [TestCase(long.MinValue, ExpectedResult = "-8 EB")] 
         public string TestOutput(long size)
         {
-            return ByteConverter.ToBytesString(size, false, 0, false);
+            return ByteConverter.ToBytesString(size, false, out _, out _, 0, false);
         }
     
         [Test]
@@ -35,7 +35,7 @@ namespace Utilizr.Globalisation.Tests.Extensions
         [TestCase(1 << 30, ExpectedResult = "1 GB")]
         public string TestExtensions(long size)
         {
-            return size.ToBytesString(false, 0, true);
+            return size.ToBytesString(false, out _, out _, 0, true);
         }
     }
 }
