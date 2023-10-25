@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Utilizr.Info;
+using Utilizr.Win.Util;
 using Utilizr.Win32.Shell32;
 using Utilizr.Win32.Shell32.Flags;
 
@@ -100,7 +101,7 @@ namespace Utilizr.Win.Info
             if (!Platform.Is64BitOS)
                 return GetProgramFiles();
 
-            var regKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion");
+            var regKey = RegistryHelper.GetKeyFromPath(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion");
             if (regKey != null)
             {
                 var path = regKey.GetValue("ProgramFilesDir (x86)") as string;
@@ -127,7 +128,7 @@ namespace Utilizr.Win.Info
         /// </summary>
         public static string GetProgramFiles()
         {
-            var regKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion");
+            var regKey = RegistryHelper.GetKeyFromPath(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion");
             if (regKey != null)
             {
                 var path = regKey.GetValue("ProgramFilesDir") as string;
