@@ -12,12 +12,12 @@ using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.Kernel32.Structs;
 using Utilizr.Win32.Userenv;
-using Utilizr.Win.Extensions;
 
 namespace Utilizr.Win.Info
 {
     public static class ProcessHelper
     {
+        const string LOG_CAT = "process-helper";
         public static bool ProcessOwnedByUser(int pid, string userSID)
         {
             IntPtr pToken = IntPtr.Zero;
@@ -169,194 +169,6 @@ namespace Utilizr.Win.Info
             return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _);
         }
 
-        public static bool LaunchAllProcessesAndWaitAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive)
-        {
-            bool result = false;
-            bool success = true;
-
-            var pi = new PROCESS_INFORMATION();
-            var saProcess = new SECURITY_ATTRIBUTES();
-            var saThread = new SECURITY_ATTRIBUTES();
-            saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
-            saThread.nLength = (uint)Marshal.SizeOf(saThread);
-
-            STARTUPINFO si = new STARTUPINFO();
-
-            si.cb = (uint)Marshal.SizeOf(si);
-
-            //if this member is NULL, the new process inherits the desktop
-            //and window station of its parent process. If this member is
-            //an empty string, the process does not inherit the desktop and
-            //window station of its parent process; instead, the system
-            //determines if a new desktop and window station need to be created.
-            //If the impersonated user already has a desktop, the system uses the
-            //existing desktop.
-
-            //si.lpDesktop = @"winsta0\default"; //Modify as needed
-            si.lpDesktop = null;
-            si.dwFlags = (uint)(STARTUPINFO_FLAGS.STARTF_USESHOWWINDOW | STARTUPINFO_FLAGS.STARTF_FORCEONFEEDBACK);
-            si.wShowWindow = ShowWindowFlags.SW_SHOW;
-            si.hStdError = IntPtr.Zero;
-            si.hStdInput = IntPtr.Zero;
-            si.hStdOutput = IntPtr.Zero;
-            si.lpReserved2 = IntPtr.Zero;
-            si.cbReserved2 = 0;
-            si.lpTitle = null;
-
-
-            //When INTERACTIVE, service run locally, and needs to use CreateProcess since service 
-            //running under logged in user's context, not local system. Account will not have
-            //SE_INCREASE_QUOTA_NAME, and will fail with ERROR_PRIVILEGE_NOT_HELD (1314)
-
-
-            // Environment.UserInteractive always return true for .net core, expose so callee
-            // can set explicitly: https://github.com/dotnet/runtime/issues/770
-
-            if (userInteractive)
-            {
-                result = Kernel32.CreateProcess(
-                    null,
-                    cmdLine,
-                    ref saProcess,
-                    ref saThread,
-                    false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE,
-                    envBlock,
-                    null,
-                    ref si,
-                    out pi
-                );
-            }
-            else
-            {
-                result = Advapi32.CreateProcessAsUser(
-                    token,
-                    null,
-                    cmdLine,
-                    ref saProcess,
-                    ref saThread,
-                    false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT,
-                    envBlock,
-                    null,
-                    ref si,
-                    out pi
-                );
-            }
-
-            if (result == false)
-            {
-                int error = Marshal.GetLastWin32Error();
-                Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
-                return false;
-            }
-
-            var childProcesses = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
-
-            success = WaitOnChildren(childProcesses, cmdLine, true);
-
-            var ipd = childProcesses.Select(x => (nint)x.Id).ToArray();
-
-            Kernel32.WaitForMultipleObjects((uint)childProcesses.Count, ipd, true, Kernel32.WAIT_FOR_OBJECT_INFINITE);
-
-
-            result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
-            Kernel32.CloseHandle(pi.hProcess);
-
-
-
-
-            return success;
-        }
-
-        public static bool WaitOnChildren(List<Process> children, string parentExe, bool recursiveWait = false)
-        {
-            bool success = true;
-
-            var idLookup = new Dictionary<int, string>();
-            void exitedHandler(object s, EventArgs e)
-            {
-                // Cannot just get the ExitCode from the process, since the childProcess
-                // object didn't start it. This is a hacky work around...
-
-                if (!(s is Process process))
-                    return;
-
-                idLookup.TryGetValue(process.Id, out string executablePath);
-
-                //success = success && process.ExitCode == 0;
-                //Log.Info(
-                //    LogCat,
-                //    "{0} process '{1}' returned {2} from parent '{3}'",
-                //    nameof(WaitOnChildren),
-                //    executablePath,
-                //    process.ExitCode,
-                //    logExeArgsInfo
-                //);
-            }
-
-            foreach (var childProcess in children)
-            {
-                var loopLocal = childProcess;
-                if (loopLocal.HasExited)
-                    continue;
-
-                if (IsUnsafeWaitProcess(loopLocal.ProcessName))
-                    continue;
-
-                try
-                {
-                    var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
-                    idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
-
-                    //Log.Info(
-                    //    LogCat,
-                    //    "Waiting on child process '{0}' from '{1}'",
-                    //    wmiInfo.ExecutablePath,
-                    //    logExeArgsInfo
-                    //);
-
-                    loopLocal.EnableRaisingEvents = true;
-                    loopLocal.Exited += exitedHandler;
-                    var grandChildren = loopLocal.GetChildProcesses().ToList();
-                    success = WaitOnChildren(grandChildren, wmiInfo.ExecutablePath, true) && success;
-                    loopLocal.WaitForExit();
-                }
-                catch (Exception ex)
-                {
-                    //Log.Exception(LogCat, ex);
-                }
-                finally
-                {
-                    loopLocal.Exited -= exitedHandler;
-                }
-            }
-
-            return success;
-        }
-
-        static bool IsUnsafeWaitProcess(string processName)
-        {
-            // Don't wait on Windows Explorer.
-            // Some uninstallers might fire feedback, etc, link the browser.
-            // Don't wait on the browsers
-            // Zoom also has an issue with ProcessTrace, causing it to fire until resources are consumed
-            // One of Zooms components [cptinstall] looks to be the perp
-
-            string lowerName = processName.ToLowerInvariant();
-            bool isUnsafe = lowerName.Contains("explorer") ||
-                lowerName.Contains("iexplore") ||
-                lowerName.Contains("chrome") ||
-                lowerName.Contains("firefox") ||
-                lowerName.Contains("opera") ||
-                lowerName.Contains("microsoftedge") ||
-                lowerName.Contains("cptinstall") ||
-                lowerName.Contains("zoom") ||
-                lowerName.Contains("msedge"); // chromium based edge
-
-            return isUnsafe;
-        }
-
         public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode)
         {
             bool result = false;
@@ -436,6 +248,26 @@ namespace Utilizr.Win.Info
             {
                 int error = Marshal.GetLastWin32Error();
                 Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
+
+
+                Log.Info(LOG_CAT, "FALSE");
+                Log.Info(LOG_CAT, "BBB1: {0}", token.ToString());
+                Log.Info(LOG_CAT, "BBB2: {0}", cmdLine);
+
+                Log.Info(LOG_CAT, "saProcess: {0}", saProcess.nLength.ToString());
+                Log.Info(LOG_CAT, "saProcess: {0}", saProcess.lpSecurityDescriptor.ToString());
+                Log.Info(LOG_CAT, "saProcess: {0}", saProcess.bInheritHandle.ToString());
+
+                Log.Info(LOG_CAT, "saThread: {0}", saThread.nLength.ToString());
+                Log.Info(LOG_CAT, "saThread: {0}", saThread.lpSecurityDescriptor.ToString());
+                Log.Info(LOG_CAT, "saThread: {0}", saThread.bInheritHandle.ToString());
+
+                Log.Info(LOG_CAT, "BBB3: {0}", envBlock.ToString());
+
+                Log.Info(LOG_CAT, "PI: {0}", pi.hProcess.ToString());
+                Log.Info(LOG_CAT, "PI: {0}", pi.hThread.ToString());
+                Log.Info(LOG_CAT, "PI: {0}", pi.dwProcessId.ToString());
+                Log.Info(LOG_CAT, "PI: {0}", pi.dwThreadId.ToString());
                 return result;
             }
 
