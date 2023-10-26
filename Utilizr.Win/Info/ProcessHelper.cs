@@ -103,7 +103,7 @@ namespace Utilizr.Win.Info
         public static IEnumerable<WMIProcessInfo> GetRunningProcessesForFile(string filePath)
         {
             return GetRunningProcesses()
-                   .Where(i => i.ExecutablePath != null && 
+                   .Where(i => i.ExecutablePath != null &&
                                i.ExecutablePath.Equals(filePath, StringComparison.InvariantCultureIgnoreCase));
         }
 
@@ -264,7 +264,7 @@ namespace Utilizr.Win.Info
             Kernel32.CloseHandle(pi.hProcess);
 
 
-            
+
 
             return success;
         }
@@ -332,9 +332,7 @@ namespace Utilizr.Win.Info
                 }
             }
 
-
-
-            return false;
+            return success;
         }
 
         static bool IsUnsafeWaitProcess(string processName)
@@ -385,7 +383,7 @@ namespace Utilizr.Win.Info
             //si.lpDesktop = @"winsta0\default"; //Modify as needed
             si.lpDesktop = null;
             si.dwFlags = (uint)(STARTUPINFO_FLAGS.STARTF_USESHOWWINDOW | STARTUPINFO_FLAGS.STARTF_FORCEONFEEDBACK);
-            si.wShowWindow =  ShowWindowFlags.SW_SHOW;
+            si.wShowWindow = ShowWindowFlags.SW_SHOW;
             si.hStdError = IntPtr.Zero;
             si.hStdInput = IntPtr.Zero;
             si.hStdOutput = IntPtr.Zero;
@@ -433,7 +431,7 @@ namespace Utilizr.Win.Info
                     out pi
                 );
             }
-            
+
             if (result == false)
             {
                 int error = Marshal.GetLastWin32Error();
