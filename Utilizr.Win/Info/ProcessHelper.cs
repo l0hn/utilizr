@@ -312,6 +312,7 @@ namespace Utilizr.Win.Info
 
             //----
             var children = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
+            Log.Info(LOG_CAT, "Children: {0}", children.Count.ToString());
             result = WaitOnChildren(children, cmdLine, recursiveWait: true) && result;
             //----
 
