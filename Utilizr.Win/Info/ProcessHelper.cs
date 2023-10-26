@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Utilizr.Logging;
+using Utilizr.Win.Extensions;
 using Utilizr.Win32.Advapi32;
 using Utilizr.Win32.Advapi32.Flags;
 using Utilizr.Win32.Advapi32.Structs;
@@ -229,6 +230,7 @@ namespace Utilizr.Win.Info
             }
             else
             {
+                Log.Info(LOG_CAT, "START");
                 result = Advapi32.CreateProcessAsUser(
                     token,
                     null,
@@ -242,6 +244,7 @@ namespace Utilizr.Win.Info
                     ref si,
                     out pi
                 );
+                Log.Info(LOG_CAT, "END");
             }
 
             if (result == false)
@@ -250,26 +253,45 @@ namespace Utilizr.Win.Info
                 Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
 
 
-                Log.Info(LOG_CAT, "FALSE");
-                Log.Info(LOG_CAT, "BBB1: {0}", token.ToString());
-                Log.Info(LOG_CAT, "BBB2: {0}", cmdLine);
+                //Log.Info(LOG_CAT, "FALSE");
+                //Log.Info(LOG_CAT, "BBB1: {0}", token.ToString());
+                //Log.Info(LOG_CAT, "BBB2: {0}", cmdLine);
 
-                Log.Info(LOG_CAT, "saProcess: {0}", saProcess.nLength.ToString());
-                Log.Info(LOG_CAT, "saProcess: {0}", saProcess.lpSecurityDescriptor.ToString());
-                Log.Info(LOG_CAT, "saProcess: {0}", saProcess.bInheritHandle.ToString());
+                //Log.Info(LOG_CAT, "saProcess: {0}", saProcess.nLength.ToString());
+                //Log.Info(LOG_CAT, "saProcess: {0}", saProcess.lpSecurityDescriptor.ToString());
+                //Log.Info(LOG_CAT, "saProcess: {0}", saProcess.bInheritHandle.ToString());
 
-                Log.Info(LOG_CAT, "saThread: {0}", saThread.nLength.ToString());
-                Log.Info(LOG_CAT, "saThread: {0}", saThread.lpSecurityDescriptor.ToString());
-                Log.Info(LOG_CAT, "saThread: {0}", saThread.bInheritHandle.ToString());
+                //Log.Info(LOG_CAT, "saThread: {0}", saThread.nLength.ToString());
+                //Log.Info(LOG_CAT, "saThread: {0}", saThread.lpSecurityDescriptor.ToString());
+                //Log.Info(LOG_CAT, "saThread: {0}", saThread.bInheritHandle.ToString());
 
-                Log.Info(LOG_CAT, "BBB3: {0}", envBlock.ToString());
+                //Log.Info(LOG_CAT, "BBB3: {0}", envBlock.ToString());
 
-                Log.Info(LOG_CAT, "PI: {0}", pi.hProcess.ToString());
-                Log.Info(LOG_CAT, "PI: {0}", pi.hThread.ToString());
-                Log.Info(LOG_CAT, "PI: {0}", pi.dwProcessId.ToString());
-                Log.Info(LOG_CAT, "PI: {0}", pi.dwThreadId.ToString());
+                //Log.Info(LOG_CAT, "PI: {0}", pi.hProcess.ToString());
+                //Log.Info(LOG_CAT, "PI: {0}", pi.hThread.ToString());
+                //Log.Info(LOG_CAT, "PI: {0}", pi.dwProcessId.ToString());
+                //Log.Info(LOG_CAT, "PI: {0}", pi.dwThreadId.ToString());
                 return result;
             }
+
+            Log.Info(LOG_CAT, "TRUE");
+            Log.Info(LOG_CAT, "BBB1: {0}", token.ToString());
+            Log.Info(LOG_CAT, "BBB2: {0}", cmdLine);
+
+            Log.Info(LOG_CAT, "saProcess: {0}", saProcess.nLength.ToString());
+            Log.Info(LOG_CAT, "saProcess: {0}", saProcess.lpSecurityDescriptor.ToString());
+            Log.Info(LOG_CAT, "saProcess: {0}", saProcess.bInheritHandle.ToString());
+
+            Log.Info(LOG_CAT, "saThread: {0}", saThread.nLength.ToString());
+            Log.Info(LOG_CAT, "saThread: {0}", saThread.lpSecurityDescriptor.ToString());
+            Log.Info(LOG_CAT, "saThread: {0}", saThread.bInheritHandle.ToString());
+
+            Log.Info(LOG_CAT, "BBB3: {0}", envBlock.ToString());
+
+            Log.Info(LOG_CAT, "PI: {0}", pi.hProcess.ToString());
+            Log.Info(LOG_CAT, "PI: {0}", pi.hThread.ToString());
+            Log.Info(LOG_CAT, "PI: {0}", pi.dwProcessId.ToString());
+            Log.Info(LOG_CAT, "PI: {0}", pi.dwThreadId.ToString());
 
             if (!waitForExit)
             {
@@ -288,7 +310,107 @@ namespace Utilizr.Win.Info
                 return false;
             }
 
+            //----
+            var children = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
+            result = WaitOnChildren(children, cmdLine, recursiveWait: true) && result;
+            //----
+
             return result;
+        }
+
+        public static bool WaitOnChildren(List<Process> children, string parentExe, bool recursiveWait = false)
+        {
+            bool success = true;
+            //string logExeArgsInfo = string.IsNullOrEmpty(parentArgs)
+            //    ? parentExe
+            //    : $"{parentExe} {parentArgs}";
+
+            string logExeArgsInfo = parentExe;
+
+            //Log.Info(LogCat, "'{0}' started {1:N0} child process(es)", logExeArgsInfo, children.Count);
+
+            var idLookup = new Dictionary<int, string>();
+            void exitedHandler(object s, EventArgs e)
+            {
+                // Cannot just get the ExitCode from the process, since the childProcess
+                // object didn't start it. This is a hacky work around...
+
+                if (!(s is Process process))
+                    return;
+
+                idLookup.TryGetValue(process.Id, out string executablePath);
+
+                success = success && process.ExitCode == 0;
+                //Log.Info(
+                //    LogCat,
+                //    "{0} process '{1}' returned {2} from parent '{3}'",
+                //    nameof(WaitOnChildren),
+                //    executablePath,
+                //    process.ExitCode,
+                //    logExeArgsInfo
+                //);
+            }
+
+            foreach (var childProcess in children)
+            {
+                var loopLocal = childProcess;
+                if (loopLocal.HasExited)
+                    continue;
+
+                if (IsUnsafeWaitProcess(loopLocal.ProcessName))
+                    continue;
+
+                try
+                {
+                    var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
+                    idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
+
+                    //Log.Info(
+                    //    LogCat,
+                    //    "Waiting on child process '{0}' from '{1}'",
+                    //    wmiInfo.ExecutablePath,
+                    //    logExeArgsInfo
+                    //);
+
+                    loopLocal.EnableRaisingEvents = true;
+                    loopLocal.Exited += exitedHandler;
+                    var grandChildren = loopLocal.GetChildProcesses().ToList();
+                    success = WaitOnChildren(grandChildren, wmiInfo.ExecutablePath, true) && success;
+                    loopLocal.WaitForExit();
+                }
+                catch (Exception ex)
+                {
+                    //Log.Exception(LogCat, ex);
+                }
+                finally
+                {
+                    loopLocal.Exited -= exitedHandler;
+                }
+            }
+
+            return success;
+        }
+
+        static bool IsUnsafeWaitProcess(string processName)
+        {
+            // Don't wait on Windows Explorer.
+            // Some uninstallers might fire feedback, etc, link the browser.
+            // Don't wait on the browsers
+            // Zoom also has an issue with ProcessTrace, causing it to fire until resources are consumed
+            // One of Zooms components [cptinstall] looks to be the perp
+
+            string lowerName = processName.ToLowerInvariant();
+            bool isUnsafe = lowerName.Contains("explorer") ||
+                lowerName.Contains("iexplore") ||
+                lowerName.Contains("chrome") ||
+                lowerName.Contains("firefox") ||
+                lowerName.Contains("opera") ||
+                lowerName.Contains("microsoftedge") ||
+                lowerName.Contains("cptinstall") ||
+                lowerName.Contains("zoom") ||
+                lowerName.Contains("msedge"); // chromium based edge
+
+            return isUnsafe;
         }
 
         [DebuggerDisplay("ExecutablePath={ExecutablePath}")]
