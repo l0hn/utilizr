@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
     <ProjectReference Include="..\Utilizr.Win32\Utilizr.Win32.csproj" />
     <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
