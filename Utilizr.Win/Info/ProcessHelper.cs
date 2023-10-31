@@ -65,6 +65,35 @@ namespace Utilizr.Win.Info
             }
         }
 
+        public static void StopAllProcessesByName(string logCat, string processName, int? timeoutMs = null)
+        {
+            foreach (var process in Process.GetProcessesByName(processName))
+            {
+                try
+                {
+                    var wmiInfo = ProcessHelper.GetRunningProcess(process.Id);
+
+                    if (wmiInfo == null)
+                    {
+                        Log.Info(logCat, $"Killing process {process.Id}");
+                    }
+                    else
+                    {
+                        Log.Info(logCat, $"Killing process {process.Id}, \"{wmiInfo.ExecutablePath}\"{Environment.NewLine}Command Line: \"{wmiInfo.CommandLine}\"");
+                    }
+                    process.Kill();
+
+                    if (timeoutMs.HasValue)
+                        process.WaitForExit((int)timeoutMs);
+                    else process.WaitForExit();
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception(logCat, ex);
+                }
+            }
+        }
+
         public static WMIProcessInfo? GetRunningProcess(string processName)
         {
             return GetRunningProcesses(processName).FirstOrDefault();

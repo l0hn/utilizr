@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using Utilizr.Win32.Msi.Flags;
 
@@ -15,5 +13,8 @@ namespace Utilizr.Win32.Msi
 
         [DllImport(MSI_DLL, CharSet = CharSet.Auto)]
         public static extern InstallState MsiGetComponentPath(string productCode, string componentCode, StringBuilder componentPath, ref int componentPathBufferSize);
+
+        [DllImport(MSI_DLL, CharSet = CharSet.Unicode)]
+        public static extern int MsiGetProductInfo(string product, string property, [Out] StringBuilder valueBuf, ref int len);
     }
 }
