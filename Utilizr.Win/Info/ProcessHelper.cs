@@ -252,46 +252,8 @@ namespace Utilizr.Win.Info
                 int error = Marshal.GetLastWin32Error();
                 Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
 
-
-                //Log.Info(LOG_CAT, "FALSE");
-                //Log.Info(LOG_CAT, "BBB1: {0}", token.ToString());
-                //Log.Info(LOG_CAT, "BBB2: {0}", cmdLine);
-
-                //Log.Info(LOG_CAT, "saProcess: {0}", saProcess.nLength.ToString());
-                //Log.Info(LOG_CAT, "saProcess: {0}", saProcess.lpSecurityDescriptor.ToString());
-                //Log.Info(LOG_CAT, "saProcess: {0}", saProcess.bInheritHandle.ToString());
-
-                //Log.Info(LOG_CAT, "saThread: {0}", saThread.nLength.ToString());
-                //Log.Info(LOG_CAT, "saThread: {0}", saThread.lpSecurityDescriptor.ToString());
-                //Log.Info(LOG_CAT, "saThread: {0}", saThread.bInheritHandle.ToString());
-
-                //Log.Info(LOG_CAT, "BBB3: {0}", envBlock.ToString());
-
-                //Log.Info(LOG_CAT, "PI: {0}", pi.hProcess.ToString());
-                //Log.Info(LOG_CAT, "PI: {0}", pi.hThread.ToString());
-                //Log.Info(LOG_CAT, "PI: {0}", pi.dwProcessId.ToString());
-                //Log.Info(LOG_CAT, "PI: {0}", pi.dwThreadId.ToString());
                 return result;
             }
-
-            Log.Info(LOG_CAT, "TRUE");
-            Log.Info(LOG_CAT, "BBB1: {0}", token.ToString());
-            Log.Info(LOG_CAT, "BBB2: {0}", cmdLine);
-
-            Log.Info(LOG_CAT, "saProcess: {0}", saProcess.nLength.ToString());
-            Log.Info(LOG_CAT, "saProcess: {0}", saProcess.lpSecurityDescriptor.ToString());
-            Log.Info(LOG_CAT, "saProcess: {0}", saProcess.bInheritHandle.ToString());
-
-            Log.Info(LOG_CAT, "saThread: {0}", saThread.nLength.ToString());
-            Log.Info(LOG_CAT, "saThread: {0}", saThread.lpSecurityDescriptor.ToString());
-            Log.Info(LOG_CAT, "saThread: {0}", saThread.bInheritHandle.ToString());
-
-            Log.Info(LOG_CAT, "BBB3: {0}", envBlock.ToString());
-
-            Log.Info(LOG_CAT, "PI: {0}", pi.hProcess.ToString());
-            Log.Info(LOG_CAT, "PI: {0}", pi.hThread.ToString());
-            Log.Info(LOG_CAT, "PI: {0}", pi.dwProcessId.ToString());
-            Log.Info(LOG_CAT, "PI: {0}", pi.dwThreadId.ToString());
 
             if (!waitForExit)
             {
@@ -310,12 +272,10 @@ namespace Utilizr.Win.Info
                 return false;
             }
 
-            //----
             var children = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
             Log.Info(LOG_CAT, "Children: {0}", children.Count.ToString());
             result = WaitOnChildren(children, cmdLine, recursiveWait: true) && result;
-            //----
-
+            
             return result;
         }
 
@@ -342,14 +302,14 @@ namespace Utilizr.Win.Info
                 idLookup.TryGetValue(process.Id, out string executablePath);
 
                 success = success && process.ExitCode == 0;
-                //Log.Info(
-                //    LogCat,
-                //    "{0} process '{1}' returned {2} from parent '{3}'",
-                //    nameof(WaitOnChildren),
-                //    executablePath,
-                //    process.ExitCode,
-                //    logExeArgsInfo
-                //);
+                Log.Info(
+                    LOG_CAT,
+                    "{0} process '{1}' returned {2} from parent '{3}'",
+                    nameof(WaitOnChildren),
+                    executablePath,
+                    process.ExitCode,
+                    logExeArgsInfo
+                );
             }
 
             foreach (var childProcess in children)
@@ -366,12 +326,12 @@ namespace Utilizr.Win.Info
                     var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
                     idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
 
-                    //Log.Info(
-                    //    LogCat,
-                    //    "Waiting on child process '{0}' from '{1}'",
-                    //    wmiInfo.ExecutablePath,
-                    //    logExeArgsInfo
-                    //);
+                    Log.Info(
+                        LOG_CAT,
+                        "Waiting on child process '{0}' from '{1}'",
+                        wmiInfo.ExecutablePath,
+                        logExeArgsInfo
+                    );
 
                     loopLocal.EnableRaisingEvents = true;
                     loopLocal.Exited += exitedHandler;
@@ -381,7 +341,7 @@ namespace Utilizr.Win.Info
                 }
                 catch (Exception ex)
                 {
-                    //Log.Exception(LogCat, ex);
+                    Log.Exception(LOG_CAT, ex);
                 }
                 finally
                 {
