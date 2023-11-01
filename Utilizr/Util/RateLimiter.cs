@@ -38,6 +38,15 @@ namespace Utilizr.Util
             action();
         }
 
+        /// <summary>
+        /// Execute an action with rate limiting.
+        /// NOTE: There is no guarantee that the action will be invoked. i.e. if rate limiting occurs the action will be dropped
+        /// </summary>
+        public Task ExecuteActionDropAsync(Action action)
+        {
+            return Task.Run(() => ExecuteActionDrop(action));
+        }
+
 
         /// <summary>
         /// Execute an action with rate limiting.
