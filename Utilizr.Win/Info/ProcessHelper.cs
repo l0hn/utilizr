@@ -194,12 +194,12 @@ namespace Utilizr.Win.Info
             return envBlock;
         }
 
-        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit)
+        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, Action<int> pidSetCallback = null)
         {
-            return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _);
+            return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _, pidSetCallback);
         }
 
-        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode)
+        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode, Action<int> pidSetCallback = null)
         {
             bool result = false;
             exitCode = null;
@@ -259,7 +259,6 @@ namespace Utilizr.Win.Info
             }
             else
             {
-                Log.Info(LOG_CAT, "START");
                 result = Advapi32.CreateProcessAsUser(
                     token,
                     null,
@@ -273,7 +272,6 @@ namespace Utilizr.Win.Info
                     ref si,
                     out pi
                 );
-                Log.Info(LOG_CAT, "END");
             }
 
             if (result == false)
@@ -289,6 +287,7 @@ namespace Utilizr.Win.Info
                 return true;
             }
 
+            pidSetCallback?.Invoke((int)pi.dwProcessId);
             Kernel32.WaitForSingleObject(pi.hProcess, Kernel32.WAIT_FOR_OBJECT_INFINITE);
 
             result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
