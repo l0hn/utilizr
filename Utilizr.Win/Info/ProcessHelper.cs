@@ -194,12 +194,12 @@ namespace Utilizr.Win.Info
             return envBlock;
         }
 
-        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, Action<int> pidSetCallback = null)
+        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, Action<int>? pidSetCallback = null)
         {
             return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _, pidSetCallback);
         }
 
-        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode, Action<int> pidSetCallback = null)
+        public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode, Action<int>? pidSetCallback = null)
         {
             bool result = false;
             exitCode = null;
