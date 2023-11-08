@@ -48,7 +48,6 @@ namespace Utilizr.WPF.Util
                     () =>
                     {
                         _loadedObject = _delegate();
-                        BeforeUiShown?.Invoke(_loadedObject!);
                         _loaded = true;
                     }
                 );
