@@ -12,19 +12,26 @@ namespace Utilizr.WPF.Util
     {
         readonly Dispatcher _dispatcher;
 
+        public Action<T>? BeforeUiShown;
+        public Action? BeforeUiRemoved;
+
         /// <summary>
         /// Creates a new LazyLoadDispatch and use the main UI dispatcher
         /// </summary>
         /// <param name="loader"></param>
-        public LazyLoadDispatch(Func<T> loader, Type? typeHint = null)
+        public LazyLoadDispatch(Func<T> loader, Type? typeHint = null, Action<T>? beforeUiShown = null, Action? beforeUiRemoved = null)
             : base(loader, typeHint)
         {
+            BeforeUiShown = beforeUiShown;
+            BeforeUiRemoved = beforeUiRemoved;
             _dispatcher = Application.Current.Dispatcher;
         }
 
-        public LazyLoadDispatch(Func<T> loader, Dispatcher dispatcher, Type? typeHint = null)
+        public LazyLoadDispatch(Func<T> loader, Dispatcher dispatcher, Type? typeHint = null, Action<T>? beforeUiShown = null, Action? beforeUiRemoved = null)
             : base(loader, typeHint)
         {
+            BeforeUiShown = beforeUiShown;
+            BeforeUiRemoved = beforeUiRemoved;
             _dispatcher = dispatcher;
         }
 
@@ -41,10 +48,21 @@ namespace Utilizr.WPF.Util
                     () =>
                     {
                         _loadedObject = _delegate();
+                        BeforeUiShown?.Invoke(_loadedObject!);
                         _loaded = true;
                     }
                 );
             }
+        }
+        
+        public void InvokeBeforeUiShown()
+        {
+            BeforeUiShown?.Invoke(_loadedObject!);
+        }
+
+        public void InvokeBeforeUiRemoved()
+        {
+            BeforeUiRemoved?.Invoke();
         }
     }
 }
