@@ -6,7 +6,7 @@ namespace Utilizr.Globalisation.Helpers
     public static class PotGen
     {
         const string LIST_FILE = "utilizr_src_files.txt";
-        public const string XGETTEXT_FORMAT_STRING = @"-L C# --from-code=UTF-8 --keyword=_n:1,2 --keyword=_ip:1,2 --keyword=_p:1,2 --keyword=_m:1,2 --keyword=_m --keyword=_p --keyword=_i --keyword=_ --files-from=""{0}"" -o ""{1}"" --add-comments=##";
+        public const string XGETTEXT_FORMAT_STRING = @"-L C# --from-code=UTF-8 --keyword=_N:1,2 --keyword=_IP:1,2 --keyword=_P:1,2 --keyword=_M:1,2 --keyword=_M --keyword=_P --keyword=_I --keyword=_ --files-from=""{0}"" -o ""{1}"" --add-comments=##";
         //public const string XGETTEXT_FORMAT_STRING = @"-L java --from-code=UTF-8 --keyword=n_:1,2 --keyword=ip_:1,2 --keyword=p_:1,2 --keyword=m:1,2 --keyword=m --keyword=p_ --keyword=i_ --keyword=t_ --files-from=""{0}"" -o ""{1}"" --add-comments=##";
 
         public static void CreatePotFile(string srcRootDir, string outputFile, string? getTextFormat=null)
