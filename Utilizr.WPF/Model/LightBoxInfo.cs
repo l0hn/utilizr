@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Utilizr.WPF.Model
 {
@@ -88,19 +89,39 @@ namespace Utilizr.WPF.Model
             }
         }
 
+        private Brush _lightBoxBackground = new SolidColorBrush(Colors.White);
+        public Brush LightBoxBackground
+        {
+            get { return _lightBoxBackground; }
+            set
+            {
+                _lightBoxBackground = value;
+                OnPropertyChanged(nameof(LightBoxBackground));
+            }
+        }
+
 
         public static LightBoxInfo Empty()
         {
             return new LightBoxInfo(null, true, false, false, null);
         }
 
-        public LightBoxInfo(UIElement? view, bool hasClose = true, bool show = true, bool bringAppIntoFocus = false, Action? closedAction = null)
+        public LightBoxInfo(
+            UIElement? view,
+            bool hasClose = true,
+            bool show = true,
+            bool bringAppIntoFocus = false,
+            Action? closedAction = null,
+            Brush? backgroundBrush = null)
         {
             View = view;
             HasClose = hasClose;
             Show = show;
             BringAppIntoFocus = bringAppIntoFocus;
             ClosedAction = closedAction;
+
+            if (backgroundBrush != null)
+                LightBoxBackground = backgroundBrush;
         }
 
         public void SetContent(UIElement view, bool hasClose = true, bool show = true)
