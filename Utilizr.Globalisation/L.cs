@@ -467,7 +467,7 @@ namespace Utilizr.Globalisation
         /// <param name="text">Text.</param>
         public static ITranslatable WrapAsTranslatable(this string text)
         {
-            return L._I("{0}", () => L.Args(text));
+            return new MS(text, null);
         }
 
         /// <summary>
