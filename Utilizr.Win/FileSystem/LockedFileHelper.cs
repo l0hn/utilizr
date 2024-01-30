@@ -9,10 +9,10 @@ namespace Utilizr.Win.FileSystem
 {
     public static class LockedFileHelper
     {
-        public static IEnumerable<Process> WhosLocking(string path)
+        public static IEnumerable<Process> WhosLocking(string path, bool log = true)
         {
             var _procDict = new Dictionary<uint, Process>();
-            foreach (var handleInfo in GetHandlesForFile(path))
+            foreach (var handleInfo in GetHandlesForFile(path, log))
             {
                 if (_procDict.ContainsKey(handleInfo.ProcessId))
                     continue;
@@ -32,7 +32,7 @@ namespace Utilizr.Win.FileSystem
             }
         }
 
-        public static IEnumerable<HandleInfo> GetHandlesForFile(string file)
+        public static IEnumerable<HandleInfo> GetHandlesForFile(string file, bool log = true)
         {
             foreach (var handleInfo in HandleUtil.GetHandles())
             {
@@ -46,7 +46,10 @@ namespace Utilizr.Win.FileSystem
 
                 if (!file.Equals(handleInfo.DosName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Log.Info($"{handleInfo.ProcessId} {handleInfo.DosName}");
+                    if (log)
+                    {
+                        Log.Info($"{handleInfo.ProcessId} {handleInfo.DosName}");
+                    }
                     continue;
                 }
 
@@ -54,9 +57,9 @@ namespace Utilizr.Win.FileSystem
             }
         }
 
-        public static void CloseHandlesForFile(string file)
+        public static void CloseHandlesForFile(string file, bool log = true)
         {
-            foreach (var handleInfo in GetHandlesForFile(file))
+            foreach (var handleInfo in GetHandlesForFile(file, log))
             {
                 //close the handle? can it be this easy?
                 var hnd = (IntPtr)handleInfo.Handle;
