@@ -45,11 +45,21 @@ namespace Utilizr.Win.Util
         }
 
         /// <summary>
-        /// 
+        /// Start and wait for the service to be in a running state, timing out after 2 minutes.
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns>True if service was already running before check</returns>
         public static bool StartWindowsService(string serviceName)
+        {
+            return StartWindowsService(serviceName, TimeSpan.FromSeconds(120));
+        }
+
+        /// <summary>
+        /// Start and optionally wait for the service to be in the running state.
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns>True if service was already running before check</returns>
+        public static bool StartWindowsService(string serviceName, TimeSpan? timeout = null)
         {
             using (var controller = new ServiceController(serviceName))
             {
@@ -58,7 +68,8 @@ namespace Utilizr.Win.Util
                 {
                     Log.Info(LOG_CAT, $"Starting {serviceName} service");
                     controller.Start();
-                    controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(120));
+                    if (timeout != null)
+                        controller.WaitForStatus(ServiceControllerStatus.Running, timeout.Value);
                 }
                 return wasAlreadyRunning;
             }
