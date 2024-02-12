@@ -81,7 +81,6 @@ namespace Utilizr.Rest.Client
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    // todo: this needs improving
                     var description = response.StatusDescription;
 
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
