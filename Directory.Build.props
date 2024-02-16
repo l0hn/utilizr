@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Define MyProperty only if it hasn't been defined before -->
+    <UtilizrPath Condition="'$(UtilizrPath)' == ''">$(MSBuildThisFileDirectory)</UtilizrPath>
+  </PropertyGroup>
+</Project>

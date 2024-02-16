@@ -13,6 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Utilizr/Utilizr.csproj"/>
+    <ProjectReference Include="$(UtilizrPath)Utilizr/Utilizr.csproj"/>
   </ItemGroup>
 </Project>
