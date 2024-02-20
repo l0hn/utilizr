@@ -21,6 +21,19 @@ namespace Utilizr.WPF.Controls
             set { SetValue(CommandProperty, value); }
         }
 
+        public static readonly DependencyProperty MouseDownCommandProperty =
+            DependencyProperty.Register(
+                nameof(MouseDownCommand),
+                typeof(ICommand),
+                typeof(ClickableRun),
+                new PropertyMetadata(default(ICommand))
+            );
+
+        public ICommand MouseDownCommand
+        {
+            get { return (ICommand)GetValue(MouseDownCommandProperty); }
+            set { SetValue(MouseDownCommandProperty, value); }
+        }
 
         public static readonly DependencyProperty CommandParameterProperty =
             DependencyProperty.Register(
@@ -36,6 +49,21 @@ namespace Utilizr.WPF.Controls
             set { SetValue(CommandParameterProperty, value); }
         }
 
+        public static readonly DependencyProperty MouseDownCommandParameterProperty =
+            DependencyProperty.Register(
+                nameof(MouseDownCommandParameter ),
+                typeof(object),
+                typeof(ClickableRun),
+                new PropertyMetadata(default(object))
+            );
+
+        public object MouseDownCommandParameter
+        {
+            get { return GetValue(MouseDownCommandParameterProperty); }
+            set { SetValue(MouseDownCommandParameterProperty, value); }
+        }
+
+        
         public ClickableRun()
         {
             MouseLeftButtonUp += (s, e) =>
@@ -44,6 +72,15 @@ namespace Utilizr.WPF.Controls
                 {
                     // Null check, as unlikely, but possibly changed can execute check
                     Command?.Execute(CommandParameter);
+                }
+            };
+
+            MouseLeftButtonDown += (s, e) =>
+            {
+                if (MouseDownCommand?.CanExecute(MouseDownCommandParameter) == true)
+                {
+                    // Null check, as unlikely, but possibly changed can execute check
+                    MouseDownCommand?.Execute(MouseDownCommandParameter);
                 }
             };
         }
