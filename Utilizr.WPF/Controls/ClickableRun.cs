@@ -38,6 +38,15 @@ namespace Utilizr.WPF.Controls
 
         public ClickableRun()
         {
+            MouseLeftButtonUp += (s, e) =>
+            {
+                if (Command?.CanExecute(CommandParameter) == true)
+                {
+                    // Null check, as unlikely, but possibly changed can execute check
+                    Command?.Execute(CommandParameter);
+                }
+            };
+
             MouseLeftButtonDown += (s, e) =>
             {
                 if (Command?.CanExecute(CommandParameter) == true)
