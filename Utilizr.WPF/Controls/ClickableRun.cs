@@ -38,7 +38,7 @@ namespace Utilizr.WPF.Controls
 
         public ClickableRun()
         {
-            MouseLeftButtonUp += (s, e) =>
+            MouseLeftButtonDown += (s, e) =>
             {
                 if (Command?.CanExecute(CommandParameter) == true)
                 {
