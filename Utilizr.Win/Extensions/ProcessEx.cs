@@ -103,12 +103,19 @@ namespace Utilizr.Win.Extensions
         /// <summary>
         /// Wait for a process to exit, without an access denied error.
         /// </summary>
-        /// <param name="p"></param>
         public static void SafeWaitForExit(this Process p)
+        {
+            SafeWaitForExit((uint)p.Id);
+        }
+
+        /// <summary>
+        /// Wait for the process with the given PID to exit.
+        /// </summary>
+        public static void SafeWaitForExit(uint pid)
         {
             var flags = ProcessAccessFlags.QueryLimitedInformation | ProcessAccessFlags.Synchronize;
 
-            var hProcess = Kernel32.OpenProcess(flags, false, (uint)p.Id);
+            var hProcess = Kernel32.OpenProcess(flags, false, pid);
             if (hProcess == IntPtr.Zero)
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
