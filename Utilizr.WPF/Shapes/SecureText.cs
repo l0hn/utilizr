@@ -8,13 +8,13 @@ using Utilizr.Util;
 
 namespace Utilizr.WPF.Shapes
 {
-    public class SecureTextBlock : Shape
+    public class SecureText : Shape
     {
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register(
                 nameof(Text),
                 typeof(SecureString),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(default, (d, e) => InvalidateShape(d, e, true))
             );
 
@@ -29,7 +29,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(TextFontSize),
                 typeof(double),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(14D, (d, e) => InvalidateShape(d, e, true))
             );
 
@@ -44,7 +44,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(TextAlignment),
                 typeof(TextAlignment),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(TextAlignment.Left, (d, e) => InvalidateShape(d, e, true))
             );
 
@@ -58,7 +58,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(TextFill),
                 typeof(Brush),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(System.Windows.Media.Brushes.Transparent, (d, e) => InvalidateShape(d, e))
             );
 
@@ -73,7 +73,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(TextStroke),
                 typeof(Brush),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(System.Windows.Media.Brushes.Black, (d, e) => InvalidateShape(d, e))
             );
 
@@ -88,7 +88,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(TextStrokeThickness),
                 typeof(double),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(1D, (d, e) => InvalidateShape(d, e, true))
             );
 
@@ -103,7 +103,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(TextStrokeOffset),
                 typeof(Point),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(new Point(0, 0), (d, e) => InvalidateShape(d, e, true))
             );
 
@@ -119,7 +119,7 @@ namespace Utilizr.WPF.Shapes
             DependencyProperty.Register(
                 nameof(Typeface),
                 typeof(Typeface),
-                typeof(SecureTextBlock),
+                typeof(SecureText),
                 new PropertyMetadata(default, (d, e) => InvalidateShape(d, e, true))
             );
 
@@ -134,7 +134,7 @@ namespace Utilizr.WPF.Shapes
 
         static void InvalidateShape(DependencyObject d, DependencyPropertyChangedEventArgs e, bool invalidateSize = false)
         {
-            if (d is not SecureTextBlock shape)
+            if (d is not SecureText shape)
                 return;
 
             if (invalidateSize)
@@ -149,9 +149,18 @@ namespace Utilizr.WPF.Shapes
             get
             {
                 // todo: possible cache and invalidate on text change
-                // random 'wide' char to avoid reading, Length may still be bigger than char count
-                var text = GenerateForamattedText(new string('W', Text?.Length ?? 0));
-                return new RectangleGeometry(new Rect(0, 0, text.Width, text.Height));
+                var height = 0D;
+                var width = 0D;
+
+                if (Text != null && Text.Length > 0)
+                {
+                    using var pinned = new PinnedString(Text);
+                    var formattedText = GenerateForamattedText(pinned.String);
+                    height = formattedText.Height;
+                    width = formattedText.Width;
+                }
+
+                return new RectangleGeometry(new Rect(0, 0, width, height));
             }
         }
 
@@ -184,7 +193,7 @@ namespace Utilizr.WPF.Shapes
             }
             catch (Exception ex)
             {
-                Log.Exception(nameof(SecureTextBlock), ex);
+                Log.Exception(nameof(SecureText), ex);
             }
         }
 

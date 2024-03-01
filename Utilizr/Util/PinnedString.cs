@@ -4,6 +4,10 @@ using System.Security;
 
 namespace Utilizr.Util
 {
+    /// <summary>
+    /// A wrapper to get a the contents of a SecureString, pinned it to a certain address with GC.Alloc.
+    /// This means sensitive strings won't be left floating in memory.
+    /// </summary>
     public class PinnedString : IDisposable
     {
         public SecureString SecureString { get; }
@@ -48,7 +52,8 @@ namespace Utilizr.Util
                         pInsecureString[index] = pString[index];
                     }
                 }
-                catch (Exception)
+                catch { }
+                finally
                 {
                     if (stringPtr != IntPtr.Zero)
                     {
@@ -83,10 +88,7 @@ namespace Utilizr.Util
                     _gcHandle.Free();
                 }
             }
-            catch (Exception)
-            {
-
-            }
+            catch { }
         }
 
         public void Dispose()
