@@ -5,15 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Utilizr.WPF.Controls"
              xmlns:shapes="clr-namespace:Utilizr.WPF.Shapes"
-             mc:Ignorable="d">
-    
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=local:SecureTextBlock, IsDesignTimeCreatable=False}">
+
     <shapes:SecureText x:Name="SecureTextShape"
                        Text="{Binding Path=Text}"
                        TextFontSize="{Binding Path=TextFontSize}"
-                       TextFill="{Binding Path=TextFill}"
-                       TextStroke="{Binding Path=TextStroke}"
-                       TextStrokeThickness="{Binding Path=TextStrokeThickness}"
-                       TextStrokeOffset="{Binding Path=ShadowOffset}"
+                       TextBrush="{Binding Path=TextBrush}"
+                       TextAlignment="{Binding Path=TextAlignment}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        Width="{Binding Path=Width}"/>

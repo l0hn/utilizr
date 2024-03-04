@@ -36,63 +36,35 @@ namespace Utilizr.WPF.Controls
             set { SetValue(TextFontSizeProperty, value); }
         }
 
-        public static readonly DependencyProperty ShadowOffsetProperty =
+        public static readonly DependencyProperty TextBrushProperty =
             DependencyProperty.Register(
-                nameof(ShadowOffset),
-                typeof(Point),
-                typeof(SecureTextBlock),
-                new PropertyMetadata(new Point(-10, -10))
-            );
-
-        public Point ShadowOffset
-        {
-            get { return (Point)GetValue(ShadowOffsetProperty); }
-            set { SetValue(ShadowOffsetProperty, value); }
-        }
-
-        public static readonly DependencyProperty TextStrokeThicknessProperty =
-            DependencyProperty.Register(
-                nameof(TextStrokeThickness),
-                typeof(double),
-                typeof(SecureTextBlock),
-                new PropertyMetadata(1D)
-            );
-
-        public double TextStrokeThickness
-        {
-            get { return (double)GetValue(TextStrokeThicknessProperty); }
-            set { SetValue(TextStrokeThicknessProperty, value); }
-        }
-
-
-        public static readonly DependencyProperty TextFillProperty =
-            DependencyProperty.Register(
-                nameof(TextFill),
+                nameof(TextBrush),
                 typeof(Brush),
                 typeof(SecureTextBlock),
                 new PropertyMetadata(System.Windows.Media.Brushes.Transparent)
             );
 
-        public Brush TextFill
+        public Brush TextBrush
         {
-            get { return (Brush)GetValue(TextFillProperty); }
-            set { SetValue(TextFillProperty, value); }
+            get { return (Brush)GetValue(TextBrushProperty); }
+            set { SetValue(TextBrushProperty, value); }
         }
 
 
-        public static readonly DependencyProperty TextStrokeProperty =
+        public static readonly DependencyProperty TextAlignmentProperty =
             DependencyProperty.Register(
-                nameof(TextStroke),
-                typeof(Brush),
+                nameof(TextAlignment),
+                typeof(TextAlignment),
                 typeof(SecureTextBlock),
-                new PropertyMetadata(System.Windows.Media.Brushes.Black)
+                new PropertyMetadata(TextAlignment.Left)
             );
 
-        public Brush TextStroke
+        public TextAlignment TextAlignment
         {
-            get { return (Brush)GetValue(TextStrokeProperty); }
-            set { SetValue(TextStrokeProperty, value); }
+            get { return (TextAlignment)GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
         }
+
 
         public SecureTextBlock()
         {

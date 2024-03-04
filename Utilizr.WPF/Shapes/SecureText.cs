@@ -54,65 +54,19 @@ namespace Utilizr.WPF.Shapes
             set { SetValue(TextAlignmentProperty, value); }
         }
 
-        public static readonly DependencyProperty TextFillProperty =
+        public static readonly DependencyProperty TextBrushProperty =
             DependencyProperty.Register(
-                nameof(TextFill),
+                nameof(TextBrush),
                 typeof(Brush),
                 typeof(SecureText),
                 new PropertyMetadata(System.Windows.Media.Brushes.Transparent, (d, e) => InvalidateShape(d, e))
             );
 
-        public Brush TextFill
+        public Brush TextBrush
         {
-            get { return (Brush)GetValue(TextFillProperty); }
-            set { SetValue(TextFillProperty, value); }
+            get { return (Brush)GetValue(TextBrushProperty); }
+            set { SetValue(TextBrushProperty, value); }
         }
-
-
-        public static readonly DependencyProperty TextStrokeProperty =
-            DependencyProperty.Register(
-                nameof(TextStroke),
-                typeof(Brush),
-                typeof(SecureText),
-                new PropertyMetadata(System.Windows.Media.Brushes.Black, (d, e) => InvalidateShape(d, e))
-            );
-
-        public Brush TextStroke
-        {
-            get { return (Brush)GetValue(TextStrokeProperty); }
-            set { SetValue(TextStrokeProperty, value); }
-        }
-
-
-        public static readonly DependencyProperty TextStrokeThicknessProperty =
-            DependencyProperty.Register(
-                nameof(TextStrokeThickness),
-                typeof(double),
-                typeof(SecureText),
-                new PropertyMetadata(1D, (d, e) => InvalidateShape(d, e, true))
-            );
-
-        public double TextStrokeThickness
-        {
-            get { return (double)GetValue(TextStrokeThicknessProperty); }
-            set { SetValue(TextStrokeThicknessProperty, value); }
-        }
-
-
-        public static readonly DependencyProperty TextStrokeOffsetProperty =
-            DependencyProperty.Register(
-                nameof(TextStrokeOffset),
-                typeof(Point),
-                typeof(SecureText),
-                new PropertyMetadata(new Point(0, 0), (d, e) => InvalidateShape(d, e, true))
-            );
-
-        public Point TextStrokeOffset
-        {
-            get { return (Point)GetValue(TextStrokeOffsetProperty); }
-            set { SetValue(TextStrokeOffsetProperty, value); }
-        }
-
 
 
         public static readonly DependencyProperty TypefaceProperty =
@@ -128,8 +82,6 @@ namespace Utilizr.WPF.Shapes
             get { return (Typeface)GetValue(TypefaceProperty); }
             set { SetValue(TypefaceProperty, value); }
         }
-
-
 
 
         static void InvalidateShape(DependencyObject d, DependencyPropertyChangedEventArgs e, bool invalidateSize = false)
@@ -182,14 +134,7 @@ namespace Utilizr.WPF.Shapes
                     textLocation.X = (ActualWidth - formattedText.Width) / 2;
                 }
 
-                var outlinePoint = new Point(
-                    textLocation.X + TextStrokeOffset.X,
-                    textLocation.Y + TextStrokeOffset.Y
-                );
-
-                var textGeometry = formattedText.BuildGeometry(outlinePoint);
                 drawingContext.DrawText(formattedText, textLocation);
-                drawingContext.DrawGeometry(TextFill, new Pen(TextStroke, TextStrokeThickness), textGeometry);
             }
             catch (Exception ex)
             {
@@ -205,7 +150,7 @@ namespace Utilizr.WPF.Shapes
                 FlowDirection.LeftToRight,
                 Typeface,
                 TextFontSize,
-                TextFill,
+                TextBrush,
                 1.0
             );
 
