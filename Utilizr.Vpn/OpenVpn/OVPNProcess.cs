@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using Utilizr.Extensions;
+using Utilizr.FileSystem;
 using Utilizr.Info;
 using Utilizr.Logging;
 using Utilizr.Network;
@@ -149,11 +150,16 @@ namespace Utilizr.Vpn.OpenVpn
 
                 var file = Path.Combine(AppInfo.AppDirectory, "OpenVpn", "ovpn");
 
+                if (OverridePath != null)
+                    file = Path.Combine(OverridePath, "OpenVpn", "ovpn");
+
                 file = Path.Combine(file, command);
 
                 return file;
             }
         }
+
+        public static string? OverridePath { get; set; } = null;
 
         void Start(Dictionary<string, string> options, string? managementPwd)
         {

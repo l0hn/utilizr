@@ -1,4 +1,5 @@
-﻿using Utilizr.Info;
+﻿using Utilizr.FileSystem;
+using Utilizr.Info;
 using Utilizr.Logging;
 using Utilizr.Win;
 
@@ -57,6 +58,9 @@ namespace Utilizr.Vpn.OpenVpn
         static string GetDriverDir()
         {
             var driverDir = Path.Combine(AppInfo.AppDirectory, "OpenVpn", "driver");
+            if (OVPNProcess.OverridePath != null)
+                driverDir = Path.Combine(OVPNProcess.OverridePath, "OpenVpn", "driver");
+
             driverDir = Path.Combine(driverDir, Platform.Is64BitOS ? "amd64" : "i386");
             return driverDir;
         }
