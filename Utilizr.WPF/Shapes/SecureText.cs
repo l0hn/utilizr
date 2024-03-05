@@ -118,9 +118,14 @@ namespace Utilizr.WPF.Shapes
 
         static readonly Point _zeroPoint = new Point(0, 0);
 
+        public SecureText()
+        {
+            IsVisibleChanged += (s, e) => InvalidateVisual();
+        }
+
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (Text == null || Text.Length < 1)
+            if (Text == null || Text.Length < 1 || !IsVisible)
                 return;
 
             try

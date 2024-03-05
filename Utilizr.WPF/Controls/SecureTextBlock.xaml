@@ -13,7 +13,7 @@
                        TextFontSize="{Binding Path=TextFontSize}"
                        TextBrush="{Binding Path=TextBrush}"
                        TextAlignment="{Binding Path=TextAlignment}"
-                       HorizontalAlignment="Stretch"
-                       VerticalAlignment="Stretch"
+                       HorizontalAlignment="{Binding Path=HorizontalAlignment}"
+                       VerticalAlignment="{Binding Path=VerticalAlignment}"
                        Width="{Binding Path=Width}"/>
 </UserControl>

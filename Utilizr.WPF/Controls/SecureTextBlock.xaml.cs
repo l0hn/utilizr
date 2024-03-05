@@ -1,4 +1,5 @@
-﻿using System.Security;
+﻿using System;
+using System.Security;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -36,6 +37,33 @@ namespace Utilizr.WPF.Controls
             set { SetValue(TextFontSizeProperty, value); }
         }
 
+
+        public static readonly DependencyProperty TextFontWeightProperty =
+            DependencyProperty.Register(
+                nameof(TextFontWeight),
+                typeof(FontWeight),
+                typeof(SecureTextBlock),
+                new PropertyMetadata(FontWeights.Normal, OnTextFontWeightChanged)
+            );
+
+        static void OnTextFontWeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not SecureTextBlock stb)
+                return;
+
+            if (e.NewValue is not FontWeight fontWeight)
+                return;
+
+            stb.UpdateTypeface(fontWeight);
+        }
+
+        public FontWeight TextFontWeight
+        {
+            get { return (FontWeight)GetValue(TextFontWeightProperty); }
+            set { SetValue(TextFontWeightProperty, value); }
+        }
+
+
         public static readonly DependencyProperty TextBrushProperty =
             DependencyProperty.Register(
                 nameof(TextBrush),
@@ -70,7 +98,12 @@ namespace Utilizr.WPF.Controls
         {
             InitializeComponent();
             SecureTextShape.DataContext = this;
-            SecureTextShape.Typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            UpdateTypeface(TextFontWeight);
+        }
+
+        void UpdateTypeface(FontWeight fontWeight)
+        {
+            SecureTextShape.Typeface = new Typeface(FontFamily, FontStyle, fontWeight, FontStretch);
         }
     }
 }
