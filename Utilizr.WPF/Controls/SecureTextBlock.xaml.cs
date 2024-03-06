@@ -9,20 +9,6 @@ namespace Utilizr.WPF.Controls
 
     public partial class SecureTextBlock : UserControl
     {
-        public static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register(
-            nameof(Text),
-            typeof(SecureString),
-            typeof(SecureTextBlock),
-            new PropertyMetadata(default(SecureString)));
-
-        public SecureString Text
-        {
-            get { return (SecureString)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
-        }
-
-
         public static readonly DependencyProperty TextFontSizeProperty =
             DependencyProperty.Register(
                 nameof(TextFontSize),
@@ -104,6 +90,11 @@ namespace Utilizr.WPF.Controls
         void UpdateTypeface(FontWeight fontWeight)
         {
             SecureTextShape.Typeface = new Typeface(FontFamily, FontStyle, fontWeight, FontStretch);
+        }
+
+        public void UpdateText(SecureString? secureString)
+        {
+            SecureTextShape.Text = secureString;
         }
     }
 }

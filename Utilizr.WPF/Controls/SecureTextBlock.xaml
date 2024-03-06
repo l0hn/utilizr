@@ -9,7 +9,6 @@
              d:DataContext="{d:DesignInstance Type=local:SecureTextBlock, IsDesignTimeCreatable=False}">
 
     <shapes:SecureText x:Name="SecureTextShape"
-                       Text="{Binding Path=Text}"
                        TextFontSize="{Binding Path=TextFontSize}"
                        TextBrush="{Binding Path=TextBrush}"
                        TextAlignment="{Binding Path=TextAlignment}"

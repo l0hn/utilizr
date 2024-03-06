@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -41,8 +42,10 @@ namespace Utilizr.Util
 
                     // Pin our string, disallowing the garbage collector from moving it around.
                     _gcHandle = GCHandle.Alloc(String, GCHandleType.Pinned);
+                    System.Diagnostics.Debug.WriteLine($"*** GC HANDLE CREATED 0x{_gcHandle.AddrOfPinnedObject():x} ***");
 
                     stringPtr = Marshal.SecureStringToBSTR(SecureString);
+                    System.Diagnostics.Debug.WriteLine($"*** MARSHAL HANDLE CREATED 0x{stringPtr:x} ***");
 
                     // Copy the SecureString content to our pinned string
                     char* pString = (char*)stringPtr;
@@ -52,13 +55,21 @@ namespace Utilizr.Util
                         pInsecureString[index] = pString[index];
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+
+                }
                 finally
                 {
                     if (stringPtr != IntPtr.Zero)
                     {
                         // Free the SecureString BSTR that was generated
                         Marshal.ZeroFreeBSTR(stringPtr);
+                        System.Diagnostics.Debug.WriteLine($"*** MARSHAL HANDLE DESTROYED 0x{stringPtr:x} ***");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"*** MARSHAL HANDLE CANNOT FREE ZERO ***");
                     }
                 }
             }
@@ -85,10 +96,14 @@ namespace Utilizr.Util
 
                     // Free the handle so the garbage collector
                     // can dispose of it properly.
+                    System.Diagnostics.Debug.WriteLine($"*** GC HANDLE DESTROYED 0x{_gcHandle.AddrOfPinnedObject():x} ***");
                     _gcHandle.Free();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public void Dispose()

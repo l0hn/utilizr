@@ -104,12 +104,22 @@ namespace Utilizr.WPF.Shapes
                 var height = 0D;
                 var width = 0D;
 
+                PinnedString? pinned = null;
                 if (Text != null && Text.Length > 0)
                 {
-                    using var pinned = new PinnedString(Text);
+                    pinned = new PinnedString(Text);
                     var formattedText = GenerateForamattedText(pinned.String);
                     height = formattedText.Height;
                     width = formattedText.Width;
+                }
+
+                try
+                {
+                    pinned?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception(nameof(SecureText), ex);
                 }
 
                 return new RectangleGeometry(new Rect(0, 0, width, height));
@@ -128,9 +138,10 @@ namespace Utilizr.WPF.Shapes
             if (Text == null || Text.Length < 1 || !IsVisible)
                 return;
 
+            PinnedString? pinnedText = null;
             try
             {
-                using var pinnedText = new PinnedString(Text);
+                pinnedText = new PinnedString(Text);
                 var formattedText = GenerateForamattedText(pinnedText.String);
 
                 var textLocation = _zeroPoint;
@@ -144,6 +155,17 @@ namespace Utilizr.WPF.Shapes
             catch (Exception ex)
             {
                 Log.Exception(nameof(SecureText), ex);
+            }
+            finally
+            {
+                try
+                {
+                    pinnedText?.Dispose();
+                }
+                catch (Exception innerEx)
+                {
+                    Log.Exception(nameof(SecureText), innerEx);
+                }
             }
         }
 
