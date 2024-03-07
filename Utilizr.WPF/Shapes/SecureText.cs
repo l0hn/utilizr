@@ -107,7 +107,7 @@ namespace Utilizr.WPF.Shapes
                 PinnedString? pinned = null;
                 if (Text != null && Text.Length > 0)
                 {
-                    pinned = new PinnedString(Text);
+                    pinned = new PinnedString(Text, (ex) => Log.Exception(nameof(PinnedString), ex));
                     var formattedText = GenerateForamattedText(pinned.String);
                     height = formattedText.Height;
                     width = formattedText.Width;
@@ -141,7 +141,7 @@ namespace Utilizr.WPF.Shapes
             PinnedString? pinnedText = null;
             try
             {
-                pinnedText = new PinnedString(Text);
+                pinnedText = new PinnedString(Text, (ex) => Log.Exception(nameof(PinnedString), ex));
                 var formattedText = GenerateForamattedText(pinnedText.String);
 
                 var textLocation = _zeroPoint;

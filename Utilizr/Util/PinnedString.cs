@@ -16,8 +16,11 @@ namespace Utilizr.Util
 
         private GCHandle _gcHandle;
 
-        public PinnedString(SecureString secureString)
+        readonly Action<Exception>? _exceptionCallback;
+
+        public PinnedString(SecureString secureString, Action<Exception>? exceptionCallback = null)
         {
+            _exceptionCallback = exceptionCallback;
             SecureString = secureString;
             UpdateStringValue();
         }
@@ -57,7 +60,7 @@ namespace Utilizr.Util
                 }
                 catch (Exception ex)
                 {
-
+                    _exceptionCallback?.Invoke(ex);
                 }
                 finally
                 {
@@ -102,7 +105,7 @@ namespace Utilizr.Util
             }
             catch (Exception ex)
             {
-
+                _exceptionCallback?.Invoke(ex);
             }
         }
 
