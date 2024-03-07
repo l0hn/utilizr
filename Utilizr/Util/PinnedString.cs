@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -11,14 +10,14 @@ namespace Utilizr.Util
     /// </summary>
     public class PinnedString : IDisposable
     {
-        public SecureString SecureString { get; }
+        public SecureString? SecureString { get; }
         public string? String { get; protected set; }
 
         private GCHandle _gcHandle;
 
         readonly Action<Exception>? _exceptionCallback;
 
-        public PinnedString(SecureString secureString, Action<Exception>? exceptionCallback = null)
+        public PinnedString(SecureString? secureString, Action<Exception>? exceptionCallback = null)
         {
             _exceptionCallback = exceptionCallback;
             SecureString = secureString;
@@ -33,7 +32,10 @@ namespace Utilizr.Util
             unsafe
             {
                 if (SecureString == null)
+                {
+                    String = null;
                     return;
+                }
 
                 var length = SecureString.Length;
                 String = new string('\0', length);
@@ -45,10 +47,7 @@ namespace Utilizr.Util
 
                     // Pin our string, disallowing the garbage collector from moving it around.
                     _gcHandle = GCHandle.Alloc(String, GCHandleType.Pinned);
-                    System.Diagnostics.Debug.WriteLine($"*** GC HANDLE CREATED 0x{_gcHandle.AddrOfPinnedObject():x} ***");
-
                     stringPtr = Marshal.SecureStringToBSTR(SecureString);
-                    System.Diagnostics.Debug.WriteLine($"*** MARSHAL HANDLE CREATED 0x{stringPtr:x} ***");
 
                     // Copy the SecureString content to our pinned string
                     char* pString = (char*)stringPtr;
@@ -68,11 +67,6 @@ namespace Utilizr.Util
                     {
                         // Free the SecureString BSTR that was generated
                         Marshal.ZeroFreeBSTR(stringPtr);
-                        System.Diagnostics.Debug.WriteLine($"*** MARSHAL HANDLE DESTROYED 0x{stringPtr:x} ***");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"*** MARSHAL HANDLE CANNOT FREE ZERO ***");
                     }
                 }
             }
@@ -97,9 +91,7 @@ namespace Utilizr.Util
                         pInsecureString[index] = '\0';
                     }
 
-                    // Free the handle so the garbage collector
-                    // can dispose of it properly.
-                    System.Diagnostics.Debug.WriteLine($"*** GC HANDLE DESTROYED 0x{_gcHandle.AddrOfPinnedObject():x} ***");
+                    // Free the handle so the garbage collector can dispose of it properly.
                     _gcHandle.Free();
                 }
             }
