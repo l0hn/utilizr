@@ -1,0 +1,18 @@
+﻿<UserControl x:Class="Utilizr.WPF.Controls.SecureTextBlock"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Utilizr.WPF.Controls"
+             xmlns:shapes="clr-namespace:Utilizr.WPF.Shapes"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=local:SecureTextBlock, IsDesignTimeCreatable=False}">
+
+    <shapes:SecureText x:Name="SecureTextShape"
+                       TextFontSize="{Binding Path=TextFontSize}"
+                       TextBrush="{Binding Path=TextBrush}"
+                       TextAlignment="{Binding Path=TextAlignment}"
+                       HorizontalAlignment="{Binding Path=HorizontalAlignment}"
+                       VerticalAlignment="{Binding Path=VerticalAlignment}"
+                       Width="{Binding Path=Width}"/>
+</UserControl>
