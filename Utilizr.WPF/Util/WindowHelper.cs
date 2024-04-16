@@ -148,22 +148,6 @@ namespace Utilizr.WPF.Util
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SwitchDesktop(IntPtr hDesktop);
 
-        public static void Kris()
-        {
-            Microsoft.Win32.SystemEvents.SessionSwitch += new Microsoft.Win32.SessionSwitchEventHandler(SystemEvents_SessionSwitch);
-        }
-
-        static void SystemEvents_SessionSwitch(object sender, Microsoft.Win32.SessionSwitchEventArgs e)
-        {
-            if (e.Reason == SessionSwitchReason.SessionLock)
-            {
-                IsLocked = true;
-            }
-            else if (e.Reason == SessionSwitchReason.SessionUnlock)
-            {
-                IsLocked = false;
-            }
-        }
 
         // Check if the workstation has been locked.
         public static bool IsWorkstationLocked()
