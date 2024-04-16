@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -118,6 +119,9 @@ namespace Utilizr.WPF.Util
         }
 
         //-----------
+
+        public static bool IsLocked;
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SystemParametersInfo(uint uAction,
@@ -143,6 +147,23 @@ namespace Utilizr.WPF.Util
         [DllImport("user32", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SwitchDesktop(IntPtr hDesktop);
+
+        public static void Kris()
+        {
+            Microsoft.Win32.SystemEvents.SessionSwitch += new Microsoft.Win32.SessionSwitchEventHandler(SystemEvents_SessionSwitch);
+        }
+
+        static void SystemEvents_SessionSwitch(object sender, Microsoft.Win32.SessionSwitchEventArgs e)
+        {
+            if (e.Reason == SessionSwitchReason.SessionLock)
+            {
+                IsLocked = true;
+            }
+            else if (e.Reason == SessionSwitchReason.SessionUnlock)
+            {
+                false;
+            }
+        }
 
         // Check if the workstation has been locked.
         public static bool IsWorkstationLocked()
