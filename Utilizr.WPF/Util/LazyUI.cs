@@ -12,8 +12,8 @@ namespace Utilizr.WPF.Util
         /// <param name="uiDispatcher">If not null, will be used to invoke <paramref name="loader"/>. Useful for invoking on the UI thread.</param>
         /// <param name="beforeUiShown">Action to invoke before the UI is shown.</param>
 
-        public LazyUI(Func<UIElement> loader, Type? typeHint = null, Action<UIElement>? beforeUiShown = null)
-            : base(loader, Application.Current.Dispatcher, typeHint, beforeUiShown)
+        public LazyUI(Func<UIElement> loader, Type? typeHint = null, Action<UIElement>? beforeUiShown = null, Action? beforeUiRemoved = null)
+            : base(loader, Application.Current.Dispatcher, typeHint, beforeUiShown, beforeUiRemoved)
         {
 
         }
