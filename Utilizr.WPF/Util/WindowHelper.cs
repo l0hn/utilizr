@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Interop;
+using Utilizr.Logging;
 using Utilizr.Win32.Shell32;
 using Utilizr.Win32.Shell32.Flags;
 using Utilizr.Win32.User32;
@@ -42,11 +43,14 @@ namespace Utilizr.WPF.Util
             {
                 Shell32.SHQueryUserNotificationState(out var state);
 
+                Log.Info(nameof(WindowHelper), $"HasDetectedFullScreenApp UserNotificationState: {state}");
+
                 return state != UserNotificationState.AcceptsNotifications &&
                        state != UserNotificationState.QuietTime;
             }
             catch (Exception)
             {
+                Log.Info(nameof(WindowHelper), "HasDetectedFullScreenApp Exception");
                 return IsForegroundWindowFullScreen(out _);
             }
         }
