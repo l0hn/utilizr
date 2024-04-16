@@ -161,7 +161,7 @@ namespace Utilizr.WPF.Util
             }
             else if (e.Reason == SessionSwitchReason.SessionUnlock)
             {
-                false;
+                IsLocked = false;
             }
         }
 
