@@ -73,7 +73,7 @@ namespace Utilizr.Win.Security
                 if (Advapi32.OpenProcessToken(hProcess, uPriv, ref hToken) == 0)
                     return false;
 
-                return (Advapi32.LookupPrivilegeValue(null, SePrivilegeNames.SE_TCB_NAME, ref tLuid));
+                return (Advapi32.LookupPrivilegeValue(null, SePrivileges.GetSecurityEntityValue(SecurityEntity.SE_TCB_NAME), ref tLuid));
             }
             finally
             {
@@ -166,7 +166,7 @@ namespace Utilizr.Win.Security
             var tLuid = new LUID();
             var newState = new TOKEN_PRIVILEGES();
 
-            if (!Advapi32.LookupPrivilegeValue(null, SePrivilegeNames.SE_RELABEL_NAME, ref tLuid))
+            if (!Advapi32.LookupPrivilegeValue(null, SePrivileges.GetSecurityEntityValue(SecurityEntity.SE_RELABEL_NAME), ref tLuid))
             {
                 Kernel32.CloseHandle(primaryToken);
                 return IntPtr.Zero;
