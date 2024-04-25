@@ -2,7 +2,7 @@
   "profiles": {
     "Utilizr.Console": {
       "commandName": "Project",
-      "commandLineArgs": "flatten-dictionary --assemblypath \"..\\..\\..\\..\\..\\SecuritySuite\\GUI.Theme\\bin\\Debug\\net7.0-windows\\GUI.Theme.dll\" --dictionarypath LightTheme.xaml --output ./test.xaml"
+      "commandLineArgs": "flatten-dictionary --assemblypath \"..\\..\\..\\..\\..\\SecuritySuite\\GUI.Theme\\bin\\Debug\\net8.0-windows\\GUI.Theme.dll\" --dictionarypath LightTheme.xaml --output ./test.xaml"
     }
   }
 }
