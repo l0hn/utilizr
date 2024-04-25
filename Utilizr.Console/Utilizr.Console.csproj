@@ -17,8 +17,4 @@
     <ProjectReference Include="..\Utilizr.WPF\Utilizr.WPF.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
 </Project>
