@@ -112,13 +112,13 @@ namespace Utilizr.FileSystem
         /// <param name="onlyCopyIfAlreadyExists">If set to <c>true</c> only copy if already exists.</param>
         /// <param name="recursive">If set to <c>true</c> recursive.</param>
         /// <param name="ignoreFolderNames">Ignore folder names.</param>
-        /// <param name="ignoreFileExtensions">File without a matching extension will not be copied.</param>
+        /// <param name="ignoreFileExtensions">File with a matching extension will not be copied.</param>
         public static void CopyDirectoryContents(
             string sourceDirectory,
             string destinationDirectory,
             bool onlyCopyIfAlreadyExists,
             bool recursive,
-            string[] ignoreFolderNames,
+            string[]? ignoreFolderNames,
             string[]? ignoreFileExtensions)
         {
             if (!Directory.Exists(destinationDirectory))
@@ -126,8 +126,8 @@ namespace Utilizr.FileSystem
 
             foreach (var file in Directory.GetFiles(sourceDirectory))
             {
-                var fileExt = file.ToLower();
-                if (fileExt.EndsWith(".ds_store") || ignoreFileExtensions?.Any(p => p.Equals(fileExt, StringComparison.OrdinalIgnoreCase)) == true)
+                var fileWithExt = file.ToLower();
+                if (fileWithExt.EndsWith(".ds_store") || ignoreFileExtensions?.Any(p => fileWithExt.EndsWith(p, StringComparison.OrdinalIgnoreCase)) == true)
                     continue;
 
                 var destinationFile = Path.Combine(destinationDirectory, Path.GetFileName(file));
