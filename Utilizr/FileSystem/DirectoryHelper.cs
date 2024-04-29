@@ -126,8 +126,8 @@ namespace Utilizr.FileSystem
 
             foreach (var file in Directory.GetFiles(sourceDirectory))
             {
-                var fileExt = file.ToLower();
-                if (fileExt.EndsWith(".ds_store") || ignoreFileExtensions?.Any(p => p.EndsWith(fileExt, StringComparison.OrdinalIgnoreCase)) == true)
+                var fileWithExt = file.ToLower();
+                if (fileWithExt.EndsWith(".ds_store") || ignoreFileExtensions?.Any(p => fileWithExt.EndsWith(p, StringComparison.OrdinalIgnoreCase)) == true)
                     continue;
 
                 var destinationFile = Path.Combine(destinationDirectory, Path.GetFileName(file));
