@@ -1,16 +1,9 @@
 ﻿using Newtonsoft.Json;
 using RestSharp;
-using RestSharp.Serializers;
 using RestSharp.Serializers.NewtonsoftJson;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
-using System.Threading.Tasks;
 using System.Web;
-using Utilizr.Extensions;
 using Utilizr.Logging;
 
 namespace Utilizr.Rest.Client
@@ -225,10 +218,10 @@ namespace Utilizr.Rest.Client
                 }
             }
 
-            OnResponseRecieved(response, request.GetType());
+            OnResponseReceived(response, request.GetType());
         }
 
-        protected virtual void OnResponseRecieved(object? response, Type requestType)
+        protected virtual void OnResponseReceived(object? response, Type requestType)
         {
             ResponseReceived?.Invoke(response, requestType);
         }
