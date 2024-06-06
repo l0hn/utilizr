@@ -20,20 +20,26 @@ namespace Utilizr.WPF.Util
             set => _resourceDir = value.Trim().Trim('/');
         }
 
+
         private static bool? _inDesignMode;
 
         /// <summary>
         /// Returns the URI for the specified resourceKey
         /// </summary>
         /// <param name="resourceKey">Image name including extension, e.g. foobar.png</param>
+        /// <param name="theme">Provide an optional theme name. The return URI will include this subfolder from <see cref="ResourceDir"/>.</param>
         /// <returns></returns>
-        public static Uri GetImageUri(string resourceKey)
+        public static Uri GetImageUri(string resourceKey, string? theme = null)
         {
             CheckDesignMode();
 
+            var potentialThemeWithTrialingSlash = string.Empty;
+            if (!string.IsNullOrEmpty(theme))
+                potentialThemeWithTrialingSlash = $"{theme.Trim('/')}/";
+
             Uri uri = _inDesignMode == true // Nullable bool
-                ? new Uri($"../../{_resourceDir}/{resourceKey}", UriKind.Relative)
-                : new Uri($"pack://siteoforigin:,,,/{_resourceDir}/{resourceKey}");
+                ? new Uri($"../../{_resourceDir}/{potentialThemeWithTrialingSlash}{resourceKey}", UriKind.Relative)
+                : new Uri($"pack://siteoforigin:,,,/{_resourceDir}/{potentialThemeWithTrialingSlash}{resourceKey}");
 
             return uri;
         }
@@ -43,8 +49,9 @@ namespace Utilizr.WPF.Util
         /// Get an image from the resources folder
         /// </summary>
         /// <param name="resourceKey">Image name including extension, e.g. foobar.png</param>
+        /// <param name="theme">Provider an optional theme name. This subfolder of the resources folder will be checked.</param>
         /// <returns></returns>
-        public static BitmapFrame? GetImageSource(string resourceKey)
+        public static BitmapFrame? GetImageSource(string resourceKey, string? theme = null)
         {
             try
             {
@@ -54,7 +61,7 @@ namespace Utilizr.WPF.Util
                 if (bitmapFrame != null)
                     return bitmapFrame;
 
-                var uri = GetImageUri(resourceKey);
+                var uri = GetImageUri(resourceKey, theme);
 
                 //IMPORTANT!!! never return a BitmapImage.. doing so will lock image files and prevent application auto updates from working.
                 return BitmapFrame.Create(uri, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
