@@ -51,7 +51,7 @@ namespace Utilizr.WPF.Util
         /// <param name="resourceKey">Image name including extension, e.g. foobar.png</param>
         /// <param name="theme">Provider an optional theme name. This subfolder of the resources folder will be checked.</param>
         /// <returns></returns>
-        public static BitmapFrame? GetImageSource(string resourceKey, string? theme = null)
+        public static BitmapFrame? GetImageSource(string resourceKey, string? theme = null, bool fallbackToUnthemed = false)
         {
             try
             {
@@ -69,6 +69,9 @@ namespace Utilizr.WPF.Util
             }
             catch (Exception ex)
             {
+                if (!string.IsNullOrEmpty(theme) && fallbackToUnthemed)
+                    return GetImageSource(resourceKey);
+
                 Log.Exception(ex, $"Failed to load resource for key {resourceKey}");
 #if DEBUG
                 if (_inDesignMode != true)
