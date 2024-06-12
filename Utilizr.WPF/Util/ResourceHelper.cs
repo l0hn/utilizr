@@ -27,7 +27,7 @@ namespace Utilizr.WPF.Util
         /// Returns the URI for the specified resourceKey
         /// </summary>
         /// <param name="resourceKey">Image name including extension, e.g. foobar.png</param>
-        /// <param name="theme">Provide an optional theme name. The return URI will include this subfolder from <see cref="ResourceDir"/>.</param>
+        /// <param name="theme">Provide an optional theme name. The returned URI will include this subfolder from <see cref="ResourceDir"/>.</param>
         /// <returns></returns>
         public static Uri GetImageUri(string resourceKey, string? theme = null)
         {
@@ -41,7 +41,7 @@ namespace Utilizr.WPF.Util
                 ? new Uri($"../../{_resourceDir}/{potentialThemeWithTrialingSlash}{resourceKey}", UriKind.Relative)
                 : new Uri($"pack://siteoforigin:,,,/{_resourceDir}/{potentialThemeWithTrialingSlash}{resourceKey}");
 
-            Log.Debug(nameof(ResourceHelper), $"Returning URI '{uri}' for resource = {resourceKey} and theme = {theme}");
+            Log.Debug(nameof(ResourceHelper), $"Returning URI '{uri}' for resource='{resourceKey}' and theme='{theme}'");
 
             return uri;
         }

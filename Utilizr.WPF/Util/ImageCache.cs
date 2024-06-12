@@ -23,13 +23,13 @@ namespace Utilizr.WPF.Util
         {
             var themedResource = string.IsNullOrEmpty(theme)
                 ? resource
-                : Path.Combine(theme, resource);
+                : $"{theme}\\{resource}";
 
             BitmapFrame? result;
-            if (_cache.TryGetValue(resource, out result))
+            if (_cache.TryGetValue(themedResource, out result))
                 return result;
 
-            var data = ResourceLoadable.Instance?.Get(resource);
+            var data = ResourceLoadable.Instance?.Get(themedResource);
             if (data != null)
             {
                 using (var memStream = new MemoryStream(data))
@@ -38,7 +38,7 @@ namespace Utilizr.WPF.Util
                 }
                 lock (LOCK)
                 {
-                    _cache[resource] = result;
+                    _cache[themedResource] = result;
                 }
             }
 
