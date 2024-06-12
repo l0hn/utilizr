@@ -38,5 +38,6 @@
     <converters:UriToImageConverter x:Key="UriToImageConverter"/>
     <converters:UriToIconConverter x:Key="UriToIconConverter"/>
     <converters:UriToImageFallbackConverter x:Key="UriToImageFallbackConverter"/>
+    <converters:UriToImageThemedConverter x:Key="UriToImageThemedConverter"/>
     <converters:ValueConverterGroup x:Key="ValueConverterGroup"/>
 </ResourceDictionary>

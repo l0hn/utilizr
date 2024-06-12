@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Utilizr.FileSystem
 {
@@ -10,6 +9,7 @@ namespace Utilizr.FileSystem
     {
         public delegate void OnError(string filePath, Exception error);
         public delegate string[] DirectoryFiltererDelegate(string[] directories);
+        public delegate bool CopyDirectoryCustomFilterDelegate(string absolutePath, bool isFile);
 
         /// <summary>
         /// For each directory in the directory tree rooted at the directoryPath given, yield a DirectoryResult which
@@ -119,7 +119,8 @@ namespace Utilizr.FileSystem
             bool onlyCopyIfAlreadyExists,
             bool recursive,
             string[]? ignoreFolderNames,
-            string[]? ignoreFileExtensions)
+            string[]? ignoreFileExtensions,
+            CopyDirectoryCustomFilterDelegate? customFilter = null)
         {
             if (!Directory.Exists(destinationDirectory))
                 Directory.CreateDirectory(destinationDirectory);
@@ -135,6 +136,9 @@ namespace Utilizr.FileSystem
                 if (onlyCopyIfAlreadyExists && !File.Exists(destinationFile))
                     continue;
 
+                if (customFilter?.Invoke(file, true) == false) // still copying if delegate not provided
+                    continue;
+
                 File.Copy(file, destinationFile, true);
             }
 
@@ -144,6 +148,9 @@ namespace Utilizr.FileSystem
             foreach (var dir in Directory.GetDirectories(sourceDirectory))
             {
                 if (ignoreFolderNames?.Any(i => i.Equals(Path.GetFileName(dir), StringComparison.InvariantCultureIgnoreCase)) == true)
+                    continue;
+
+                if (customFilter?.Invoke(dir, false) == false) // still copying if delegate not provided
                     continue;
 
                 var destination = Path.Combine(destinationDirectory, Path.GetFileName(dir));
