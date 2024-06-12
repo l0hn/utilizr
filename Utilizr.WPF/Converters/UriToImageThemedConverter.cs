@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
+using Utilizr.Logging;
 using Utilizr.WPF.Util;
 
 namespace Utilizr.WPF.Converters
@@ -41,11 +42,14 @@ namespace Utilizr.WPF.Converters
             if (parameter is ImageThemedConverterMode explicitMode)
                 mode = explicitMode;
 
-            return ResourceHelper.GetImageSource(
+            var result = ResourceHelper.GetImageSource(
                 (string)value!,
                 CurrentTheme,
                 mode == ImageThemedConverterMode.FallbackToUnthemedResource
             );
+
+            Log.Debug(nameof(UriToImageThemedConverter), $"CurrentTheme={CurrentTheme}, value={value}, mode={mode}, result={result}");
+            return result;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
