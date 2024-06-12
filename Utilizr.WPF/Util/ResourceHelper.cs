@@ -41,6 +41,8 @@ namespace Utilizr.WPF.Util
                 ? new Uri($"../../{_resourceDir}/{potentialThemeWithTrialingSlash}{resourceKey}", UriKind.Relative)
                 : new Uri($"pack://siteoforigin:,,,/{_resourceDir}/{potentialThemeWithTrialingSlash}{resourceKey}");
 
+            Log.Debug(nameof(ResourceHelper), $"Returning URI '{uri}' for resource = {resourceKey} and theme = {theme}");
+
             return uri;
         }
 
@@ -57,7 +59,7 @@ namespace Utilizr.WPF.Util
             {
                 CheckDesignMode();
 
-                var bitmapFrame = ImageCache.Get(resourceKey);
+                var bitmapFrame = ImageCache.Get(resourceKey, theme);
                 if (bitmapFrame != null)
                     return bitmapFrame;
 
@@ -72,7 +74,7 @@ namespace Utilizr.WPF.Util
                 if (!string.IsNullOrEmpty(theme) && fallbackToUnthemed)
                     return GetImageSource(resourceKey);
 
-                Log.Exception(ex, $"Failed to load resource for key {resourceKey}");
+                Log.Exception(ex, $"Failed to load resource for key {resourceKey}, theme={theme ?? "none"}");
 #if DEBUG
                 if (_inDesignMode != true)
                     throw;
