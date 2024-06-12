@@ -23,7 +23,7 @@ namespace Utilizr.WPF.Util
         {
             var themedResource = string.IsNullOrEmpty(theme)
                 ? resource
-                : $"{theme}\\{resource}";
+                : $"{theme}/{resource}";
 
             BitmapFrame? result;
             if (_cache.TryGetValue(themedResource, out result))
