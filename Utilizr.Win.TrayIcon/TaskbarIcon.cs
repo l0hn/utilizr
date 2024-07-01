@@ -169,14 +169,14 @@ namespace Utilizr.Win.TrayIcon
         /// </param>
         /// <exception cref="ArgumentNullException">If <paramref name="balloon"/>
         /// is a null reference.</exception>
-        public void ShowCustomBalloon(UIElement balloon, PopupAnimation animation, int? timeout, Visual visual, bool throwOnError = false)
+        public void ShowCustomBalloon(UIElement balloon, PopupAnimation animation, int? timeout, Visual visual, bool throwOnError = false, bool allowTransparency = false)
         {
             try
             {
                 Dispatcher dispatcher = this.GetDispatcher();
                 if (!dispatcher.CheckAccess())
                 {
-                    var action = new Action(() => ShowCustomBalloon(balloon, animation, timeout, visual));
+                    var action = new Action(() => ShowCustomBalloon(balloon, animation, timeout, visual, allowTransparency));
                     dispatcher.Invoke(DispatcherPriority.Normal, action);
                     return;
                 }
@@ -199,7 +199,7 @@ namespace Utilizr.Win.TrayIcon
 
                 //create an invisible popup that hosts the UIElement
                 Popup popup = new Popup();
-                popup.AllowsTransparency = false;
+                popup.AllowsTransparency = allowTransparency;
 
                 //provide the popup with the taskbar icon's data context
                 UpdateDataContext(popup, null, DataContext);
