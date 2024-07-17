@@ -456,6 +456,11 @@ namespace Utilizr.Globalisation
             T = t;
             _formatArgs = formatArgs;
         }
+
+        public override string ToString()
+        {
+            return Translation;
+        }
     }
 
     public static class ITranslatableExtensions
