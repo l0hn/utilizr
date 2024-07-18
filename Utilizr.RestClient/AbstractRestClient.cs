@@ -45,6 +45,15 @@ namespace Utilizr.Rest.Client
                 request.AddHeader(header.Key, header.Value);
             }
 
+            var extraHeaders = apiRequest.GetExtraRequestSpecificHeaders();
+            if (extraHeaders != null)
+            {
+                foreach (var extraHeader in extraHeaders)
+                {
+                    request.AddHeader(extraHeader.Key, extraHeader.Value);
+                }
+            }
+
             if (apiRequest.Body != null)
             {
                 request.AddBody(JsonConvert.SerializeObject(apiRequest.Body), ContentType.Json);
@@ -85,6 +94,8 @@ namespace Utilizr.Rest.Client
                 //var responseData = JsonConvert.DeserializeObject<T>(response.Content!);
                 if (response.Data == null)
                     throw new Exception($"Failed to deserialise response on {apiRequest.Endpoint}", response.ErrorException);
+
+                apiRequest.PostProcessing(response.Data);
 
                 NotifyRequestCompleted<T>(apiRequest, response.Data);
                 return response.Data;
