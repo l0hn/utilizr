@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Net;
 
 namespace Utilizr.Rest.Client
 {
@@ -28,6 +29,17 @@ namespace Utilizr.Rest.Client
         /// </summary>
         /// <returns>The object for request logging.</returns>
         object GetObjectForRequestLogging();
+
+        /// <summary>
+        /// Optionally add any extra headers.
+        /// </summary>
+        Dictionary<string, string>? GetExtraRequestSpecificHeaders();
+
+        /// <summary>
+        /// Override post processing to perform internal tasks upon a successful response
+        /// NOTE: this method is NOT async, do not write blocking code in this method
+        /// </summary>
+        void PostProcessing(TResponse response);
 
         /// <summary>
         /// Gets the object for response logging. Override this method if you need to remove sensitive data before logging
@@ -61,6 +73,11 @@ namespace Utilizr.Rest.Client
         }
 
         /// <summary>
+        /// Optionally add any extra headers.
+        /// </summary>
+        public virtual Dictionary<string, string>? GetExtraRequestSpecificHeaders() { return null; }
+
+        /// <summary>
         /// Gets the object for request logging.
         /// You should override this method is for example you need to remove any sensitive information from a specific object before logging
         /// </summary>
@@ -80,6 +97,13 @@ namespace Utilizr.Rest.Client
 
             return new object(); // empty
         }
+
+        /// <summary>
+        /// Override post processing to perform internal tasks upon a successful response
+        /// NOTE: this method is NOT async, do not write blocking code in this method
+        /// </summary>
+        /// <param name="response">Response.</param>
+        public virtual void PostProcessing(TResponse response) { }
 
         /// <summary>
         /// Gets the object for response logging. Override this method if you need to remove sensitive data before logging

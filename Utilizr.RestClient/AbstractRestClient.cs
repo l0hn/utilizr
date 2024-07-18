@@ -39,6 +39,16 @@ namespace Utilizr.Rest.Client
         public virtual T Execute<T>(IApiRequest<T> apiRequest)
         {
             var headers = GetHeaders(apiRequest);
+            var extraHeaders = apiRequest.GetExtraRequestSpecificHeaders();
+            if (extraHeaders != null)
+            {
+                foreach (var extraHeader in extraHeaders)
+                {
+                    // Make sure extra headers overwrite any default headers
+                    headers[extraHeader.Key] = extraHeader.Value;
+                }
+            }
+
             var request = new RestRequest(apiRequest.Endpoint, apiRequest.Method);
             foreach (var header in headers)
             {
@@ -85,6 +95,8 @@ namespace Utilizr.Rest.Client
                 //var responseData = JsonConvert.DeserializeObject<T>(response.Content!);
                 if (response.Data == null)
                     throw new Exception($"Failed to deserialise response on {apiRequest.Endpoint}", response.ErrorException);
+
+                apiRequest.PostProcessing(response.Data);
 
                 NotifyRequestCompleted<T>(apiRequest, response.Data);
                 return response.Data;
