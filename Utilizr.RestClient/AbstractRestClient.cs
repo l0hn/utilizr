@@ -39,19 +39,20 @@ namespace Utilizr.Rest.Client
         public virtual T Execute<T>(IApiRequest<T> apiRequest)
         {
             var headers = GetHeaders(apiRequest);
-            var request = new RestRequest(apiRequest.Endpoint, apiRequest.Method);
-            foreach (var header in headers)
-            {
-                request.AddHeader(header.Key, header.Value);
-            }
-
             var extraHeaders = apiRequest.GetExtraRequestSpecificHeaders();
             if (extraHeaders != null)
             {
                 foreach (var extraHeader in extraHeaders)
                 {
-                    request.AddHeader(extraHeader.Key, extraHeader.Value);
+                    // Make sure extra headers overwrite any default headers
+                    headers[extraHeader.Key] = extraHeader.Value;
                 }
+            }
+
+            var request = new RestRequest(apiRequest.Endpoint, apiRequest.Method);
+            foreach (var header in headers)
+            {
+                request.AddHeader(header.Key, header.Value);
             }
 
             if (apiRequest.Body != null)
