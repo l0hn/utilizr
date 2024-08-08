@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Utilizr.Info;
@@ -185,10 +186,23 @@ namespace Utilizr.WPF.Util
                 }
                 else
                 {
-                    var path = Path.Combine(AppInfo.AppDirectory, _resourceDir);
-                    path = Path.Combine(path, resourceKey);
-                    using var stream = File.Open(path, FileMode.Open);
-                    return BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                    var iconData = ResourceLoadable.Instance.Get(resourceKey)?.ToArray();
+
+                    if (iconData != null)
+                    {
+                        BitmapFrame? bitmapRes;
+                        using (var memStream = new MemoryStream(iconData))
+                        {
+                            return BitmapFrame.Create(memStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                        }
+                    }
+                    else
+                    {
+                        var path = Path.Combine(AppInfo.AppDirectory, _resourceDir);
+                        path = Path.Combine(path, resourceKey);
+                        using var stream = File.Open(path, FileMode.Open);
+                        return BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                    }
                 }
             }
             catch (IOException)
