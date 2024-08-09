@@ -83,7 +83,12 @@ namespace Utilizr.WPF.Util
                 if (string.IsNullOrEmpty(path))
                     return backupIcon();
 
-                var icon = Icon.ExtractAssociatedIcon(path);
+                var iconIndex = path.IndexOf(',');
+                var safePath = iconIndex > 0
+                    ? path.Substring(0, iconIndex)
+                    : path;
+
+                var icon = Icon.ExtractAssociatedIcon(safePath);
                 if (icon == null)
                     return backupIcon();
 
