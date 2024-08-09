@@ -16,7 +16,7 @@ namespace Utilizr.Win32.ShlwApi
             ref int pcchCanonicalized,
             Shlwapi_URL dwFlags);
 
-        [DllImport(SHLWAPI_DLL, BestFitMapping = false, CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = false, ThrowOnUnmappableChar = true)]
+        [DllImport(SHLWAPI_DLL, BestFitMapping = false, CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern int SHLoadIndirectString(string pszSource, 
                             StringBuilder 
                             pszOutBuf, 
