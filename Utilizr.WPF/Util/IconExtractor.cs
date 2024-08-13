@@ -20,7 +20,7 @@ namespace Utilizr.WPF.Util
         /// <param name="filePath"></param>
         /// <param name="backupIconUriPath">Backup image URI to use if the icon cannot be extracted from the file</param>
         /// <returns></returns>
-        public static byte[] GetInstallerIcon(string filePath, Uri backupIconUri)
+        public static byte[] GetInstallerIcon(string? filePath, Uri? backupIconUri)
         {
             if (string.IsNullOrEmpty(filePath))
                 return GetIcon(null, backupIconUri);
@@ -43,7 +43,14 @@ namespace Utilizr.WPF.Util
             return GetIcon(pathNoArgs, backupIconUri);
         }
 
-        public static byte[] GetIcon(string path, Uri? backupIconUri = null)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path">If null or empty, the backup icon will be returned.</param>
+        /// <param name="backupIconUri">Optional backup icon if an error retrieving the specified icon.</param>
+        /// <returns></returns>
+        public static byte[] GetIcon(string? path, Uri? backupIconUri = null)
         {
             byte[] backupIcon()
             {
@@ -76,7 +83,12 @@ namespace Utilizr.WPF.Util
                 if (string.IsNullOrEmpty(path))
                     return backupIcon();
 
-                var icon = Icon.ExtractAssociatedIcon(path);
+                var iconIndex = path.IndexOf(',');
+                var safePath = iconIndex > 0
+                    ? path.Substring(0, iconIndex)
+                    : path;
+
+                var icon = Icon.ExtractAssociatedIcon(safePath);
                 if (icon == null)
                     return backupIcon();
 
