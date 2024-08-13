@@ -20,7 +20,7 @@ namespace Utilizr.WPF.Util
         /// <param name="filePath"></param>
         /// <param name="backupIconUriPath">Backup image URI to use if the icon cannot be extracted from the file</param>
         /// <returns></returns>
-        public static byte[] GetInstallerIcon(string filePath, Uri? backupIconUri)
+        public static byte[] GetInstallerIcon(string? filePath, Uri? backupIconUri)
         {
             if (string.IsNullOrEmpty(filePath))
                 return GetIcon(null, backupIconUri);
