@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
+using Utilizr.Extensions;
 
 namespace Utilizr
 {
@@ -122,6 +125,29 @@ namespace Utilizr
         {
             Command = command;
             Args = args;
+        }
+        
+        public void ThrowIfError() {
+            if (ExitCode != 0)
+            {
+                throw new Exception(Info());
+            }
+        }
+
+        public string Info() {
+            StringBuilder sb = new StringBuilder($"cmd: {CommandWithArgs}");
+            sb.AppendLine($"exit code: {ExitCode}");
+            if (Output.IsNotNullOrEmpty())
+            {
+                sb.AppendLine($"\noutput:\n{Output}");
+            }
+
+            if (ErrorOutput.IsNotNullOrEmpty())
+            {
+                sb.AppendLine($"\nerror: {ErrorOutput}");
+            }
+
+            return sb.ToString();
         }
     }
 }
