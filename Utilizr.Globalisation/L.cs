@@ -245,7 +245,7 @@ namespace Utilizr.Globalisation
                 return;
             try
             {
-                _lookupDictionary.Add(ietfLanguageTag, ResourceContext.FromStream(stream, ietfLanguageTag));
+                _lookupDictionary.Add(ietfLanguageTag.ToLowerInvariant(), ResourceContext.FromStream(stream, ietfLanguageTag.ToLowerInvariant()));
                 _moFileLookup[ietfLanguageTag] = "";
             }
             catch (Exception ex)
