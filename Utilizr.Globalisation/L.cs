@@ -450,6 +450,10 @@ namespace Utilizr.Globalisation
         }
 
         readonly Func<LArgsInfo>? _formatArgs;
+        
+        public LArgsInfo? GetArgs() {
+            return _formatArgs?.Invoke();
+        }
 
         internal MS(string t, Func<LArgsInfo>? formatArgs)
         {
