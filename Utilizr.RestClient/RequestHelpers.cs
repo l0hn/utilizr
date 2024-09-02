@@ -47,13 +47,21 @@ namespace Utilizr.Rest.Client
         /// </summary>
         /// <returns>The object for response logging.</returns>
         TResponse GetObjectForResponseLogging(TResponse response);
+
+        /// <summary>
+        /// Return an optional more detailed error message instead of the stardand HTTP status.
+        /// </summary>
+        /// <param name="statusCode">HTTP status code.</param>
+        /// <param name="response">Types response for the attempted request.</param>
+        /// <returns>Null for default behaviour, or optionally a more detailed error message.</returns>
+        string? GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(HttpStatusCode statusCode, TResponse? response);
     }
 
     public abstract class ApiRequest<TResponse> : IApiRequest<TResponse>
     {
         [JsonIgnore]
         public string EndpointLogStr => $"({MethodLogStr}){Endpoint}";
-        
+
         [JsonIgnore]
         public string MethodLogStr => Method.ToString().ToUpperInvariant();
 
@@ -113,6 +121,17 @@ namespace Utilizr.Rest.Client
         public virtual TResponse GetObjectForResponseLogging(TResponse response)
         {
             return response;
+        }
+
+        /// <summary>
+        /// Return an optional more detailed error message instead of the stardand HTTP status.
+        /// </summary>
+        /// <param name="statusCode">HTTP status code.</param>
+        /// <param name="response">Types response for the attempted request.</param>
+        /// <returns>Null for default behaviour, or optionally a more detailed error message.</returns>
+        public virtual string? GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(HttpStatusCode statusCode, TResponse? response)
+        {
+            return null;
         }
     }
 

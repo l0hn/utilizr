@@ -89,6 +89,10 @@ namespace Utilizr.Rest.Client
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
                         OnAuthenticationError(response.StatusCode, description);
 
+                    var detailedErrorDescription = apiRequest.GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(response.StatusCode, response.Data);
+                    if (!string.IsNullOrEmpty(detailedErrorDescription))
+                        description = detailedErrorDescription;
+
                     throw new ApiException((int)response.StatusCode, description, response.Content);
                 }
 
