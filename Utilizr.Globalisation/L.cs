@@ -418,11 +418,17 @@ namespace Utilizr.Globalisation
         string Translation { get; }
     }
 
+    public interface ITranslatableArgs {
+        public LArgsInfo? GetArgs();
+        public string T { get; set; }
+        public string UnformattedTranslation();
+    }
+
     /// <summary>
     /// Allows translatable singular string to be stored in variables
     /// </summary>
     [DebuggerDisplay("English = {English}\n, Translation = {Translation}")]
-    public class MS : ITranslatable
+    public class MS : ITranslatable, ITranslatableArgs
     {
         public string T { get; set; }
         public string Translation
@@ -465,6 +471,12 @@ namespace Utilizr.Globalisation
         {
             return Translation;
         }
+
+        public string UnformattedTranslation()
+        {
+            return L._(T);
+        }
+
     }
 
     public static class ITranslatableExtensions
@@ -507,7 +519,7 @@ namespace Utilizr.Globalisation
     /// Allows translatable plural string to be stored in variables
     /// </summary>
     [DebuggerDisplay("English = {English}\n, Translation = {Translation}")]
-    public class MP : ITranslatable
+    public class MP : ITranslatable, ITranslatableArgs
     {
         public string T { get; set; }
         public string TPlural { get; set; }
@@ -555,6 +567,16 @@ namespace Utilizr.Globalisation
             TPlural = tplural;
             _counter = counter;
             _formatArgs = formatArgs;
+        }
+
+        public LArgsInfo? GetArgs()
+        {
+            return _formatArgs?.Invoke();
+        }
+
+        public string UnformattedTranslation()
+        {
+            return L._P(T, TPlural, _counter.Invoke());
         }
     }
 
