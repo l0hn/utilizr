@@ -24,6 +24,8 @@ namespace Utilizr.Globalisation
         private static readonly Dictionary<string, ResourceContext> _lookupDictionary = new();
         private static readonly Dictionary<string, string> _moFileLookup = new();
 
+        private static readonly Dictionary<string, string> _fuzzyLangMatch = new(); 
+
         private static bool _indexedMoFiles = false;
         public const string LogCat = "Utilizr.Globalisation";
 
@@ -63,8 +65,8 @@ namespace Utilizr.Globalisation
                     var allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
 
                     foreach (var culture in allCultures)
-                    {
-                        if (!_moFileLookup.ContainsKey(culture.IetfLanguageTag))
+                    {                    
+                        if (!_lookupDictionary.ContainsKey(culture.IetfLanguageTag.ToLowerInvariant()))
                             continue;
 
                         supported.Add(
@@ -235,23 +237,42 @@ namespace Utilizr.Globalisation
         }
 
         /// <summary>
-        /// Indexes the mo file with the specified language. Use with android as assets do not have paths.
+        /// Indexes the mo file with the specified language. Use when assets do not have file paths
         /// </summary>
         /// <param name="ietfLanguageTag">Ietf language tag.</param>
         /// <param name="stream">Asset Stream of mo file.</param>
         public static void IndexMoFile(string ietfLanguageTag, Stream stream)
         {
+            ietfLanguageTag = ietfLanguageTag.ToLowerInvariant();
             if (_lookupDictionary.ContainsKey(ietfLanguageTag))
                 return;
             try
             {
-                _lookupDictionary.Add(ietfLanguageTag.ToLowerInvariant(), ResourceContext.FromStream(stream, ietfLanguageTag.ToLowerInvariant()));
-                _moFileLookup[ietfLanguageTag] = "";
+                var ctx = ResourceContext.FromStream(stream, ietfLanguageTag);
+                _lookupDictionary.Add(ietfLanguageTag, ctx);
+                _fuzzyLangMatch[ietfLanguageTag[..2]] = ietfLanguageTag;
+                
             }
             catch (Exception ex)
             {
                 Log.Exception(LogCat, ex);
             }
+        }
+
+        private static bool ContextForLang(string ietfLangTag, out ResourceContext ctx) {
+            ietfLangTag = ietfLangTag.ToLowerInvariant();
+            if (_lookupDictionary.TryGetValue(ietfLangTag, out ctx))
+            {
+                return true;
+            }
+            if (_fuzzyLangMatch.TryGetValue(ietfLangTag[..2], out ietfLangTag))
+            {
+                if (_lookupDictionary.TryGetValue(ietfLangTag, out ctx))
+                {
+                    return true;   
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -265,18 +286,15 @@ namespace Utilizr.Globalisation
             var result = string.Empty;
             try
             {
-                if (CurrentLanguage != null && _lookupDictionary.ContainsKey(CurrentLanguage))
-                {
-                    if (_lookupDictionary[CurrentLanguage] != null)
+                if (ContextForLang(CurrentLanguage, out var ctx)) {
+                    result = ctx.LookupString(t);
+                    if (args.Length > 0)
                     {
-                        result = _lookupDictionary[CurrentLanguage].LookupString(t);
-                        if (args.Length > 0)
-                        {
-                            result = string.Format(result, args);
-                        }
-                        return result;
+                        result = string.Format(result, args);
                     }
+                    return result;
                 }
+
                 result = t;
                 if (args.Length > 0)
                 {
@@ -300,18 +318,16 @@ namespace Utilizr.Globalisation
         public static string _P(string t, string tPlural, long n, params object[] args)
         {
             var result = string.Empty;
-            if (CurrentLanguage != null && _lookupDictionary.ContainsKey(CurrentLanguage))
+            if (ContextForLang(CurrentLanguage, out var ctx))
             {
-                if (_lookupDictionary[CurrentLanguage] != null)
+                result = ctx.LookupPluralString(t, tPlural, n);
+                if (args.Length > 0)
                 {
-                    result = _lookupDictionary[CurrentLanguage].LookupPluralString(t, tPlural, n);
-                    if (args.Length > 0)
-                    {
-                        result = string.Format(result, args);
-                    }
-                    return result;
+                    result = string.Format(result, args);
                 }
+                return result;
             }
+
             //couldn't find resource context so return default values
             result = n == 1 ? t : tPlural;
             if (args.Length > 0)
