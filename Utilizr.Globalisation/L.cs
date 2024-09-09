@@ -155,30 +155,18 @@ namespace Utilizr.Globalisation
                 //add a dummy 'blank' language that always returns a blanked out string - helpful for finding missing translations/errors
                 if (ietfLanguageTag == "blank")
                 {
-                    _lookupDictionary.Add("blank", new DummyResourceContext("blank", (s) =>
-                    {
-                        var chars = new char[s.Length];
-                        for (int i = 0; i < chars.Length; i++)
-                        {
-                            chars[i] = char.IsWhiteSpace(s[i])
-                                ? s[i]
-                                : '*';
-                        }
-                        return new string(chars);
-                    }, (s, p, n) =>
-                    {
-                        var chars = new char[s.Length];
-                        int insideFormatPlaceholder = 0;
+                    var replaceCharFunc = string (string s) => {
+                        var insideFormatPlaceholder = 0;
+                        var chars = s.ToArray();
                         for (int i = 0; i < chars.Length; i++)
                         {
                             // Don't replace character if whitespace to avoid one long string of *******
                             // Don't replace string format placeholders, such as {0:N0}
 
-                            chars[i] = s[i];
                             if (char.IsWhiteSpace(s[i]))
                                 continue;
 
-                            if (s[i] == '{')
+                            if (chars[i] == '{')
                             {
                                 insideFormatPlaceholder++;
                                 continue;
@@ -194,9 +182,16 @@ namespace Utilizr.Globalisation
                                 continue;
 
                             chars[i] = '*';
-
                         }
                         return new string(chars);
+                    };
+
+                    _lookupDictionary.Add("blank", new DummyResourceContext("blank", (s) =>
+                    {
+                        return replaceCharFunc(s);
+                    }, (s, p, n) =>
+                    {
+                        return replaceCharFunc(s);
                     }));
                 }
 #endif
