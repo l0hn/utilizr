@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Utilizr.Globalisation.Helpers
 {
@@ -12,7 +13,8 @@ namespace Utilizr.Globalisation.Helpers
         public static void CreatePotFile(string srcRootDir, string outputFile, string? getTextFormat=null)
         {
             Console.WriteLine("indexing source directory");
-            if (SourceList.GenerateSourceList(srcRootDir, LIST_FILE) == 0)
+            var listFileOutput = Path.Combine(Path.GetDirectoryName(outputFile), LIST_FILE);
+            if (SourceList.GenerateSourceList(srcRootDir, listFileOutput) == 0)
             {
                 throw new ArgumentException("No source files found in specified source root");
             }
@@ -26,7 +28,7 @@ namespace Utilizr.Globalisation.Helpers
                     FileName = platform == PlatformID.Unix || platform == PlatformID.MacOSX
                         ? "xgettext"
                         : "xgettext.exe",
-                    Arguments = string.Format(getTextFormat ?? XGETTEXT_FORMAT_STRING, LIST_FILE, outputFile),
+                    Arguments = string.Format(getTextFormat ?? XGETTEXT_FORMAT_STRING, listFileOutput, outputFile),
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
