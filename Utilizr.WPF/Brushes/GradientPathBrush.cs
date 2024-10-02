@@ -123,7 +123,8 @@ namespace Utilizr.WPF.Brushes
             };
 
             Rect rect = Data.GetRenderBounds(pen);
-            return new Size(rect.Right, rect.Bottom);
+            //return new Size(rect.Right, rect.Bottom);
+            return availableSize;
         }
 
         protected override void OnRender(DrawingContext dc)
