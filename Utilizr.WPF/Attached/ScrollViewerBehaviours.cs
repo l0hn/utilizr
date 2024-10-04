@@ -1,5 +1,9 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Utilizr.WPF.Attached
 {
@@ -68,5 +72,115 @@ namespace Utilizr.WPF.Attached
         {
             obj.SetValue(AutoScrollToTopProperty, value);
         }
+
+
+
+
+        #region ApplyCutOffOpacity Attached Property
+        public static readonly DependencyProperty ApplyCutOffOpacityProperty =
+            DependencyProperty.RegisterAttached(
+                "ApplyCutOffOpacity",
+                typeof(bool),
+                typeof(ScrollViewerBehaviours),
+                new PropertyMetadata(false, OnApplyCutOffOpacityChanged)
+            );
+
+        private static void OnApplyCutOffOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ScrollViewer scrollViewer)
+                return;
+
+            bool newValue = (bool)e.NewValue;
+            bool oldValue = (bool)e.OldValue;
+
+            void loaded(object sender, RoutedEventArgs e) => UpdateOpacityMask(scrollViewer);
+            void sizeChanged(object sender, SizeChangedEventArgs e) => UpdateOpacityMask(scrollViewer);
+
+            if (oldValue && !newValue)
+            {
+                scrollViewer.SizeChanged -= sizeChanged;
+                scrollViewer.Loaded -= loaded;
+            }
+
+            if (!oldValue && newValue)
+            {
+                scrollViewer.SizeChanged += sizeChanged;
+                scrollViewer.Loaded += loaded;
+                UpdateOpacityMask(scrollViewer);
+            }
+        }
+
+        public static bool GetApplyCutOffOpacity(ScrollViewer obj)
+        {
+            return (bool)obj.GetValue(ApplyCutOffOpacityProperty);
+        }
+
+        public static void SetApplyCutOffOpacity(ScrollViewer obj, bool val)
+        {
+            obj.SetValue(ApplyCutOffOpacityProperty, val);
+        }
+        #endregion
+
+
+        static Brush? _solidBrush;
+        static Pen? _pen;
+        static Brush? _fadeBrush;
+
+        static void UpdateOpacityMask(ScrollViewer scrollViewer)
+        {
+            if (!scrollViewer.IsLoaded)
+                return;
+
+            if (double.IsNaN(scrollViewer.ActualHeight) || double.IsNaN(scrollViewer.ActualWidth))
+                return;
+
+            //  ______________
+            // |            | |
+            // |            | |
+            // |      1     |2|
+            // |            | |
+            // |______________|
+            // |      3     | |
+            //  --------------
+
+            // 1 main area, 100% opacity
+            // 2 scroll bar area, 100% opacity
+            // 3 faded opacity, linear with 0% and 100% gradient stops
+
+            var drawingBrush = new DrawingBrush()
+            {
+                Stretch = Stretch.None,
+                AlignmentX = AlignmentX.Center,
+                AlignmentY = AlignmentY.Top,
+                ViewboxUnits = BrushMappingMode.RelativeToBoundingBox,
+            };
+
+            // todo: Expose the height of the fade, and the width of the scroll viewer
+            const double fadeHeight = 36; // 3
+            const int scrollBarWidth = 10; // 2
+
+            _solidBrush ??= new SolidColorBrush(Colors.White);
+            _pen ??= new Pen(_solidBrush, 0);
+            _fadeBrush ??= new LinearGradientBrush(
+                new GradientStopCollection(
+                    new List<GradientStop>()
+                    {
+                        new GradientStop(Colors.White, 0),
+                        new GradientStop(Colors.Transparent, 1)
+                    }
+                ),
+                startPoint: new Point(0.5, 0),
+                endPoint: new Point(0.5, 1)
+            );
+
+            var drawingGroup = new DrawingGroup();
+            drawingGroup.Children.Add(new GeometryDrawing(_solidBrush, _pen, new RectangleGeometry(new Rect(0, 0, scrollViewer.ActualWidth, scrollViewer.ActualHeight - fadeHeight)))); //1
+            drawingGroup.Children.Add(new GeometryDrawing(_solidBrush, _pen, new RectangleGeometry(new Rect(scrollViewer.ActualWidth - scrollBarWidth, 0, scrollBarWidth, scrollViewer.ActualHeight)))); //2
+            drawingGroup.Children.Add(new GeometryDrawing(_fadeBrush, _pen, new RectangleGeometry(new Rect(0, scrollViewer.ActualHeight - fadeHeight, scrollViewer.ActualWidth, fadeHeight)))); //3
+
+            drawingBrush.Drawing = drawingGroup;
+            scrollViewer.OpacityMask = drawingBrush;
+        }
+
     }
 }
