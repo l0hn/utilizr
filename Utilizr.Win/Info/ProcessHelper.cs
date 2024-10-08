@@ -205,8 +205,8 @@ namespace Utilizr.Win.Info
             exitCode = null;
 
             var pi = new PROCESS_INFORMATION();
-            var saProcess = new SECURITY_ATTRIBUTES();
-            var saThread = new SECURITY_ATTRIBUTES();
+            var saProcess = new Win32.Kernel32.Structs.SECURITY_ATTRIBUTES();
+            var saThread = new Win32.Kernel32.Structs.SECURITY_ATTRIBUTES();
             saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
             saThread.nLength = (uint)Marshal.SizeOf(saThread);
 
@@ -250,7 +250,7 @@ namespace Utilizr.Win.Info
                     ref saProcess,
                     ref saThread,
                     false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE | ProcessCreationFlags.CREATE_SUSPENDED,
                     envBlock,
                     null,
                     ref si,
@@ -266,7 +266,7 @@ namespace Utilizr.Win.Info
                     ref saProcess,
                     ref saThread,
                     false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_SUSPENDED,
                     envBlock,
                     null,
                     ref si,
@@ -282,13 +282,18 @@ namespace Utilizr.Win.Info
                 return result;
             }
 
+            var job = new Job();
+            job.AddProcess(pi.hProcess);
+            Kernel32.ResumeThread(pi.hThread);
+
+            
             if (!waitForExit)
             {
                 return true;
             }
 
             pidSetCallback?.Invoke((int)pi.dwProcessId);
-            Kernel32.WaitForSingleObject(pi.hProcess, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+            Kernel32.WaitForSingleObject(job.handle, Kernel32.WAIT_FOR_OBJECT_INFINITE);
 
             result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
             Kernel32.CloseHandle(pi.hProcess);
@@ -340,42 +345,51 @@ namespace Utilizr.Win.Info
                 );
             }
 
+            var job = new Job();
             foreach (var childProcess in children)
             {
-                var loopLocal = childProcess;
-                if (loopLocal.HasExited)
-                    continue;
+                // Hopefully we can add all the processes, then wait until all are complete through the job
+                job.AddProcess(childProcess.Id);
+                childProcess.ResumeProcess();
 
-                if (IsUnsafeWaitProcess(loopLocal.ProcessName))
-                    continue;
 
-                try
-                {
-                    var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
-                    idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
+                //var loopLocal = childProcess;
+                //if (loopLocal.HasExited)
+                //    continue;
 
-                    Log.Info(
-                        LOG_CAT,
-                        "Waiting on child process '{0}' from '{1}'",
-                        wmiInfo.ExecutablePath,
-                        logExeArgsInfo
-                    );
+                //if (IsUnsafeWaitProcess(loopLocal.ProcessName))
+                //    continue;
 
-                    loopLocal.EnableRaisingEvents = true;
-                    loopLocal.Exited += exitedHandler;
-                    var grandChildren = loopLocal.GetChildProcesses().ToList();
-                    success = WaitOnChildren(grandChildren, wmiInfo.ExecutablePath, true) && success;
-                    loopLocal.WaitForExit();
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception(LOG_CAT, ex);
-                }
-                finally
-                {
-                    loopLocal.Exited -= exitedHandler;
-                }
+                //try
+                //{
+                //    var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
+                //    idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
+
+                //    Log.Info(
+                //        LOG_CAT,
+                //        "Waiting on child process '{0}' from '{1}'",
+                //        wmiInfo.ExecutablePath,
+                //        logExeArgsInfo
+                //    );
+
+                //    loopLocal.EnableRaisingEvents = true;
+                //    loopLocal.Exited += exitedHandler;
+                //    var grandChildren = loopLocal.GetChildProcesses().ToList();
+                //    success = WaitOnChildren(grandChildren, wmiInfo.ExecutablePath, true) && success;
+                //    loopLocal.WaitForExit();
+                //}
+                //catch (Exception ex)
+                //{
+                //    Log.Exception(LOG_CAT, ex);
+                //}
+                //finally
+                //{
+                //    loopLocal.Exited -= exitedHandler;
+                //}
             }
+
+            // Todo: method needed to await completion of job
+            Kernel32.WaitForSingleObject(job.handle, Kernel32.WAIT_FOR_OBJECT_INFINITE);
 
             return success;
         }
