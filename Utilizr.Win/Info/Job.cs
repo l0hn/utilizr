@@ -16,6 +16,8 @@ namespace Utilizr.Win.Info
         private const int WS_POPUP = unchecked((int)0x80000000);
         private const int HWND_MESSAGE = -3;
 
+        const uint JOB_OBJECT_ALL_ACCESS = 0x1F001F;
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr CreateJobObject(IntPtr a, string lpName);
 
@@ -25,13 +27,31 @@ namespace Utilizr.Win.Info
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
+        // Need a DllImport for kernal32 OpenJobObject
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr OpenJobObject(uint dwDesiredAccess, bool bInheritHandle, string lpName);
+
         public IntPtr handle;
         private bool disposed;
+        private string _name;
 
         public Job()
         {
             handle = CreateJobObject(IntPtr.Zero, null);
             UpdateMemoryLimit(null, null, null);
+        }
+
+        public Job(string name)
+        {
+            _name = name;
+            handle = CreateJobObject(IntPtr.Zero, name);
+            UpdateMemoryLimit(null, null, null);
+        }
+
+        public IntPtr GetHandle()
+        {
+            // Need a DllImport for kernal32 OpenJobObject
+            return OpenJobObject(JOB_OBJECT_ALL_ACCESS, false, _name);
         }
 
         public void UpdateMemoryLimit(uint? minPrcWorkingSet, uint? maxPrcWorkingSet, uint? maxJobVirtualMemory)

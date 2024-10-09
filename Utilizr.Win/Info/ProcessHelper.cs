@@ -282,7 +282,7 @@ namespace Utilizr.Win.Info
                 return result;
             }
 
-            var job = new Job();
+            var job = new Job("job1");
             job.AddProcess(pi.hProcess);
             Kernel32.ResumeThread(pi.hThread);
 
@@ -294,11 +294,13 @@ namespace Utilizr.Win.Info
 
             pidSetCallback?.Invoke((int)pi.dwProcessId);
             Log.Info("Job.Handle going into wait");
-            Kernel32.WaitForSingleObject(job.handle, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+            var handle = job.GetHandle();
+            Kernel32.WaitForSingleObject(handle, Kernel32.WAIT_FOR_OBJECT_INFINITE); // Todo: this doesn't come out of the wait
             Log.Info("Job.Handle finished wait");
 
             result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
             Kernel32.CloseHandle(pi.hProcess);
+            Kernel32.CloseHandle(handle);
             exitCode = ec;
 
             if (exitCode != 0)
@@ -347,7 +349,7 @@ namespace Utilizr.Win.Info
                 );
             }
 
-            var job = new Job();
+            var job = new Job("job3");
             foreach (var childProcess in children)
             {
                 // Hopefully we can add all the processes, then wait until all are complete through the job
@@ -392,8 +394,11 @@ namespace Utilizr.Win.Info
 
             // Todo: method needed to await completion of job
             Log.Info("Job.Handle going into wait");
-            Kernel32.WaitForSingleObject(job.handle, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+            var h = job.GetHandle();
+            Kernel32.WaitForSingleObject(h, Kernel32.WAIT_FOR_OBJECT_INFINITE);
             Log.Info("Job.Handle finished wait");
+
+            Kernel32.CloseHandle(h);
 
             return success;
         }
