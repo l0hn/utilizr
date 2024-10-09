@@ -349,7 +349,7 @@ namespace Utilizr.Win.Info
             foreach (var childProcess in children)
             {
                 // Hopefully we can add all the processes, then wait until all are complete through the job
-                job.AddProcess(childProcess.Id);
+                job.AddProcess(childProcess.Handle);
                 childProcess.ResumeProcess();
 
 
