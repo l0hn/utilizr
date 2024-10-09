@@ -293,7 +293,9 @@ namespace Utilizr.Win.Info
             }
 
             pidSetCallback?.Invoke((int)pi.dwProcessId);
+            Log.Info("Job.Handle going into wait");
             Kernel32.WaitForSingleObject(job.handle, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+            Log.Info("Job.Handle finished wait");
 
             result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
             Kernel32.CloseHandle(pi.hProcess);
@@ -389,7 +391,9 @@ namespace Utilizr.Win.Info
             }
 
             // Todo: method needed to await completion of job
+            Log.Info("Job.Handle going into wait");
             Kernel32.WaitForSingleObject(job.handle, Kernel32.WAIT_FOR_OBJECT_INFINITE);
+            Log.Info("Job.Handle finished wait");
 
             return success;
         }
