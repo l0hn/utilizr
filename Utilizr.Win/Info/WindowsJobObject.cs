@@ -5,7 +5,7 @@ using Utilizr.Win32.Kernel32.Structs;
 
 namespace Utilizr.Win.Info
 {
-    public class Job : IDisposable
+    public class WindowsJobObject : IDisposable
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);

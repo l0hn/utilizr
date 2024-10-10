@@ -279,7 +279,7 @@ namespace Utilizr.Win.Info
                 return result;
             }
 
-            var job = new Job();
+            var job = new WindowsJobObject();
             job.StartProcessAndWait(pi);
 
             if (!waitForExit)
