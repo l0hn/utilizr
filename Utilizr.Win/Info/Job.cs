@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Structs;
 
 namespace Utilizr.Win.Info
 {
-
-
     public class Job : IDisposable
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -73,14 +70,10 @@ namespace Utilizr.Win.Info
             while (GetQueuedCompletionStatus(ioPort, out numberOfBytes, out completionKey, out overlapped, uint.MaxValue))
             {
                 if (completionKey == (UIntPtr)job)
-                {
-                    Console.WriteLine("All processes in the job have exited.");
                     break;
-                }
             }
 
             Marshal.FreeHGlobal(completionPortPtr);
         }
     }
-
 }

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using Utilizr.Logging;
-using Utilizr.Win.Extensions;
 using Utilizr.Win32.Advapi32;
 using Utilizr.Win32.Advapi32.Flags;
 using Utilizr.Win32.Advapi32.Structs;
@@ -200,32 +198,6 @@ namespace Utilizr.Win.Info
             return LaunchProcessAsUser(cmdLine, token, envBlock, userInteractive, waitForExit, out _, pidSetCallback);
         }
 
-
-
-        //[DllImport("kernel32.dll", SetLastError = true)]
-        //static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
-
-        //[DllImport("kernel32.dll", SetLastError = true)]
-        //static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
-
-        //[DllImport("kernel32.dll", SetLastError = true)]
-        //static extern IntPtr CreateIoCompletionPort(IntPtr FileHandle, IntPtr ExistingCompletionPort, UIntPtr CompletionKey, uint NumberOfConcurrentThreads);
-
-        //[DllImport("kernel32.dll", SetLastError = true)]
-        //static extern bool GetQueuedCompletionStatus(IntPtr CompletionPort, out uint lpNumberOfBytes, out UIntPtr lpCompletionKey, out IntPtr lpOverlapped, uint dwMilliseconds);
-
-        //[DllImport("kernel32.dll", SetLastError = true)]
-        //private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
-
-        //[StructLayout(LayoutKind.Sequential)]
-        //struct JOBOBJECT_ASSOCIATE_COMPLETION_PORT
-        //{
-        //    public UIntPtr CompletionKey;
-        //    public IntPtr CompletionPort;
-        //}
-
-
-
         public static bool LaunchProcessAsUser(string cmdLine, IntPtr token, IntPtr envBlock, bool userInteractive, bool waitForExit, out uint? exitCode, Action<int>? pidSetCallback = null)
         {
             bool result = false;
@@ -260,29 +232,9 @@ namespace Utilizr.Win.Info
             si.cbReserved2 = 0;
             si.lpTitle = null;
 
-
-
-
-            //IntPtr job = CreateJobObject(IntPtr.Zero, null);
-            //IntPtr ioPort = CreateIoCompletionPort(IntPtr.Zero, IntPtr.Zero, UIntPtr.Zero, 1);
-
-            //JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
-            //{
-            //    CompletionKey = (UIntPtr)job,
-            //    CompletionPort = ioPort
-            //};
-
-            //IntPtr completionPortPtr = Marshal.AllocHGlobal(Marshal.SizeOf(completionPort));
-            //Marshal.StructureToPtr(completionPort, completionPortPtr, false);
-
-            //SetInformationJobObject(job, 7, completionPortPtr, (uint)Marshal.SizeOf(completionPort));
-
-
-
             //When INTERACTIVE, service run locally, and needs to use CreateProcess since service 
             //running under logged in user's context, not local system. Account will not have
             //SE_INCREASE_QUOTA_NAME, and will fail with ERROR_PRIVILEGE_NOT_HELD (1314)
-
 
             // Environment.UserInteractive always return true for .net core, expose so callee
             // can set explicitly: https://github.com/dotnet/runtime/issues/770
@@ -327,31 +279,8 @@ namespace Utilizr.Win.Info
                 return result;
             }
 
-            //var job = new Job("job1");
-            //job.AddProcess(pi.hProcess);
-            //AssignProcessToJobObject(job, pi.hProcess);
-            //Kernel32.ResumeThread(pi.hThread);
-
-            //uint numberOfBytes;
-            //UIntPtr completionKey;
-            //IntPtr overlapped;
-
-            //// Wait for job notifications
-            //while (GetQueuedCompletionStatus(ioPort, out numberOfBytes, out completionKey, out overlapped, uint.MaxValue))
-            //{
-            //    if (completionKey == (UIntPtr)job)
-            //    {
-            //        Console.WriteLine("All processes in the job have exited.");
-            //        break;
-            //    }
-            //}
-
-            //Marshal.FreeHGlobal(completionPortPtr);
-
             var job = new Job();
-            Log.Info("Job.Handle going into wait");
             job.StartProcessAndWait(pi);
-            Log.Info("Job.Handle finished wait");
 
             if (!waitForExit)
             {
@@ -359,10 +288,6 @@ namespace Utilizr.Win.Info
             }
 
             pidSetCallback?.Invoke((int)pi.dwProcessId);
-            //Log.Info("Job.Handle going into wait");
-            //var handle = job.GetHandle();
-            //Kernel32.WaitForSingleObject(handle, Kernel32.WAIT_FOR_OBJECT_INFINITE); // Todo: this doesn't come out of the wait
-            //Log.Info("Job.Handle finished wait");
 
             result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
             Kernel32.CloseHandle(pi.hProcess);
@@ -373,10 +298,6 @@ namespace Utilizr.Win.Info
                 Log.Exception(new Exception($"Started {cmdLine} but exited with {exitCode}"));
                 return false;
             }
-
-//            var children = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
-  //          Log.Info(LOG_CAT, "Children: {0}", children.Count.ToString());
-            //result = WaitOnChildren(children, cmdLine, recursiveWait: true) && result;
             
             return result;
         }
