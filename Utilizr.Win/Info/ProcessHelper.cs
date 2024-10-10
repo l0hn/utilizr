@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Utilizr.Logging;
 using Utilizr.Win32.Advapi32;
 using Utilizr.Win32.Advapi32.Flags;
@@ -289,7 +290,14 @@ namespace Utilizr.Win.Info
 
             pidSetCallback?.Invoke((int)pi.dwProcessId);
 
-            result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
+            uint ec = 0;
+            for (var trys = 10; trys > 0; trys--)
+            {
+                result = Kernel32.GetExitCodeProcess(pi.hProcess, out ec);
+                if (ec != 259) break;
+                Thread.Sleep(1000);
+            }
+
             Kernel32.CloseHandle(pi.hProcess);
             exitCode = ec;
 
