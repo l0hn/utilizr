@@ -299,13 +299,13 @@ namespace Utilizr.Win.Info
             }
 
             Kernel32.CloseHandle(pi.hProcess);
-            exitCode = ec;
+            //exitCode = ec;
 
-            if (exitCode != 0)
-            {
-                Log.Exception(new Exception($"Started {cmdLine} but exited with {exitCode}"));
-                return false;
-            }
+            //if (exitCode != 0)
+            //{
+            //    Log.Exception(new Exception($"Started {cmdLine} but exited with {exitCode}"));
+            //    return false;
+            //}
             
             return result;
         }
