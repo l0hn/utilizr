@@ -65,8 +65,10 @@ namespace Utilizr.Globalisation
                     var allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
 
                     foreach (var culture in allCultures)
-                    {                    
-                        if (!_lookupDictionary.ContainsKey(culture.IetfLanguageTag.ToLowerInvariant()))
+                    {
+                        // _lookupDictionary won't be populated until language set and preloaded.
+                        // We want to see what we can select.
+                        if (!_moFileLookup.ContainsKey(culture.IetfLanguageTag.ToLowerInvariant()))
                             continue;
 
                         supported.Add(
@@ -264,7 +266,7 @@ namespace Utilizr.Globalisation
             {
                 if (_lookupDictionary.TryGetValue(ietfLangTag, out ctx))
                 {
-                    return true;   
+                    return true;
                 }
             }
             return false;
