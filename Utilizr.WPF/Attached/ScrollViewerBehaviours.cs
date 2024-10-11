@@ -131,8 +131,21 @@ namespace Utilizr.WPF.Attached
             if (!scrollViewer.IsLoaded)
                 return;
 
-            if (double.IsNaN(scrollViewer.ActualHeight) || double.IsNaN(scrollViewer.ActualWidth))
+            // todo: Expose the height of the fade, and the width of the scroll viewer
+            const double fadeHeight = 36; // 3
+            const int scrollBarWidth = 10; // 2
+
+            var width = scrollViewer.ActualWidth;
+            var height = scrollViewer.ActualHeight;
+
+            if (double.IsNaN(scrollViewer.ActualHeight) ||
+                double.IsNaN(scrollViewer.ActualWidth) ||
+                scrollViewer.ActualHeight - fadeHeight < 1 ||
+                scrollViewer.ActualHeight - scrollBarWidth < 1)
+            {
+                scrollViewer.OpacityMask = null;
                 return;
+            }
 
             //  ______________
             // |            | |
@@ -155,10 +168,6 @@ namespace Utilizr.WPF.Attached
                 ViewboxUnits = BrushMappingMode.RelativeToBoundingBox,
             };
 
-            // todo: Expose the height of the fade, and the width of the scroll viewer
-            const double fadeHeight = 36; // 3
-            const int scrollBarWidth = 10; // 2
-
             _solidBrush ??= new SolidColorBrush(Colors.White);
             _pen ??= new Pen(_solidBrush, 0);
             _fadeBrush ??= new LinearGradientBrush(
@@ -174,9 +183,9 @@ namespace Utilizr.WPF.Attached
             );
 
             var drawingGroup = new DrawingGroup();
-            drawingGroup.Children.Add(new GeometryDrawing(_solidBrush, _pen, new RectangleGeometry(new Rect(0, 0, scrollViewer.ActualWidth, scrollViewer.ActualHeight - fadeHeight)))); //1
-            drawingGroup.Children.Add(new GeometryDrawing(_solidBrush, _pen, new RectangleGeometry(new Rect(scrollViewer.ActualWidth - scrollBarWidth, 0, scrollBarWidth, scrollViewer.ActualHeight)))); //2
-            drawingGroup.Children.Add(new GeometryDrawing(_fadeBrush, _pen, new RectangleGeometry(new Rect(0, scrollViewer.ActualHeight - fadeHeight, scrollViewer.ActualWidth, fadeHeight)))); //3
+            drawingGroup.Children.Add(new GeometryDrawing(_solidBrush, _pen, new RectangleGeometry(new Rect(0, 0, width, height - fadeHeight)))); //1
+            drawingGroup.Children.Add(new GeometryDrawing(_solidBrush, _pen, new RectangleGeometry(new Rect(width - scrollBarWidth, 0, scrollBarWidth, height)))); //2
+            drawingGroup.Children.Add(new GeometryDrawing(_fadeBrush, _pen, new RectangleGeometry(new Rect(0, height - fadeHeight, width, fadeHeight)))); //3
 
             drawingBrush.Drawing = drawingGroup;
             scrollViewer.OpacityMask = drawingBrush;
