@@ -280,13 +280,14 @@ namespace Utilizr.Win.Info
                 return result;
             }
 
-            var job = new WindowsJobObject();
-            job.StartProcessAndWait(pi);
-
             if (!waitForExit)
             {
+                Kernel32.ResumeThread(pi.hThread);
                 return true;
             }
+
+            var job = new WindowsJobObject();
+            job.StartProcessAndWait(pi);
 
             pidSetCallback?.Invoke((int)pi.dwProcessId);
 
