@@ -305,13 +305,8 @@ namespace Utilizr.Win.Info
 
             Kernel32.CloseHandle(pi.hProcess);
 
-
-            
-
-
             return result;
         }
-
 
         static bool IsUnsafeWaitProcess(string processName)
         {

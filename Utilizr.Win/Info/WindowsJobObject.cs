@@ -7,21 +7,6 @@ namespace Utilizr.Win.Info
 {
     public class WindowsJobObject : IDisposable
     {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr CreateIoCompletionPort(IntPtr FileHandle, IntPtr ExistingCompletionPort, UIntPtr CompletionKey, uint NumberOfConcurrentThreads);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool GetQueuedCompletionStatus(IntPtr CompletionPort, out uint lpNumberOfBytes, out UIntPtr lpCompletionKey, out IntPtr lpOverlapped, uint dwMilliseconds);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
-
         [StructLayout(LayoutKind.Sequential)]
         struct JOBOBJECT_ASSOCIATE_COMPLETION_PORT
         {
@@ -37,8 +22,8 @@ namespace Utilizr.Win.Info
         // Resume the previously created and suspended process
         public bool StartProcessAndWait(PROCESS_INFORMATION? pi, nint? hProcess = null, nint? hThread = null)
         {
-            IntPtr job = CreateJobObject(IntPtr.Zero, null);
-            IntPtr ioPort = CreateIoCompletionPort(IntPtr.Zero, IntPtr.Zero, UIntPtr.Zero, 1);
+            IntPtr job = Kernel32.CreateJobObject(IntPtr.Zero, null);
+            IntPtr ioPort = Kernel32.CreateIoCompletionPort(IntPtr.Zero, IntPtr.Zero, UIntPtr.Zero, 1);
             var success = false;
 
             JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
@@ -50,16 +35,16 @@ namespace Utilizr.Win.Info
             IntPtr completionPortPtr = Marshal.AllocHGlobal(Marshal.SizeOf(completionPort));
             Marshal.StructureToPtr(completionPort, completionPortPtr, false);
 
-            SetInformationJobObject(job, 7, completionPortPtr, (uint)Marshal.SizeOf(completionPort));
+            Kernel32.SetInformationJobObject(job, 7, completionPortPtr, (uint)Marshal.SizeOf(completionPort));
 
             if (pi != null)
             {
-                AssignProcessToJobObject(job, ((PROCESS_INFORMATION)pi).hProcess);
+                Kernel32.AssignProcessToJobObject(job, ((PROCESS_INFORMATION)pi).hProcess);
                 Kernel32.ResumeThread(((PROCESS_INFORMATION)pi).hThread);
             }
             else
             {
-                AssignProcessToJobObject(job, (nint)hProcess!);
+                Kernel32.AssignProcessToJobObject(job, (nint)hProcess!);
                 Kernel32.ResumeThread((nint)hThread!);
             }
 
@@ -68,7 +53,7 @@ namespace Utilizr.Win.Info
             IntPtr overlapped;
 
             // Wait for job notifications
-            while (GetQueuedCompletionStatus(ioPort, out numberOfBytes, out completionKey, out overlapped, uint.MaxValue))
+            while (Kernel32.GetQueuedCompletionStatus(ioPort, out numberOfBytes, out completionKey, out overlapped, uint.MaxValue))
             {
                 if (completionKey == (UIntPtr)job)
                 {
