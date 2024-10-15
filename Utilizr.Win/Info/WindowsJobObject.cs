@@ -35,10 +35,11 @@ namespace Utilizr.Win.Info
         }
 
         // Resume the previously created and suspended process
-        public void StartProcessAndWait(PROCESS_INFORMATION? pi, nint? hProcess = null, nint? hThread = null)
+        public bool StartProcessAndWait(PROCESS_INFORMATION? pi, nint? hProcess = null, nint? hThread = null)
         {
             IntPtr job = CreateJobObject(IntPtr.Zero, null);
             IntPtr ioPort = CreateIoCompletionPort(IntPtr.Zero, IntPtr.Zero, UIntPtr.Zero, 1);
+            var success = false;
 
             JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
             {
@@ -70,10 +71,15 @@ namespace Utilizr.Win.Info
             while (GetQueuedCompletionStatus(ioPort, out numberOfBytes, out completionKey, out overlapped, uint.MaxValue))
             {
                 if (completionKey == (UIntPtr)job)
+                {
+                    success = true;
                     break;
+                }
             }
 
             Marshal.FreeHGlobal(completionPortPtr);
+
+            return success;
         }
     }
 }

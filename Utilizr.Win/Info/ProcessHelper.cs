@@ -294,107 +294,24 @@ namespace Utilizr.Win.Info
             uint ec = 0;
             for (var trys = 10; trys > 0; trys--)
             {
-                result = Kernel32.GetExitCodeProcess(pi.hProcess, out ec);
-                if (ec != 259) break;
+                Kernel32.GetExitCodeProcess(pi.hProcess, out ec);
+                if (ec != 259)
+                {
+                    result = true;
+                    break;
+                }
                 Thread.Sleep(1000);
             }
 
             Kernel32.CloseHandle(pi.hProcess);
-            //exitCode = ec;
 
-            //if (exitCode != 0)
-            //{
-            //    Log.Exception(new Exception($"Started {cmdLine} but exited with {exitCode}"));
-            //    return false;
-            //}
+
             
+
+
             return result;
         }
 
-        //public static bool WaitOnChildren(List<Process> children, string parentExe, bool recursiveWait = false)
-        //{
-        //    bool success = true;
-        //    //string logExeArgsInfo = string.IsNullOrEmpty(parentArgs)
-        //    //    ? parentExe
-        //    //    : $"{parentExe} {parentArgs}";
-
-        //    string logExeArgsInfo = parentExe;
-
-        //    //Log.Info(LogCat, "'{0}' started {1:N0} child process(es)", logExeArgsInfo, children.Count);
-
-        //    var idLookup = new Dictionary<int, string>();
-        //    void exitedHandler(object s, EventArgs e)
-        //    {
-        //        // Cannot just get the ExitCode from the process, since the childProcess
-        //        // object didn't start it. This is a hacky work around...
-
-        //        if (!(s is Process process))
-        //            return;
-
-        //        idLookup.TryGetValue(process.Id, out string executablePath);
-
-        //        success = success && process.ExitCode == 0;
-        //        Log.Info(
-        //            LOG_CAT,
-        //            "{0} process '{1}' returned {2} from parent '{3}'",
-        //            nameof(WaitOnChildren),
-        //            executablePath,
-        //            process.ExitCode,
-        //            logExeArgsInfo
-        //        );
-        //    }
-
-        //    var job = new Job("job3");
-        //    foreach (var childProcess in children)
-        //    {
-        //        // Hopefully we can add all the processes, then wait until all are complete through the job
-        //        job.AddProcess(childProcess.Handle);
-        //        childProcess.ResumeProcess();
-
-
-        //        var loopLocal = childProcess;
-        //        if (loopLocal.HasExited)
-        //            continue;
-
-        //        if (IsUnsafeWaitProcess(loopLocal.ProcessName))
-        //            continue;
-
-        //        try
-        //        {
-        //            // var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
-        //            idLookup[loopLocal.Id] = loopLocal.MainModule!.FileName; //wmiInfo.ExecutablePath;
-
-        //            Log.Info(
-        //                LOG_CAT,
-        //                "Waiting on child process '{0}' from '{1}'",
-        //                idLookup[loopLocal.Id], //wmiInfo.ExecutablePath,
-        //                logExeArgsInfo
-        //            );
-
-        //            loopLocal.EnableRaisingEvents = true;
-        //            loopLocal.Exited += exitedHandler;
-        //            var grandChildren = loopLocal.GetChildProcesses().ToList();
-        //            success = WaitOnChildren(grandChildren, /*wmiInfo.ExecutablePath*/ idLookup[loopLocal.Id], true) && success;
-        //            loopLocal.WaitForExit();
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Log.Exception(LOG_CAT, ex);
-        //        }
-        //        finally
-        //        {
-        //            loopLocal.Exited -= exitedHandler;
-        //        }
-        //    }
-
-        //    // Todo: method needed to await completion of job
-        //    Log.Info("Job.Handle going into wait");
-        //    var h = job.GetHandle();
-        //    Kernel32.WaitForSingleObject(h, Kernel32.WAIT_FOR_OBJECT_INFINITE);
-        //    Log.Info("Job.Handle finished wait");
-
-        //    return success;
-        //}
 
         static bool IsUnsafeWaitProcess(string processName)
         {
