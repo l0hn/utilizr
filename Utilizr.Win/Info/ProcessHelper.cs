@@ -240,6 +240,8 @@ namespace Utilizr.Win.Info
             // Environment.UserInteractive always return true for .net core, expose so callee
             // can set explicitly: https://github.com/dotnet/runtime/issues/770
 
+            uint suspendedFlag = waitForExit ? ProcessCreationFlags.CREATE_SUSPENDED : 0;
+
             if (userInteractive)
             {
                 result = Kernel32.CreateProcess(
@@ -248,7 +250,7 @@ namespace Utilizr.Win.Info
                     ref saProcess,
                     ref saThread,
                     false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE | ProcessCreationFlags.CREATE_SUSPENDED,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE | suspendedFlag,
                     envBlock,
                     null,
                     ref si,
@@ -264,7 +266,7 @@ namespace Utilizr.Win.Info
                     ref saProcess,
                     ref saThread,
                     false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_SUSPENDED,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | suspendedFlag,
                     envBlock,
                     null,
                     ref si,
@@ -278,12 +280,6 @@ namespace Utilizr.Win.Info
                 Log.Exception(new Win32Exception(error), $"{nameof(Advapi32.CreateProcessAsUser)}");
 
                 return result;
-            }
-
-            if (!waitForExit)
-            {
-                Kernel32.ResumeThread(pi.hThread);
-                return true;
             }
 
             var job = new WindowsJobObject();
