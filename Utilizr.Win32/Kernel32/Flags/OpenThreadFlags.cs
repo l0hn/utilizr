@@ -13,6 +13,7 @@ namespace Utilizr.Win32.Kernel32.Flags
         QUERY_INFORMATION =             (0x0040),
         SET_THREAD_TOKEN =              (0x0080),
         IMPERSONATE =                   (0x0100),
-        DIRECT_IMPERSONATION =          (0x0200)
+        DIRECT_IMPERSONATION =          (0x0200),
+        THREAD_ALL_ACCESS =             (0x1F03FF),
     }
 }

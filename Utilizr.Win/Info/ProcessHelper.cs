@@ -4,8 +4,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Utilizr.Logging;
-using Utilizr.Win.Extensions;
 using Utilizr.Win32.Advapi32;
 using Utilizr.Win32.Advapi32.Flags;
 using Utilizr.Win32.Advapi32.Structs;
@@ -205,8 +205,8 @@ namespace Utilizr.Win.Info
             exitCode = null;
 
             var pi = new PROCESS_INFORMATION();
-            var saProcess = new SECURITY_ATTRIBUTES();
-            var saThread = new SECURITY_ATTRIBUTES();
+            var saProcess = new Win32.Kernel32.Structs.SECURITY_ATTRIBUTES();
+            var saThread = new Win32.Kernel32.Structs.SECURITY_ATTRIBUTES();
             saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
             saThread.nLength = (uint)Marshal.SizeOf(saThread);
 
@@ -233,14 +233,14 @@ namespace Utilizr.Win.Info
             si.cbReserved2 = 0;
             si.lpTitle = null;
 
-
             //When INTERACTIVE, service run locally, and needs to use CreateProcess since service 
             //running under logged in user's context, not local system. Account will not have
             //SE_INCREASE_QUOTA_NAME, and will fail with ERROR_PRIVILEGE_NOT_HELD (1314)
 
-
             // Environment.UserInteractive always return true for .net core, expose so callee
             // can set explicitly: https://github.com/dotnet/runtime/issues/770
+
+            uint suspendedFlag = waitForExit ? ProcessCreationFlags.CREATE_SUSPENDED : 0;
 
             if (userInteractive)
             {
@@ -250,7 +250,7 @@ namespace Utilizr.Win.Info
                     ref saProcess,
                     ref saThread,
                     false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | ProcessCreationFlags.CREATE_NEW_CONSOLE | suspendedFlag,
                     envBlock,
                     null,
                     ref si,
@@ -266,7 +266,7 @@ namespace Utilizr.Win.Info
                     ref saProcess,
                     ref saThread,
                     false,
-                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT,
+                    ProcessCreationFlags.CREATE_UNICODE_ENVIRONMENT | suspendedFlag,
                     envBlock,
                     null,
                     ref si,
@@ -284,100 +284,31 @@ namespace Utilizr.Win.Info
 
             if (!waitForExit)
             {
+                pidSetCallback?.Invoke((int)pi.dwProcessId);
+                Kernel32.CloseHandle(pi.hProcess);
                 return true;
             }
 
+            var job = new WindowsJobObject();
+            job.StartProcessAndWait(pi);
+
             pidSetCallback?.Invoke((int)pi.dwProcessId);
-            Kernel32.WaitForSingleObject(pi.hProcess, Kernel32.WAIT_FOR_OBJECT_INFINITE);
 
-            result = Kernel32.GetExitCodeProcess(pi.hProcess, out uint ec);
+            uint ec = 0;
+            for (var trys = 10; trys > 0; trys--)
+            {
+                Kernel32.GetExitCodeProcess(pi.hProcess, out ec);
+                if (ec != 259)
+                {
+                    result = true;
+                    break;
+                }
+                Thread.Sleep(1000);
+            }
+
             Kernel32.CloseHandle(pi.hProcess);
-            exitCode = ec;
 
-            if (exitCode != 0)
-            {
-                Log.Exception(new Exception($"Started {cmdLine} but exited with {exitCode}"));
-                return false;
-            }
-
-            var children = ProcessEx.GetChildProcesses(pi.dwProcessId).ToList();
-            Log.Info(LOG_CAT, "Children: {0}", children.Count.ToString());
-            result = WaitOnChildren(children, cmdLine, recursiveWait: true) && result;
-            
             return result;
-        }
-
-        public static bool WaitOnChildren(List<Process> children, string parentExe, bool recursiveWait = false)
-        {
-            bool success = true;
-            //string logExeArgsInfo = string.IsNullOrEmpty(parentArgs)
-            //    ? parentExe
-            //    : $"{parentExe} {parentArgs}";
-
-            string logExeArgsInfo = parentExe;
-
-            //Log.Info(LogCat, "'{0}' started {1:N0} child process(es)", logExeArgsInfo, children.Count);
-
-            var idLookup = new Dictionary<int, string>();
-            void exitedHandler(object s, EventArgs e)
-            {
-                // Cannot just get the ExitCode from the process, since the childProcess
-                // object didn't start it. This is a hacky work around...
-
-                if (!(s is Process process))
-                    return;
-
-                idLookup.TryGetValue(process.Id, out string executablePath);
-
-                success = success && process.ExitCode == 0;
-                Log.Info(
-                    LOG_CAT,
-                    "{0} process '{1}' returned {2} from parent '{3}'",
-                    nameof(WaitOnChildren),
-                    executablePath,
-                    process.ExitCode,
-                    logExeArgsInfo
-                );
-            }
-
-            foreach (var childProcess in children)
-            {
-                var loopLocal = childProcess;
-                if (loopLocal.HasExited)
-                    continue;
-
-                if (IsUnsafeWaitProcess(loopLocal.ProcessName))
-                    continue;
-
-                try
-                {
-                    var wmiInfo = ProcessHelper.GetRunningProcess(loopLocal.Id);
-                    idLookup[loopLocal.Id] = wmiInfo.ExecutablePath;
-
-                    Log.Info(
-                        LOG_CAT,
-                        "Waiting on child process '{0}' from '{1}'",
-                        wmiInfo.ExecutablePath,
-                        logExeArgsInfo
-                    );
-
-                    loopLocal.EnableRaisingEvents = true;
-                    loopLocal.Exited += exitedHandler;
-                    var grandChildren = loopLocal.GetChildProcesses().ToList();
-                    success = WaitOnChildren(grandChildren, wmiInfo.ExecutablePath, true) && success;
-                    loopLocal.WaitForExit();
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception(LOG_CAT, ex);
-                }
-                finally
-                {
-                    loopLocal.Exited -= exitedHandler;
-                }
-            }
-
-            return success;
         }
 
         static bool IsUnsafeWaitProcess(string processName)
