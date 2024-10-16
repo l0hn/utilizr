@@ -282,6 +282,13 @@ namespace Utilizr.Win.Info
                 return result;
             }
 
+            if (!waitForExit)
+            {
+                pidSetCallback?.Invoke((int)pi.dwProcessId);
+                Kernel32.CloseHandle(pi.hProcess);
+                return true;
+            }
+
             var job = new WindowsJobObject();
             job.StartProcessAndWait(pi);
 
