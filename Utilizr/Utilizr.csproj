@@ -9,32 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="VPN\OpenVPN.NetCore\bin\**" />
-    <Compile Remove="VPN\OpenVPN.NetCore\obj\**" />
-    <Compile Remove="VPN\Utilizr.VPN.NetCore\bin\**" />
-    <Compile Remove="VPN\Utilizr.VPN.NetCore\obj\**" />
-    <EmbeddedResource Remove="VPN\OpenVPN.NetCore\bin\**" />
-    <EmbeddedResource Remove="VPN\OpenVPN.NetCore\obj\**" />
-    <EmbeddedResource Remove="VPN\Utilizr.VPN.NetCore\bin\**" />
-    <EmbeddedResource Remove="VPN\Utilizr.VPN.NetCore\obj\**" />
-    <None Remove="VPN\OpenVPN.NetCore\bin\**" />
-    <None Remove="VPN\OpenVPN.NetCore\obj\**" />
-    <None Remove="VPN\Utilizr.VPN.NetCore\bin\**" />
-    <None Remove="VPN\Utilizr.VPN.NetCore\obj\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="VPN\OpenVPN.NetCore\" />
-    <Folder Include="VPN\Utilizr.VPN.NetCore\" />
   </ItemGroup>
 
 </Project>

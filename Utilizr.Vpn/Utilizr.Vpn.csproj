@@ -8,39 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Utilizr.OpenVPN.NetCore\bin\**" />
-    <Compile Remove="Utilizr.OpenVPN.NetCore\obj\**" />
-    <Compile Remove="Utilizr.VPN.NetCore\bin\**" />
-    <Compile Remove="Utilizr.VPN.NetCore\obj\**" />
-    <Compile Remove="Utilizr.VPN\bin\**" />
-    <Compile Remove="Utilizr.VPN\obj\**" />
-    <Compile Remove="Utilizr.VPN\OpenVPN.NetCore\bin\**" />
-    <Compile Remove="Utilizr.VPN\OpenVPN.NetCore\obj\**" />
-    <Compile Remove="Utilizr.VPN\Utilizr.VPN.NetCore\bin\**" />
-    <Compile Remove="Utilizr.VPN\Utilizr.VPN.NetCore\obj\**" />
-    <EmbeddedResource Remove="Utilizr.OpenVPN.NetCore\bin\**" />
-    <EmbeddedResource Remove="Utilizr.OpenVPN.NetCore\obj\**" />
-    <EmbeddedResource Remove="Utilizr.VPN.NetCore\bin\**" />
-    <EmbeddedResource Remove="Utilizr.VPN.NetCore\obj\**" />
-    <EmbeddedResource Remove="Utilizr.VPN\bin\**" />
-    <EmbeddedResource Remove="Utilizr.VPN\obj\**" />
-    <EmbeddedResource Remove="Utilizr.VPN\OpenVPN.NetCore\bin\**" />
-    <EmbeddedResource Remove="Utilizr.VPN\OpenVPN.NetCore\obj\**" />
-    <EmbeddedResource Remove="Utilizr.VPN\Utilizr.VPN.NetCore\bin\**" />
-    <EmbeddedResource Remove="Utilizr.VPN\Utilizr.VPN.NetCore\obj\**" />
-    <None Remove="Utilizr.OpenVPN.NetCore\bin\**" />
-    <None Remove="Utilizr.OpenVPN.NetCore\obj\**" />
-    <None Remove="Utilizr.VPN.NetCore\bin\**" />
-    <None Remove="Utilizr.VPN.NetCore\obj\**" />
-    <None Remove="Utilizr.VPN\bin\**" />
-    <None Remove="Utilizr.VPN\obj\**" />
-    <None Remove="Utilizr.VPN\OpenVPN.NetCore\bin\**" />
-    <None Remove="Utilizr.VPN\OpenVPN.NetCore\obj\**" />
-    <None Remove="Utilizr.VPN\Utilizr.VPN.NetCore\bin\**" />
-    <None Remove="Utilizr.VPN\Utilizr.VPN.NetCore\obj\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
     <ProjectReference Include="..\Utilizr.Logging\Utilizr.Logging.csproj" />
     <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
@@ -100,12 +67,4 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Utilizr.OpenVPN.NetCore\" />
-    <Folder Include="Utilizr.VPN.NetCore\" />
-    <Folder Include="Utilizr.VPN\OpenVPN.NetCore\" />
-    <Folder Include="Utilizr.VPN\Utilizr.VPN.NetCore\" />
-  </ItemGroup>
-
 </Project>
