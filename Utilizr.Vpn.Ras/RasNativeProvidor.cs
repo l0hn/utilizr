@@ -269,7 +269,7 @@ namespace Utilizr.Vpn.Ras
                 Log.Exception(
                     LOG_CAT,
                     ex,
-                    $"Failure ensuring {service} is running. Connection attempt will almost certainly fail is it's not running."
+                    $"Failure ensuring {service} is running. Connection attempt will almost certainly fail if it's not running."
                 );
             }
         }
