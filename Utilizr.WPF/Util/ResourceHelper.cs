@@ -177,7 +177,6 @@ namespace Utilizr.WPF.Util
 
                 if (resourceKey == "icon.ico")
                 {
-                    //Log.Info(LOG_CAT, $" Preparing Request {0} : [Token: {1}]", "({0}){1}", requestObj.MethodLogStr, requestObj.Endpoint, token);
                     Log.Info("ResourceHelper", "KRIS XXXX icon.ico");
                 }
 

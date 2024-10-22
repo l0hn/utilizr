@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Windows.Media.Imaging;
+using Utilizr.Logging;
 
 namespace Utilizr.WPF.Util
 {
@@ -25,6 +26,8 @@ namespace Utilizr.WPF.Util
                 ? resource
                 : $"{theme}/{resource}";
 
+            Log.Info("ImageCache", $"KRIS Get {resource}");
+
             BitmapFrame? result;
             if (_cache.TryGetValue(themedResource, out result))
                 return result;
@@ -47,6 +50,7 @@ namespace Utilizr.WPF.Util
 
         internal static string? GetSvgSource(string resource)
         {
+            Log.Info("ImageCache", $"KRIS GetSvgSource {resource}");
             if (_cacheSvg.TryGetValue(resource, out string? rawSvg))
                 return rawSvg;
 
