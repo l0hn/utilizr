@@ -173,6 +173,13 @@ namespace Utilizr.WPF.Util
             try
             {
                 CheckDesignMode();
+                Log.Info("ResourceHelper", $"KRIS {resourceKey}");
+
+                if (resourceKey == "icon.ico")
+                {
+                    //Log.Info(LOG_CAT, $" Preparing Request {0} : [Token: {1}]", "({0}){1}", requestObj.MethodLogStr, requestObj.Endpoint, token);
+                    Log.Info("ResourceHelper", "KRIS XXXX icon.ico");
+                }
 
                 var result = ImageCache.Get(resourceKey);
                 if (result != null)
