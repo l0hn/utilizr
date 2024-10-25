@@ -68,8 +68,13 @@ namespace Utilizr.Globalisation
                     {
                         // _lookupDictionary won't be populated until language set and preloaded.
                         // We want to see what we can select.
-                        if (!_moFileLookup.ContainsKey(culture.IetfLanguageTag.ToLowerInvariant()))
+                        // NOTE: _moFileLookup only accounts for files indexed from disk internally by this class and
+                        // doesn't account for resources provided as streams externally, we need to check for those too.
+                        if (!_moFileLookup.ContainsKey(culture.IetfLanguageTag.ToLowerInvariant())
+                            && !_lookupDictionary.ContainsKey(culture.IetfLanguageTag.ToLowerInvariant())) 
+                        {
                             continue;
+                        }
 
                         supported.Add(
                             new SupportedLanguage(
