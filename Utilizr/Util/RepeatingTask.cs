@@ -60,7 +60,7 @@ public class RepeatingTask: IDisposable {
             {
                 _resetEvent.WaitOne();
                 _cancelInterval.Dispose();
-                _cancelInterval = new CancellationTokenSource(_interval);
+                _cancelInterval = new CancellationTokenSource();
                 _resetEvent.WaitOne();
 
                 if (_firstRunComplete || !_runImmediately) {

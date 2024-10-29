@@ -1,4 +1,6 @@
-﻿namespace Utilizr.Vpn
+﻿using Utilizr.Util;
+
+namespace Utilizr.Vpn
 {
 
     public delegate void ConnectionStateHandler(object sender, string host, Exception? error, object? userContext=null);

@@ -4,6 +4,7 @@ using Utilizr.Async;
 using Utilizr.Extensions;
 using Utilizr.Globalisation;
 using Utilizr.Logging;
+using Utilizr.Util;
 
 namespace Utilizr.Vpn.Ras
 {
