@@ -158,7 +158,7 @@ namespace Utilizr.Info
             return GetAppDirectory(dirName, DirectoryRoot);
         }
 
-#if WINDOWS
+//#if WINDOWS
         private static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
         {
             if (string.IsNullOrEmpty(AppName))
@@ -185,16 +185,16 @@ namespace Utilizr.Info
             //AppInfoRoot.InstallDirectory
             return Path.Combine(AppDirectory, dirName);
         }
-#else
-        private static string GetAppDirectory(string dirName, AppInfoRoot rootDir) {
-            if (AppName.IsNullOrEmpty())
-            {
-                throw new InvalidOperationException($"AppName must be specified before calling {nameof(GetAppDirectory)}");
-            }
-            var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            return Path.Combine(userHome, "Library", "Application Support", AppName, dirName);
-        }
-#endif
+//#else
+//        private static string GetAppDirectory(string dirName, AppInfoRoot rootDir) {
+//            if (AppName.IsNullOrEmpty())
+//            {
+//                throw new InvalidOperationException($"AppName must be specified before calling {nameof(GetAppDirectory)}");
+//            }
+//            var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+//            return Path.Combine(userHome, "Library", "Application Support", AppName, dirName);
+//        }
+//#endif
 
 
         public static void ZipLogs(string destinationFile)
