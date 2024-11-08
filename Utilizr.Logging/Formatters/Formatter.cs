@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 //using Utilizr.Extensions;
+using System.Diagnostics.CodeAnalysis;
 using Utilizr.Logging.Interfaces;
 
 namespace Utilizr.Logging.Formatters
@@ -219,7 +220,11 @@ namespace Utilizr.Logging.Formatters
                 }
             }
 
+#if NET8_0_OR_GREATER
+            public string? Eval([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.All)] LogRecord o)
+#else
             public string? Eval(LogRecord o)
+#endif
             {
                 if (_invalidExpression)
                 {

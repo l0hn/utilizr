@@ -43,7 +43,7 @@ namespace Utilizr.Info
             {
                 if (string.IsNullOrEmpty(_appDirectory))
                 {
-                    _appDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    _appDirectory = AppContext.BaseDirectory;
                 }
                 return _appDirectory!;
             }
