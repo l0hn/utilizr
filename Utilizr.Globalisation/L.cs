@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Utilizr.Globalisation.Events;
@@ -207,7 +208,14 @@ namespace Utilizr.Globalisation
 
         private static void IndexMoFiles()
         {
-            var moFileBase = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+            var moFileBase = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)!;
+
+            if (moFileBase == null || moFileBase == string.Empty)
+            {
+                Log.Warning("unable to determine base directory when indexing mo files from filesystem");
+                return;   
+            }
+
             IndexMoFiles(moFileBase);
             moFileBase = Path.Combine(moFileBase, "locale");
             IndexMoFiles(moFileBase);
