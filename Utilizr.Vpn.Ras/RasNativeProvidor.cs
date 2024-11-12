@@ -7,6 +7,7 @@ using Utilizr.Globalisation;
 using Utilizr.Logging;
 using Utilizr.Util;
 using Utilizr.Win32.Advapi32;
+using Utilizr.Win32.Advapi32.Flags;
 
 namespace Utilizr.Vpn.Ras
 {
@@ -85,33 +86,33 @@ namespace Utilizr.Vpn.Ras
         private const uint SERVICE_CHANGE_CONFIG = 0x00000002;
         private const uint SERVICE_NO_CHANGE = 0xFFFFFFFF;
 
-        private enum ServiceStartupType : uint
-        {
-            /// <summary>
-            /// A device driver started by the system loader. This value is valid only for driver services.
-            /// </summary>
-            BootStart = 0,
+        //private enum ServiceStartupType : uint
+        //{
+        //    /// <summary>
+        //    /// A device driver started by the system loader. This value is valid only for driver services.
+        //    /// </summary>
+        //    BootStart = 0,
 
-            /// <summary>
-            /// A device driver started by the IoInitSystem function. This value is valid only for driver services.
-            /// </summary>
-            SystemStart = 1,
+        //    /// <summary>
+        //    /// A device driver started by the IoInitSystem function. This value is valid only for driver services.
+        //    /// </summary>
+        //    SystemStart = 1,
 
-            /// <summary>
-            /// A service started automatically by the service control manager during system startup.
-            /// </summary>
-            Automatic = 2,
+        //    /// <summary>
+        //    /// A service started automatically by the service control manager during system startup.
+        //    /// </summary>
+        //    Automatic = 2,
 
-            /// <summary>
-            /// A service started by the service control manager when a process calls the StartService function.
-            /// </summary>
-            Manual = 3,
+        //    /// <summary>
+        //    /// A service started by the service control manager when a process calls the StartService function.
+        //    /// </summary>
+        //    Manual = 3,
 
-            /// <summary>
-            /// A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.
-            /// </summary>
-            Disabled = 4
-        }
+        //    /// <summary>
+        //    /// A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.
+        //    /// </summary>
+        //    Disabled = 4
+        //}
 
         public RasNativeProvider(string deviceName)
         {
@@ -150,6 +151,25 @@ namespace Utilizr.Vpn.Ras
             {
                 throw new Exception($"Failed to obtain a handle to service '{serviceName}'.");
             }
+
+            IntPtr ptr = Marshal.AllocHGlobal(4096);
+            uint dwBytesNeeded = 0;
+
+            bool success = Advapi32.QueryServiceConfig(serviceHandle, ptr, 4096, out dwBytesNeeded);
+
+            if (!success)
+            {
+                throw new Exception($"Failed to obtain a config information to service '{serviceName}'.");
+            }
+
+            var queryServiceConfig = new QueryServiceConfig();
+
+            Marshal.PtrToStructure(ptr, queryServiceConfig);
+
+            Marshal.FreeHGlobal(ptr);
+
+            if (queryServiceConfig.dwStartType != 4) //Service Start Type Disabled
+                return;
 
             //Change the start mode
             bool changeServiceSuccess = Advapi32.ChangeServiceConfig(serviceHandle, SERVICE_NO_CHANGE, (uint)startType, SERVICE_NO_CHANGE, null, null, IntPtr.Zero, null, null, null, null);
@@ -314,7 +334,18 @@ namespace Utilizr.Vpn.Ras
             const string service = "rasman";
             try
             {
-                ChangeServiceStartType(service, ServiceStartupType.Manual);
+                try
+                {
+                    ChangeServiceStartType(service, ServiceStartupType.Manual);
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception(
+                    LOG_CAT,
+                    ex,
+                    $"Failure during changing the {service} startup type."
+                );
+                }
 
                 using (var controller = new ServiceController(service))
                 {

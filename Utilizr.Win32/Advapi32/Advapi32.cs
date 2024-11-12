@@ -104,5 +104,8 @@ namespace Utilizr.Win32.Advapi32
 
         [DllImport(ADVAPI32_DLL, EntryPoint = "CloseServiceHandle")]
         public static extern int CloseServiceHandle(IntPtr hSCObject);
+
+        [DllImport(ADVAPI32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool QueryServiceConfig(IntPtr hService, IntPtr intPtrQueryConfig, uint cbBufSize, out uint pcbBytesNeeded);
     }
 }
