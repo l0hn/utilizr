@@ -94,13 +94,13 @@ namespace Utilizr.Win32.Advapi32
             uint nServiceType,
             uint nStartType,
             uint nErrorControl,
-            string lpBinaryPathName,
-            string lpLoadOrderGroup,
+            string? lpBinaryPathName,
+            string? lpLoadOrderGroup,
             IntPtr lpdwTagId,
             [In] char[] lpDependencies,
-            string lpServiceStartName,
-            string lpPassword,
-            string lpDisplayName);
+            string? lpServiceStartName,
+            string? lpPassword,
+            string? lpDisplayName);
 
         [DllImport(ADVAPI32_DLL, EntryPoint = "CloseServiceHandle")]
         public static extern int CloseServiceHandle(IntPtr hSCObject);
