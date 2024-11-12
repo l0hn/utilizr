@@ -82,8 +82,6 @@ namespace Utilizr.Win32.Advapi32
             out PROCESS_INFORMATION lpProcessInformation
         );
 
-        //------ KRIS
-
         [DllImport(ADVAPI32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr OpenSCManager(string machineName, string databaseName, uint dwAccess);
 
@@ -106,7 +104,5 @@ namespace Utilizr.Win32.Advapi32
 
         [DllImport(ADVAPI32_DLL, EntryPoint = "CloseServiceHandle")]
         public static extern int CloseServiceHandle(IntPtr hSCObject);
-
-        //--------
     }
 }
