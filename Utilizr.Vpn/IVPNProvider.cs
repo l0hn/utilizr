@@ -1,4 +1,6 @@
-﻿namespace Utilizr.Vpn
+﻿using Utilizr.Util;
+
+namespace Utilizr.Vpn
 {
     public interface IVpnProvider
     {

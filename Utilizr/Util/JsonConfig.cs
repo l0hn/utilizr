@@ -176,6 +176,16 @@ namespace Utilizr.Util
             }
         }
 
+        public static async Task AtomicUpdateAsync(Action<T> updateAction) {
+            await Task.Factory.StartNew(async () => {
+                lock (ATOMIC_LOCK)
+                {
+                   updateAction(Instance); 
+                }
+                await SaveInstanceAsync();
+            });            
+        }
+
         /// <summary>
         /// Locks this instance for the duration of readAction
         /// NOTE: this is only atomic with other calls to AtomicUpdate or AtomicRead. if you directly access Instance or manually call SaveInstance you're on your own.

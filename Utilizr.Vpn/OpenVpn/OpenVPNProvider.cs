@@ -1,5 +1,6 @@
 ﻿using Utilizr.Globalisation;
 using Utilizr.Win.Extensions;
+using Utilizr.Util;
 
 namespace Utilizr.Vpn.OpenVpn
 {

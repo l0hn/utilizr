@@ -1,0 +1,17 @@
+<linker>
+  <assembly fullname="Utilizr.Logging">
+    <type fullname="Utilizr.Logging.LogRecord" preserve="all">
+      <!-- Preserve properties specifically accessed via reflection -->
+      <member name="Extra" />
+      <member name="AscTime" />
+      <member name="Created" />
+      <member name="Category" />
+      <member name="ErrorText" />
+      <member name="RelativeCreated" />
+      <member name="Level" />
+      <member name="Message" />
+      <member name="InterestingObjects" />
+      <!-- Add more members as needed -->
+    </type>
+  </assembly>
+</linker>

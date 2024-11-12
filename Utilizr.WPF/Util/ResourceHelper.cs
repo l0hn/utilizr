@@ -187,6 +187,7 @@ namespace Utilizr.WPF.Util
                 else
                 {
                     var iconData = ResourceLoadable.Instance.Get(resourceKey)?.ToArray();
+                    Log.Info(nameof(ResourceHelper), $"Getting icon data for '{resourceKey}', length={iconData?.Length ?? 0}");
 
                     if (iconData != null)
                     {
@@ -201,17 +202,19 @@ namespace Utilizr.WPF.Util
                         var path = Path.Combine(AppInfo.AppDirectory, _resourceDir);
                         path = Path.Combine(path, resourceKey);
                         using var stream = File.Open(path, FileMode.Open);
+                        Log.Info(nameof(ResourceHelper), $"Getting icon stream for '{resourceKey}', length={stream.Length}");
                         return BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
                     }
                 }
             }
-            catch (IOException)
+            catch (IOException ioEx)
             {
 #if DEBUG
                 if (_inDesignMode != true)
                     throw; // Make sure we have all images during development, no typos, etc
 #endif
                 //return the default placeholder image to prevent the application crashing when images are not found
+                Log.Exception(ioEx, $"Failed to load resource for key {resourceKey}, returning placeholder");
                 return GetDefaultImagePlaceholder();
             }
             catch (Exception ex)

@@ -228,5 +228,20 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Auto)]
         public static extern bool FileTimeToSystemTime(ref FILETIME FileTime, ref SYSTEMTIME SystemTime);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr CreateIoCompletionPort(IntPtr FileHandle, IntPtr ExistingCompletionPort, UIntPtr CompletionKey, uint NumberOfConcurrentThreads);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool GetQueuedCompletionStatus(IntPtr CompletionPort, out uint lpNumberOfBytes, out UIntPtr lpCompletionKey, out IntPtr lpOverlapped, uint dwMilliseconds);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Utilizr.Extensions;
 
 
 namespace Utilizr.Info
@@ -42,7 +43,7 @@ namespace Utilizr.Info
             {
                 if (string.IsNullOrEmpty(_appDirectory))
                 {
-                    _appDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    _appDirectory = AppContext.BaseDirectory;
                 }
                 return _appDirectory!;
             }
@@ -157,6 +158,7 @@ namespace Utilizr.Info
             return GetAppDirectory(dirName, DirectoryRoot);
         }
 
+#if WINDOWS
         private static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
         {
             if (string.IsNullOrEmpty(AppName))
@@ -183,6 +185,16 @@ namespace Utilizr.Info
             //AppInfoRoot.InstallDirectory
             return Path.Combine(AppDirectory, dirName);
         }
+#else
+        private static string GetAppDirectory(string dirName, AppInfoRoot rootDir) {
+            if (AppName.IsNullOrEmpty())
+            {
+                throw new InvalidOperationException($"AppName must be specified before calling {nameof(GetAppDirectory)}");
+            }
+            var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(userHome, "Library", "Application Support", AppName, dirName);
+        }
+#endif
 
 
         public static void ZipLogs(string destinationFile)

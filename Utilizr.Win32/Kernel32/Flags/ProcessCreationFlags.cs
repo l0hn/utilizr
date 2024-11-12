@@ -10,5 +10,6 @@ namespace Utilizr.Win32.Kernel32.Flags
         public const uint CREATE_NO_WINDOW = 0x08000000;
         public const uint CREATE_BREAKAWAY_FROM_JOB = 0x01000000;
         public const uint CREATE_PROTECTED_PROCESS = 0x00040000;
+        public const uint CREATE_SUSPENDED = 0x00000004;
     }
 }
