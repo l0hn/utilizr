@@ -83,7 +83,7 @@ namespace Utilizr.Win32.Advapi32
         );
 
         [DllImport(ADVAPI32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr OpenSCManager(string machineName, string databaseName, uint dwAccess);
+        public static extern IntPtr OpenSCManager(string? machineName, string? databaseName, uint dwAccess);
 
         [DllImport(ADVAPI32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, uint dwDesiredAccess);
@@ -97,7 +97,7 @@ namespace Utilizr.Win32.Advapi32
             string? lpBinaryPathName,
             string? lpLoadOrderGroup,
             IntPtr lpdwTagId,
-            [In] char[] lpDependencies,
+            [In] char[]? lpDependencies,
             string? lpServiceStartName,
             string? lpPassword,
             string? lpDisplayName);

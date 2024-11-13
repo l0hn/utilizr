@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using Utilizr.Async;
 using Utilizr.Extensions;
 using Utilizr.Globalisation;
 using Utilizr.Logging;
 using Utilizr.Util;
-using Utilizr.Win32.Advapi32;
+using Utilizr.Win.Util;
 using Utilizr.Win32.Advapi32.Flags;
 
 namespace Utilizr.Vpn.Ras
@@ -81,39 +80,6 @@ namespace Utilizr.Vpn.Ras
         private ManualResetEvent _connectDone = new ManualResetEvent(false);
         private Task _checkStatusTask;
 
-        private const uint SC_MANAGER_CONNECT = 0x0001;
-        private const uint SERVICE_QUERY_CONFIG = 0x00000001;
-        private const uint SERVICE_CHANGE_CONFIG = 0x00000002;
-        private const uint SERVICE_NO_CHANGE = 0xFFFFFFFF;
-
-        //private enum ServiceStartupType : uint
-        //{
-        //    /// <summary>
-        //    /// A device driver started by the system loader. This value is valid only for driver services.
-        //    /// </summary>
-        //    BootStart = 0,
-
-        //    /// <summary>
-        //    /// A device driver started by the IoInitSystem function. This value is valid only for driver services.
-        //    /// </summary>
-        //    SystemStart = 1,
-
-        //    /// <summary>
-        //    /// A service started automatically by the service control manager during system startup.
-        //    /// </summary>
-        //    Automatic = 2,
-
-        //    /// <summary>
-        //    /// A service started by the service control manager when a process calls the StartService function.
-        //    /// </summary>
-        //    Manual = 3,
-
-        //    /// <summary>
-        //    /// A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.
-        //    /// </summary>
-        //    Disabled = 4
-        //}
-
         public RasNativeProvider(string deviceName)
         {
             _deviceName = deviceName;
@@ -134,56 +100,6 @@ namespace Utilizr.Vpn.Ras
             {
                 _connectDone.Set();
             }
-        }
-
-        private static void ChangeServiceStartType(string serviceName, ServiceStartupType startType)
-        {
-            //Obtain a handle to the service control manager database
-            IntPtr scmHandle = Advapi32.OpenSCManager(null, null, SC_MANAGER_CONNECT);
-            if (scmHandle == IntPtr.Zero)
-            {
-                throw new Exception("Failed to obtain a handle to the service control manager database.");
-            }
-
-            //Obtain a handle to the specified windows service
-            IntPtr serviceHandle = Advapi32.OpenService(scmHandle, serviceName, SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
-            if (serviceHandle == IntPtr.Zero)
-            {
-                throw new Exception($"Failed to obtain a handle to service '{serviceName}'.");
-            }
-
-            IntPtr ptr = Marshal.AllocHGlobal(4096);
-            uint dwBytesNeeded = 0;
-
-            bool success = Advapi32.QueryServiceConfig(serviceHandle, ptr, 4096, out dwBytesNeeded);
-
-            if (!success)
-            {
-                throw new Exception($"Failed to obtain a config information to service '{serviceName}'.");
-            }
-
-            var queryServiceConfig = new QueryServiceConfig();
-
-            Marshal.PtrToStructure(ptr, queryServiceConfig);
-
-            Marshal.FreeHGlobal(ptr);
-
-            if (queryServiceConfig.dwStartType != 4) //Service Start Type Disabled
-                return;
-
-            //Change the start mode
-            bool changeServiceSuccess = Advapi32.ChangeServiceConfig(serviceHandle, SERVICE_NO_CHANGE, (uint)startType, SERVICE_NO_CHANGE, null, null, IntPtr.Zero, null, null, null, null);
-            if (!changeServiceSuccess)
-            {
-                string msg = $"Failed to update service configuration for service '{serviceName}'. ChangeServiceConfig returned error {Marshal.GetLastWin32Error()}.";
-                throw new Exception(msg);
-            }
-
-            //Clean up
-            if (scmHandle != IntPtr.Zero)
-                Advapi32.CloseServiceHandle(scmHandle);
-            if (serviceHandle != IntPtr.Zero)
-                Advapi32.CloseServiceHandle(serviceHandle);
         }
 
         private void RasDialerOnDialError(uint error)
@@ -336,15 +252,19 @@ namespace Utilizr.Vpn.Ras
             {
                 try
                 {
-                    ChangeServiceStartType(service, ServiceStartupType.Manual);
+                    ServiceUtil.ChangeServiceStartupType(
+                        service,
+                        ServiceStartupType.Manual,
+                        (currentStartupType) => currentStartupType == ServiceStartupType.Disabled
+                    );
                 }
                 catch (Exception ex)
                 {
                     Log.Exception(
-                    LOG_CAT,
-                    ex,
-                    $"Failure during changing the {service} startup type."
-                );
+                        LOG_CAT,
+                        ex,
+                        $"Failure during changing the {service} startup type."
+                    );
                 }
 
                 using (var controller = new ServiceController(service))

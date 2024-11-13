@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Utilizr.Logging\Utilizr.Logging.csproj" />
     <ProjectReference Include="..\Utilizr.Vpn\Utilizr.Vpn.csproj" />
+    <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
   </ItemGroup>
 
 </Project>

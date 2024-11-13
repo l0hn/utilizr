@@ -1,15 +1,23 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using Utilizr.Async;
 using Utilizr.Logging;
+using Utilizr.Win32.Advapi32;
+using Utilizr.Win32.Advapi32.Flags;
+using Utilizr.Win32.Advapi32.Structs;
 
 namespace Utilizr.Win.Util
 {
     public static class ServiceUtil
     {
         const string LOG_CAT = "service-util";
+        public delegate bool CanChangeServiceStartupTypeDelegate(ServiceStartupType currentStartupType);
+
+        const uint SERVICE_NO_CHANGE = 0xFFFFFFFF;
 
         public static bool IsInstalled(string serviceName)
         {
@@ -183,6 +191,86 @@ namespace Utilizr.Win.Util
         {
             var serviceProc = Process.GetProcessesByName(serviceName).FirstOrDefault();
             serviceProc?.Kill();
+        }
+
+        /// <summary>
+        /// Attempt to change the startup type of a given service.
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <param name="newStartupType"></param>
+        /// <param name="allowStartupChange">Optional callback to allow only changing for certain values.</param>
+        public static void ChangeServiceStartupType(
+            string serviceName, 
+            ServiceStartupType newStartupType,
+            CanChangeServiceStartupTypeDelegate? allowStartupChange = null)
+        {
+            IntPtr scmHandle = IntPtr.Zero;
+            IntPtr serviceHandle = IntPtr.Zero;
+
+            try
+            {
+                //Obtain a handle to the service control manager database
+                scmHandle = Advapi32.OpenSCManager(null, null, (uint)ScmAccessRights.SC_MANAGER_CONNECT);
+                if (scmHandle == IntPtr.Zero)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to obtain a handle to the service control manager database.");
+
+                //Obtain a handle to the specified windows service
+                serviceHandle = Advapi32.OpenService(scmHandle, serviceName, (uint)(ServiceAccessRights.SERVICE_QUERY_CONFIG | ServiceAccessRights.SERVICE_CHANGE_CONFIG));
+                if (serviceHandle == IntPtr.Zero)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to obtain a handle to service '{serviceName}'.");
+
+
+                uint dwBytesNeeded = 0;
+                Advapi32.QueryServiceConfig(serviceHandle, IntPtr.Zero, 0, out dwBytesNeeded); // get size we need
+
+                IntPtr ptr = Marshal.AllocHGlobal((int)dwBytesNeeded);
+                if (!Advapi32.QueryServiceConfig(serviceHandle, ptr, dwBytesNeeded, out dwBytesNeeded))
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to obtain a config information to service '{serviceName}'.");
+
+                var queryServiceConfig = new QueryServiceConfig();
+                Marshal.PtrToStructure(ptr, queryServiceConfig);
+
+                bool canChange;
+                try
+                {
+                    canChange = allowStartupChange?.Invoke((ServiceStartupType)queryServiceConfig.dwStartType) == true;
+                }
+                finally
+                {
+                    // don't leak if windows adds a new startup option
+                    Marshal.FreeHGlobal(ptr);
+                }
+
+                if (!canChange)
+                    return;
+
+                //Change the start mode
+                bool changeServiceSuccess = Advapi32.ChangeServiceConfig(
+                    serviceHandle,
+                    SERVICE_NO_CHANGE,
+                    (uint)newStartupType,
+                    SERVICE_NO_CHANGE,
+                    null,
+                    null,
+                    IntPtr.Zero,
+                    null,
+                    null,
+                    null,
+                    null
+                );
+
+                if (!changeServiceSuccess)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to update service configuration for service '{serviceName}'.");
+            }
+            finally
+            {
+                //Clean up
+                if (scmHandle != IntPtr.Zero)
+                    Advapi32.CloseServiceHandle(scmHandle);
+
+                if (serviceHandle != IntPtr.Zero)
+                    Advapi32.CloseServiceHandle(serviceHandle);
+            }
         }
     }
 }
