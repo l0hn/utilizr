@@ -81,5 +81,31 @@ namespace Utilizr.Win32.Advapi32
             ref STARTUPINFO lpStartupInfo,
             out PROCESS_INFORMATION lpProcessInformation
         );
+
+        [DllImport(ADVAPI32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr OpenSCManager(string? machineName, string? databaseName, uint dwAccess);
+
+        [DllImport(ADVAPI32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, uint dwDesiredAccess);
+
+        [DllImport(ADVAPI32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern bool ChangeServiceConfig(
+            IntPtr hService,
+            uint nServiceType,
+            uint nStartType,
+            uint nErrorControl,
+            string? lpBinaryPathName,
+            string? lpLoadOrderGroup,
+            IntPtr lpdwTagId,
+            [In] char[]? lpDependencies,
+            string? lpServiceStartName,
+            string? lpPassword,
+            string? lpDisplayName);
+
+        [DllImport(ADVAPI32_DLL, EntryPoint = "CloseServiceHandle")]
+        public static extern int CloseServiceHandle(IntPtr hSCObject);
+
+        [DllImport(ADVAPI32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool QueryServiceConfig(IntPtr hService, IntPtr intPtrQueryConfig, uint cbBufSize, out uint pcbBytesNeeded);
     }
 }

@@ -5,6 +5,8 @@ using Utilizr.Extensions;
 using Utilizr.Globalisation;
 using Utilizr.Logging;
 using Utilizr.Util;
+using Utilizr.Win.Util;
+using Utilizr.Win32.Advapi32.Flags;
 
 namespace Utilizr.Vpn.Ras
 {
@@ -248,6 +250,23 @@ namespace Utilizr.Vpn.Ras
             const string service = "rasman";
             try
             {
+                try
+                {
+                    ServiceUtil.ChangeServiceStartupType(
+                        service,
+                        ServiceStartupType.Manual,
+                        (currentStartupType) => currentStartupType == ServiceStartupType.Disabled
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception(
+                        LOG_CAT,
+                        ex,
+                        $"Failure during changing the {service} startup type."
+                    );
+                }
+
                 using (var controller = new ServiceController(service))
                 {
                     if (controller.Status == ServiceControllerStatus.Running)
