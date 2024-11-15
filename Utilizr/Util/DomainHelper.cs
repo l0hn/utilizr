@@ -10,11 +10,11 @@ namespace Utilizr.Util
     {
         public static string GetSubDomain(string fullurl)
         {
-            var url = new Uri(fullurl);
+            string name = fullurl.StartsWith("http://") || fullurl.StartsWith("https://") ? fullurl : $"http://{fullurl}";
+            var url = new Uri(name);
 
             if (url.HostNameType == UriHostNameType.Dns)
             {
-
                 string host = url.Host;
 
                 var nodes = host.Split('.');
