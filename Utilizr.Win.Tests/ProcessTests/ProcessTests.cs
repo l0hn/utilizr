@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using NUnit.Framework;
 using Utilizr;
-using Utilizr.Win.Extensions;
 
 namespace Tests
 {
@@ -26,7 +24,7 @@ namespace Tests
             Console.WriteLine($"base dir: {AppContext.BaseDirectory}");            
             var thisProcess = Process.GetCurrentProcess();
             var thisPid = thisProcess.Id;
-            var resultFromSubProcess = Shell.Exec("../../../../Utilizr.Win.Tests.get_parent_process_id/bin/Debug/net8-windows/get_parent_process_id.exe");
+            var resultFromSubProcess = Shell.Exec("..\\..\\..\\..\\Utilizr.Win.Tests.get_parent_process_id\\bin\\Debug\\net8.0-windows\\get_parent_process_id.exe");
 
             Assert.That(resultFromSubProcess.ExitCode, Is.EqualTo(thisPid));
         }
