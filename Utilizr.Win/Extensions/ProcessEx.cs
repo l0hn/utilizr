@@ -6,6 +6,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using Utilizr.Logging;
+using Utilizr.Win.Info;
 using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Flags;
 
@@ -172,5 +173,25 @@ namespace Utilizr.Win.Extensions
                 Kernel32.CloseHandle(pThread);
             }
         }
+
+        public static Process GetParentProcess(this Process p) {
+            var parentId = ProcessHelper.GetParentProcessId(p.Id);
+            return Process.GetProcessById(parentId);
+        }
+
+        public static bool TryGetParentProcess(this Process p, out Process? parentProcess) {
+            try
+            {
+                parentProcess = GetParentProcess(p);
+                return true;
+            }
+            catch (System.Exception)
+            {
+            
+            }
+            parentProcess = null;
+            return false;
+        }
+        
     }
 }

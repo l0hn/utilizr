@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Utilizr.Logging;
@@ -331,6 +332,32 @@ namespace Utilizr.Win.Info
                 lowerName.Contains("msedge"); // chromium based edge
 
             return isUnsafe;
+        }
+
+        public static int GetParentProcessId(int pid) {
+            using var searcher = new ManagementObjectSearcher(
+                $"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {pid}"
+            );   
+
+            foreach (var obj in searcher.Get())
+            {
+                return Convert.ToInt32(obj["ParentProcessId"]);
+            }
+            throw new Exception($"failed to find parent for pid {pid}");
+        }
+
+        public static bool TryGetParentProcessId(int pid, out int parentPid) {
+            try
+            {
+                parentPid = GetParentProcessId(pid);
+                return true;
+            }
+            catch (System.Exception)
+            {
+                
+            }
+            parentPid = 0;
+            return false;
         }
 
         [DebuggerDisplay("ExecutablePath={ExecutablePath}")]
