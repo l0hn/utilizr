@@ -29,11 +29,11 @@ namespace Utilizr.Tests.Util
         }
 
         [Test]
-        [TestCase("http://test.com", "", "")]
-        [TestCase("http://test.com?param=something", "", "")]
-        [TestCase("http://subdomain.test.com?param=something", "test.com", "*.test.com")]
-        [TestCase("subdomain1.subdomain2.test.com?param=something", "test.com", "*.test.com")]
-        [TestCase("http://subdomain.test.com", "test.com", "*.test.com")]
+        [TestCase("http://test.com", "test.com", "*.test.com")]
+        [TestCase("http://test.com?param=something", "test.com", "*.test.com")]
+        [TestCase("http://subdomain.test.com?param=something", "subdomain.test.com", "*.subdomain.test.com")]
+        [TestCase("subdomain1.subdomain2.test.com?param=something", "subdomain1.subdomain2.test.com", "*.subdomain1.subdomain2.test.com")]
+        [TestCase("http://subdomain.test.com", "subdomain.test.com", "*.subdomain.test.com")]
         public void SubDomainTest(string inUrl, string subDomain1, string subDomain2)
         {
             string fullUrl = inUrl;

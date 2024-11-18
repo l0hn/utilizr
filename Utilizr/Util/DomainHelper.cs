@@ -11,19 +11,12 @@ namespace Utilizr.Util
         public static List<string> GetSubDomain(string? fullurl)
         {
             List<string> subdomains = new List<string>();
-            string name = fullurl.StartsWith("http://") || fullurl.StartsWith("https://") ? fullurl : $"http://{fullurl}";
+            string host = "";
+            string absolutepath = "";
+            GetDomain(fullurl, out host, out absolutepath);
 
-            var url = new Uri(name);
-            string host = url.Host;
-
-            var nodes = host.Split('.');
-
-            if (nodes.Length > 2)
-            {
-                var subdomain = string.Format("{0}.{1}", nodes[nodes.Length - 2], nodes[nodes.Length - 1]);
-                subdomains.Add(subdomain);
-                subdomains.Add($"*.{subdomain}");
-            }
+            subdomains.Add(host);
+            subdomains.Add($"*.{host}");
 
             return subdomains;
         }
