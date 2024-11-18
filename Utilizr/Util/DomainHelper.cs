@@ -8,64 +8,41 @@ namespace Utilizr.Util
 {
     public static class DomainHelper
     {
-        public static string GetSubDomain(string fullurl)
+        public static List<string> GetSubDomain(string? fullurl)
         {
+            List<string> subdomains = new List<string>();
             string name = fullurl.StartsWith("http://") || fullurl.StartsWith("https://") ? fullurl : $"http://{fullurl}";
+
             var url = new Uri(name);
+            string host = url.Host;
 
-            if (url.HostNameType == UriHostNameType.Dns)
+            var nodes = host.Split('.');
+
+            if (nodes.Length > 2)
             {
-                string host = url.Host;
-
-                var nodes = host.Split('.');
-
-                if (nodes.Length > 2)
-                {
-                    return string.Format("{0}.{1}", nodes[nodes.Length - 2], nodes[nodes.Length - 1]);
-                }
-                return null;
+                var subdomain = string.Format("{0}.{1}", nodes[nodes.Length - 2], nodes[nodes.Length - 1]);
+                subdomains.Add(subdomain);
+                subdomains.Add($"*.{subdomain}");
             }
 
-            return null;
+            return subdomains;
         }
 
-        public static string GetDomain(string url)
+        public static bool GetDomain(string? url, out string host, out string absolutepath)
         {
+            host = string.Empty;
+            absolutepath = string.Empty;
+
             string name = url.StartsWith("http://") || url.StartsWith("https://") ? url : $"http://{url}";
             var uri = new Uri(name);
-            return uri.Host;
-        }
-
-        public static bool GetExcemption(string exemption, out string sdkExemption)
-        {
-            sdkExemption = string.Empty;
-
-            bool IsAsterisk = false;
-            string tempDomain = exemption;
-            if (tempDomain.StartsWith("*."))
-            {
-                tempDomain = tempDomain.Replace("*.", "");
-                IsAsterisk = true;
-            }
-            string name = tempDomain.StartsWith("http://") || tempDomain.StartsWith("https://") ? tempDomain : $"http://{tempDomain}";
-
-            var uri = new Uri(name);
-            var host = uri.Host;
             var path = uri.AbsolutePath.Replace('/', ' ').Trim();
+            host = uri.Host;
+            absolutepath = uri.AbsolutePath;
 
             if (string.IsNullOrWhiteSpace(path))
-            {
-                if (IsAsterisk)
-                    sdkExemption = $"*.{host}";
-                else
-                    sdkExemption = host;
-
-                return true;
-            }
+                return false;
             else
-                sdkExemption = $"{host}{uri.AbsolutePath}";
-
-            return false;
+                return true;
         }
     }
 }
