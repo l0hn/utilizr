@@ -113,6 +113,7 @@ namespace Utilizr.FileSystem
         /// <param name="recursive">If set to <c>true</c> recursive.</param>
         /// <param name="ignoreFolderNames">Ignore folder names.</param>
         /// <param name="ignoreFileExtensions">File with a matching extension will not be copied.</param>
+        /// <param name="errorHandler">Custom error handler to allow the copy to retry or skip</param>
         public static void CopyDirectoryContents(
             string sourceDirectory,
             string destinationDirectory,
@@ -120,7 +121,8 @@ namespace Utilizr.FileSystem
             bool recursive,
             string[]? ignoreFolderNames,
             string[]? ignoreFileExtensions,
-            CopyDirectoryCustomFilterDelegate? customFilter = null)
+            CopyDirectoryCustomFilterDelegate? customFilter = null,
+            Action<CopyDirectoryErrorArgs> errorHandler = null)
         {
             if (!Directory.Exists(destinationDirectory))
                 Directory.CreateDirectory(destinationDirectory);
@@ -139,7 +141,30 @@ namespace Utilizr.FileSystem
                 if (customFilter?.Invoke(file, true) == false) // still copying if delegate not provided
                     continue;
 
-                File.Copy(file, destinationFile, true);
+
+                int errorCount = 0;
+                while (true)
+                {
+                    try
+                    {
+                        File.Copy(file, destinationFile, true);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        var errorArgs = new CopyDirectoryErrorArgs(ex, file, destinationFile, ++errorCount);   
+                        errorHandler?.Invoke(errorArgs);
+                        if (errorArgs.ContinueAction == CopyDirectoryContinueAction.RETRY)
+                        {
+                            continue;   
+                        }
+                        if (errorArgs.ContinueAction == CopyDirectoryContinueAction.SKIP)
+                        {
+                            break;
+                        }
+                        throw;
+                    }    
+                    break;
+                }
             }
 
             if (!recursive)
@@ -157,6 +182,28 @@ namespace Utilizr.FileSystem
                 Directory.CreateDirectory(destination);
                 CopyDirectoryContents(dir, destination, onlyCopyIfAlreadyExists, recursive);
             }
+        }
+    }
+
+    public enum CopyDirectoryContinueAction {
+        FAIL = 0,
+        RETRY = 1,
+        SKIP = 2
+    }
+
+    public class CopyDirectoryErrorArgs {
+        public Exception Error { get; private set; }
+        public CopyDirectoryContinueAction ContinueAction { get; set; } = CopyDirectoryContinueAction.FAIL;
+        public string SourcePath { get; private set; }
+        public string DestinationPath { get; private set; }
+        public int ErrorCountForFile { get; set; }
+
+        public CopyDirectoryErrorArgs(Exception error, string sourcePath, string destinationPath, int errorCountForFile = 1)
+        {
+            Error = error;
+            SourcePath = sourcePath;
+            DestinationPath = destinationPath;
+            ErrorCountForFile = errorCountForFile;
         }
     }
 }
