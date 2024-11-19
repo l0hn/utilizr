@@ -109,5 +109,29 @@ namespace Tests
             });
         }
 
+        [Test]
+        public void TestNoErrorHandler() {
+           var targetDir = Path.Combine(_tempTargetDir);
+
+            //lock a file
+            using FileStream fs = File.Open(_dummyFiles[3], FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+            TestDelegate copyFunc = () => {    
+                DirectoryHelper.CopyDirectoryContents (
+                    _tempDir, 
+                    targetDir,
+                    false,
+                    true
+                );   
+            };
+
+
+            Assert.Throws<IOException>(copyFunc); 
+
+            fs.Dispose();
+
+            Assert.DoesNotThrow(copyFunc);
+        }
+
     }
 }
