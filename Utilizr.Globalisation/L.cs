@@ -386,6 +386,16 @@ namespace Utilizr.Globalisation
         }
 
         /// <summary>
+        /// Allow use of a collection initialiser e.g. () => [object], instead of () => L.Args(object)
+        /// </summary>
+        /// <param name="t">Singular engnlish string</param>
+        /// <param name="args">Delegate that returns format args</param>
+        /// <returns></returns>
+        public static ITranslatable _I(string t, Func<object[]> args) {
+            return new MS(t, () => args());
+        }
+
+        /// <summary>
         /// Returns an <see cref="ITranslatable"/> object which generates the localised string
         /// at the time of invocation, using a lambda to get the latest string format arguments
         /// </summary>
@@ -398,6 +408,12 @@ namespace Utilizr.Globalisation
         {
             return new MP(t, tPlural, n, args);
         }
+
+        public static ITranslatable _IP(string t, string tPlural, Func<long> n, Func<object[]> args)
+        {
+            return new MP(t, tPlural, n, () => args());
+        }
+ 
 
         /// <summary>
         /// Static helper to create LArgsInfo without writing 'new LArgsInfo();'
@@ -615,6 +631,11 @@ namespace Utilizr.Globalisation
         public LArgsInfo(params object[] formatArgs)
         {
             FormatArgs = formatArgs;
+        }
+
+        public static implicit operator LArgsInfo(object[] formatArgs)
+        {
+            return new LArgsInfo(formatArgs);
         }
     }
 
