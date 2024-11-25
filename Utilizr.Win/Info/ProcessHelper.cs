@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -13,10 +14,12 @@ using Utilizr.Win32.Advapi32.Structs;
 using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.Kernel32.Structs;
+using Utilizr.Win32.Ntdll;
 using Utilizr.Win32.Userenv;
 
 namespace Utilizr.Win.Info
 {
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public static class ProcessHelper
     {
         const string LOG_CAT = "process-helper";
@@ -335,15 +338,39 @@ namespace Utilizr.Win.Info
         }
 
         public static int GetParentProcessId(int pid) {
-            using var searcher = new ManagementObjectSearcher(
-                $"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {pid}"
-            );   
 
-            foreach (var obj in searcher.Get())
+            IntPtr pHandle = Kernel32.OpenProcess(ProcessAccessFlags.QueryInformation, false, (uint)pid);
+
+            try
             {
-                return Convert.ToInt32(obj["ParentProcessId"]);
+                PROCESS_BASIC_INFORMATION pbi = new PROCESS_BASIC_INFORMATION();
+                int returnLength = 0;
+
+                int result = Ntdll.NtQueryInformationProcess(pHandle, 0, ref pbi, Marshal.SizeOf(pbi), ref returnLength);   
+                
+                if (result != 0)
+                {
+                    throw new InvalidOperationException($"NtQueryInformationProcess failed with status code: {result}");
+                }
+
+                return pbi.InheritedFromUniqueProcessId.ToInt32();
             }
-            throw new Exception($"failed to find parent for pid {pid}");
+            catch (System.Exception ex)
+            {
+                Log.Exception(ex);   
+                throw;
+            } finally {
+                if (pHandle != IntPtr.Zero) {
+                    try
+                    {
+                        Kernel32.CloseHandle(pHandle);
+                    }
+                    catch (System.Exception)
+                    {
+                    
+                    }
+                }
+            }
         }
 
         public static bool TryGetParentProcessId(int pid, out int parentPid) {

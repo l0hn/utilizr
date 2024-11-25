@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Utilizr.Async;
+using Utilizr.Logging;
 
 namespace Utilizr.Util
 {
@@ -226,6 +227,7 @@ namespace Utilizr.Util
         public static T Load(T t, out bool loadFailed, string customLoadPath = "")
         {
             loadFailed = true;
+            var loadPath = string.IsNullOrEmpty(customLoadPath) ? t.LoadPath : customLoadPath;
             try
             {
                 string? json = null;
@@ -241,7 +243,6 @@ namespace Utilizr.Util
 
                 if (string.IsNullOrEmpty(json))
                 {
-                    var loadPath = string.IsNullOrEmpty(customLoadPath) ? t.LoadPath : customLoadPath;
                     if (!File.Exists(loadPath))
                         return t;
 
@@ -263,7 +264,22 @@ namespace Utilizr.Util
                     return loadedObj;
                 }
             }
-            catch { }
+            catch (Exception ex) {
+                Log.Exception(ex);
+             }
+            finally {
+                if (loadFailed)
+                {
+                    try
+                    {
+                        Log.Error("LOADABLE", $"failed to load {loadPath}");
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+
             return t;
         }
 
