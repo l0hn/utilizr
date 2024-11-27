@@ -216,8 +216,7 @@ namespace Utilizr.Info
 
                 void addFolderToZip(ZipLogsAdditionalItem folder)
                 {
-                    //var filesToAdd = Directory.EnumerateFiles(folder.Path, "*", enumOptions);
-                    var filesToAdd = Directory.GetFiles(folder.Path, "*", SearchOption.AllDirectories);
+                    var filesToAdd = Directory.EnumerateFiles(folder.Path, "*", enumOptions);
                     foreach (var file in filesToAdd)
                     {
                         try
