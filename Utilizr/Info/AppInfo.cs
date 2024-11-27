@@ -1,6 +1,6 @@
-﻿using Ionic.Zip;
-using System;
+﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using Utilizr.Extensions;
@@ -209,44 +209,67 @@ namespace Utilizr.Info
                 File.Delete(destinationFile);
             }
 
-            using var zip = new ZipFile(destinationFile);
-            zip.AlternateEncoding = Encoding.UTF8;
-            zip.AlternateEncodingUsage = ZipOption.AsNecessary;
-
-            zip.AddDirectory(LogDirectory, "logs");
-            zip.AddDirectory(DataDirectory, "data");
-
-            foreach (var additionalDir in additionalDirs)
+            using (var fs = new FileStream(destinationFile, FileMode.Create, FileAccess.ReadWrite))
+            using (var zip = new ZipArchive(fs, ZipArchiveMode.Create, true))
             {
-                try
-                {
-                    if (!Directory.Exists(additionalDir.Path))
-                        continue;
+                var enumOptions = new EnumerationOptions() { RecurseSubdirectories = true };
 
-                    zip.AddDirectory(additionalDir.Path, additionalDir.PathInArchive);
-                }
-                catch (Exception ex)
+                void addFolderToZip(ZipLogsAdditionalItem folder)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDir.Path}' to archive: {ex.Message}");
+                    var filesToAdd = Directory.EnumerateFiles(folder.Path, "*", enumOptions);
+                    foreach (var file in filesToAdd)
+                    {
+                        try
+                        {
+                            // failsafe to remove the start of the path
+                            var relativeToFolderFilePath = file.Substring(folder.Path.Length).TrimStart(Path.DirectorySeparatorChar);
+                            var nameInZip = Path.Combine(folder.PathInArchive, relativeToFolderFilePath);
+
+                            var archiveEntry = zip.CreateEntry(nameInZip);
+                            using var archiveStream = archiveEntry.Open();
+                            using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            fs.CopyTo(archiveStream);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Failed to add {file} to archive {destinationFile}. Error = {ex.Message}");
+                        }
+                    }
+                }
+
+                addFolderToZip(new ZipLogsAdditionalItem { Path = LogDirectory, PathInArchive = "logs" });
+                addFolderToZip(new ZipLogsAdditionalItem { Path = DataDirectory, PathInArchive = "data" });
+
+                foreach (var additionalDirectory in additionalDirs)
+                {
+                    try
+                    {
+                        if (!Directory.Exists(additionalDirectory.Path))
+                            continue;
+
+                        addFolderToZip(additionalDirectory);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDirectory.Path}' to archive: {ex.Message}");
+                    }
+                }
+
+                foreach (var additionalFile in additionalFiles)
+                {
+                    try
+                    {
+                        if (!File.Exists(additionalFile.Path))
+                            continue;
+
+                        zip.CreateEntryFromFile(additionalFile.Path, additionalFile.PathInArchive);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
+                    }
                 }
             }
-
-            foreach (var additionalFile in additionalFiles)
-            {
-                try
-                {
-                    if (!File.Exists(additionalFile.Path))
-                        continue;
-
-                    zip.AddFile(additionalFile.Path, additionalFile.PathInArchive);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
-                }
-            }
-
-            zip.Save();
         }
     }
 
