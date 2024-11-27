@@ -225,7 +225,6 @@ namespace Utilizr.Info
                             // failsafe to remove the start of the path
                             var relativeToFolderFilePath = file.Substring(folder.Path.Length).TrimStart(Path.DirectorySeparatorChar);
                             var nameInZip = Path.Combine(folder.PathInArchive, relativeToFolderFilePath);
-                            //zip.CreateEntryFromFile(file, nameInZip);
 
                             var archiveEntry = zip.CreateEntry(nameInZip);
                             using var archiveStream = archiveEntry.Open();
@@ -272,45 +271,6 @@ namespace Utilizr.Info
                     }
                 }
             }
-
-            //using var zip = new ZipFile(destinationFile);
-            //zip.AlternateEncoding = Encoding.UTF8;
-            //zip.AlternateEncodingUsage = ZipOption.AsNecessary;
-
-            //zip.AddDirectory(LogDirectory, "logs");
-            //zip.AddDirectory(DataDirectory, "data");
-
-            //foreach (var additionalDir in additionalDirs)
-            //{
-            //    try
-            //    {
-            //        if (!Directory.Exists(additionalDir.Path))
-            //            continue;
-
-            //        zip.AddDirectory(additionalDir.Path, additionalDir.PathInArchive);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDir.Path}' to archive: {ex.Message}");
-            //    }
-            //}
-
-            //foreach (var additionalFile in additionalFiles)
-            //{
-            //    try
-            //    {
-            //        if (!File.Exists(additionalFile.Path))
-            //            continue;
-
-            //        zip.AddFile(additionalFile.Path, additionalFile.PathInArchive);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
-            //    }
-            //}
-
-            //zip.Save();
         }
     }
 
