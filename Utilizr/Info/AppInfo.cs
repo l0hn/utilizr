@@ -229,12 +229,12 @@ namespace Utilizr.Info
 
                             var archiveEntry = zip.CreateEntry(nameInZip);
                             using var archiveStream = archiveEntry.Open();
-                            using var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+                            using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                             fs.CopyTo(archiveStream);
                         }
                         catch (Exception ex)
                         {
-                            
+                            System.Diagnostics.Debug.WriteLine($"Failed to add {file} to archive {destinationFile}. Error = {ex.Message}");
                         }
                     }
                 }
