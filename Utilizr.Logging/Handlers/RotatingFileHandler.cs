@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Threading.Tasks;
+using Utilizr.Logging.Filters;
 //using Utilizr.Extensions;
 
 namespace Utilizr.Logging.Handlers
@@ -107,18 +108,14 @@ namespace Utilizr.Logging.Handlers
             {
                 try
                 {
-                    var zip = ZipFile.Open($"{filePath}{zipExt}", ZipArchiveMode.Create, Encoding.UTF8);
-                    zip.CreateEntryFromFile(filePath, Path.GetFileName(filePath), CompressionLevel.Optimal);
-                    zip.Dispose();
-
-                    //using (var zip = new ZipFile($"{filePath}{zipExt}"))
-                    //{
-                    //    zip.AlternateEncoding = Encoding.UTF8;
-                    //    zip.AlternateEncodingUsage = ZipOption.AsNecessary;
-
-                    //    zip.AddFile(filePath, string.Empty);
-                    //    zip.Save();
-                    //}
+                    using (var zipFileSteam = new FileStream($"{filePath}{zipExt}", FileMode.Create, FileAccess.ReadWrite))
+                    using (var zip = new ZipArchive(zipFileSteam, ZipArchiveMode.Create, true))
+                    {
+                        var archiveEntry = zip.CreateEntry(Path.GetFileName(filePath));
+                        using var archiveStream = archiveEntry.Open();
+                        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        fs.CopyTo(archiveStream);
+                    }
 
                     File.Delete(filePath);
                 }
