@@ -1,6 +1,6 @@
-﻿using Ionic.Zip;
-using System;
+﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Threading.Tasks;
 //using Utilizr.Extensions;
@@ -107,14 +107,18 @@ namespace Utilizr.Logging.Handlers
             {
                 try
                 {
-                    using (var zip = new ZipFile($"{filePath}{zipExt}"))
-                    {
-                        zip.AlternateEncoding = Encoding.UTF8;
-                        zip.AlternateEncodingUsage = ZipOption.AsNecessary;
+                    var zip = ZipFile.Open($"{filePath}{zipExt}", ZipArchiveMode.Create, Encoding.UTF8);
+                    zip.CreateEntryFromFile(filePath, Path.GetFileName(filePath), CompressionLevel.Optimal);
+                    zip.Dispose();
 
-                        zip.AddFile(filePath, string.Empty);
-                        zip.Save();
-                    }
+                    //using (var zip = new ZipFile($"{filePath}{zipExt}"))
+                    //{
+                    //    zip.AlternateEncoding = Encoding.UTF8;
+                    //    zip.AlternateEncodingUsage = ZipOption.AsNecessary;
+
+                    //    zip.AddFile(filePath, string.Empty);
+                    //    zip.Save();
+                    //}
 
                     File.Delete(filePath);
                 }
