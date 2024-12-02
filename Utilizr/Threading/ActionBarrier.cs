@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Utilizr.Threading;
+
 public class ActionBarrier {
     SemaphoreSlim _running;
     string _description;
