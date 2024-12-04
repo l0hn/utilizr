@@ -51,9 +51,10 @@ namespace Utilizr
                 CreateNoWindow = true
             };
             proc.EnableRaisingEvents = false;
-            proc.StartInfo.FileName = Path.Combine(workingDir, command); //KRIS
+            
             if (workingDir != null)
             {
+                proc.StartInfo.FileName = Path.Combine(workingDir, command); //KRIS
                 proc.StartInfo.WorkingDirectory = workingDir;
             }
             if (environmentVariables != null)
