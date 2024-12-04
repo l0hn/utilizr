@@ -42,14 +42,16 @@ namespace Utilizr
             using var proc = new Process();
             var result = new ShellResult(command, args);
 
-            proc.StartInfo = new ProcessStartInfo(command, string.Join(" ", args))
+            proc.StartInfo = new ProcessStartInfo(command, string.Join(" ", args)) //command, string.Join(" ", args) KRIS
             {
                 UseShellExecute = asAdmin,
                 RedirectStandardOutput = !asAdmin,
                 RedirectStandardError = !asAdmin,
+                Arguments = string.Join(" ", args), //KRIS 
                 CreateNoWindow = true
             };
             proc.EnableRaisingEvents = false;
+            proc.StartInfo.FileName = Path.Combine(workingDir, command); //KRIS
             if (workingDir != null)
             {
                 proc.StartInfo.WorkingDirectory = workingDir;
