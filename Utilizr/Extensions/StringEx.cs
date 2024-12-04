@@ -315,5 +315,9 @@ namespace Utilizr.Extensions
         {
             return Hash.MD5(str);
         }
+
+        public static string Quote(this string str) {
+            return $"\"{str}\"";
+        }
     }
 }
