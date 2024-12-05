@@ -77,7 +77,7 @@ namespace Utilizr.Win32.Kernel32
         public static extern int DeleteFileW([MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
 
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern int MoveFileExW([MarshalAs(UnmanagedType.LPWStr)] string lpExistingFileName, [MarshalAs(UnmanagedType.LPWStr)] string lpNewFileName, int dwFlags);
+        public static extern int MoveFileExW([MarshalAs(UnmanagedType.LPWStr)] string lpExistingFileName, [MarshalAs(UnmanagedType.LPWStr)] string lpNewFileName, MoveFileFlags dwFlags);
 
         [DllImport(KERNEL32_DLL, CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr FindFirstFileW([MarshalAs(UnmanagedType.LPWStr)] string lpFileName, out WIN32_FIND_DATAW lpFindFileData);
