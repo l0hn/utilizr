@@ -61,7 +61,7 @@ namespace Utilizr.FileSystem
             directoryFilterer ??= dirs => dirs.Where(dir =>
             {
                 var dirName = Path.GetFileName(dir);
-                return string.IsNullOrEmpty(dirName?.Trim());
+                return !string.IsNullOrEmpty(dirName?.Trim());
             }).ToArray();
             directories = directoryFilterer(directories);
 
