@@ -133,6 +133,19 @@ namespace Utilizr.Logging
             Root.RemoveHandler(handler);
         }
 
+        public static void FlushAllHandlers() {
+            Root.Handlers.ForEach(handler => {
+                try
+                {
+                    handler.Flush();
+                }
+                catch (System.Exception)
+                {
+                    //
+                }
+            });
+        }
+
         public static Logger GetLogger(string name)
         {
             return Manager.GetLogger(name);

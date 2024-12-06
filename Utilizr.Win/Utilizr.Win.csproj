@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Utilizr.Win</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
