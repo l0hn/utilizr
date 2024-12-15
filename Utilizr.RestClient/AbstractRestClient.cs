@@ -114,7 +114,7 @@ namespace Utilizr.Rest.Client
 
         void LogRequest<T>(IApiRequest<T> apiRequest, Dictionary<string, string> headers)
         {
-            if (!LogRequests)
+            if (!LogRequests || !apiRequest.LogRequest)
                 return;
 
             var debugDict = new Dictionary<string, object>();
@@ -132,7 +132,7 @@ namespace Utilizr.Rest.Client
             Log.Info(LOG_CAT, $"Received response (RAW) from api request {apiRequest.EndpointLogStr} : [{response.Content}]");
 #endif
 
-            if (!LogRequests)
+            if (!LogRequests || !apiRequest.LogRequest)
                 return;
 
             var debugDict = new Dictionary<string, object?>();
