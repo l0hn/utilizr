@@ -10,6 +10,7 @@ namespace Utilizr.Threading;
 public class ActionBarrier {
     SemaphoreSlim _running;
     string _description;
+    Task? _currentTask;
 
     public ActionBarrier(string description = "")
     {
@@ -17,16 +18,26 @@ public class ActionBarrier {
         _running = new SemaphoreSlim(1, 1);
     }
 
-    public async Task<bool> TryRunAsync(Func<Task> action) {
+    public async Task<TryRunResult> TryRunAsync(Func<Task> action, bool waitExisting) {        
+        var result = new TryRunResult();
         try
         {
             await RunAsync(action);
-            return true;
+            result.RanTask = true;
         }
-        catch
-        {
+        catch (ActionBarrierException abex) {
+            result.Error = abex;
+            result.BlockingTask = _currentTask;
+            if (waitExisting && result.BlockingTask != null)
+            {
+                await result.BlockingTask;
+            }
         }
-        return false;
+        catch (Exception ex){
+            result.Error = ex;
+            result.RanTask = true;
+        }
+        return result;
     }   
 
     public async Task RunAsync(Func<Task> action) {
@@ -45,7 +56,8 @@ public class ActionBarrier {
         try
         {
             Debug.WriteLine(_description + "executing");
-            await action.Invoke();
+            _currentTask = action.Invoke();
+            await _currentTask;
             Debug.WriteLine(_description + "completed");
         } 
         catch (Exception ex) {
@@ -53,9 +65,25 @@ public class ActionBarrier {
             throw;
         }
         finally {
+            _currentTask = null;
             Debug.WriteLine(_description + "releasing lock");
             _running.Release();
         }
+    }
+
+    public async Task WaitRunningTask() {
+        if (_currentTask == null) 
+        {
+            return;   
+        }
+        
+        try
+        {
+            await _currentTask;
+        }
+        catch (System.Exception)
+        {
+        }   
     }
 
     public void Dispose()
@@ -75,3 +103,14 @@ public class ActionBarrierException : System.Exception
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }   
+
+public class TryRunResult {
+    public bool RanTask { get; internal set;}
+    public Task? BlockingTask { get; internal set;}
+    public Exception? Error { get; internal set; }
+
+    public TryRunResult()
+    {
+       
+    }
+}
