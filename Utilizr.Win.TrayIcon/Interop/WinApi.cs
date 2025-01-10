@@ -11,7 +11,7 @@ namespace Utilizr.Win.TrayIcon.Interop
         /// <summary>
         /// Creates, updates or deletes the taskbar icon.
         /// </summary>
-        [DllImport("shell32.Dll")]
+        [DllImport("shell32.Dll", EntryPoint = "Shell_NotifyIconW")]
         public static extern bool Shell_NotifyIcon(NotifyCommand cmd, [In]ref NotifyIconData data);
 
 
