@@ -844,7 +844,7 @@ namespace Utilizr.Win.TrayIcon
         private void SetVersion()
         {
             iconData.VersionOrTimeout = (uint)NotifyIconVersion.Vista;
-            bool status = WinApi.Shell_NotifyIcon(NotifyCommand.SetVersion, ref iconData);
+            bool status = WinApi.Shell_NotifyIconW(NotifyCommand.SetVersion, ref iconData);
 
             if (!status)
             {

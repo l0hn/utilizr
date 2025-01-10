@@ -125,7 +125,7 @@ namespace Utilizr.Win.TrayIcon
             data.ValidMembers = flags;
             lock (SyncRoot)
             {
-                return WinApi.Shell_NotifyIcon(command, ref data);
+                return WinApi.Shell_NotifyIconW(command, ref data);
             }
         }
 
