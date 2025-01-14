@@ -180,7 +180,16 @@ namespace Utilizr.FileSystem
 
                 var destination = Path.Combine(destinationDirectory, Path.GetFileName(dir));
                 Directory.CreateDirectory(destination);
-                CopyDirectoryContents(dir, destination, onlyCopyIfAlreadyExists, recursive);
+                CopyDirectoryContents(
+                    dir, 
+                    destination, 
+                    onlyCopyIfAlreadyExists, 
+                    recursive, 
+                    ignoreFolderNames, 
+                    ignoreFileExtensions,
+                    customFilter,
+                    errorHandler
+                );
             }
         }
     }
