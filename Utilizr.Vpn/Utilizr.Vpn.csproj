@@ -18,13 +18,10 @@
     <None Update="OpenVpn\driver\amd64\devcon.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenVpn\driver\amd64\OemWin2k.inf">
+    <None Update="OpenVpn\driver\amd64\OemVista.inf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OpenVpn\driver\amd64\tap0901.cat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenVpn\driver\amd64\tap0901.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OpenVpn\driver\amd64\tap0901.sys">
@@ -33,16 +30,25 @@
     <None Update="OpenVpn\driver\i386\devcon.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenVpn\driver\i386\OemWin2k.inf">
+    <None Update="OpenVpn\driver\i386\OemVista.inf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OpenVpn\driver\i386\tap0901.cat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenVpn\driver\i386\tap0901.map">
+    <None Update="OpenVpn\driver\i386\tap0901.sys">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenVpn\driver\i386\tap0901.sys">
+    <None Update="OpenVpn\driver\arm64\devcon.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenVpn\driver\arm64\OemVista.inf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenVpn\driver\arm64\tap0901.cat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenVpn\driver\arm64\tap0901.sys">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OpenVpn\ovpn\libcrypto-1_1.dll">
