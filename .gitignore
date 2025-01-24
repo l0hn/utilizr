@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Always add the Utilizr.VPN/OpenVpn/drivers folder
+!Utilizr.Vpn/OpenVpn/driver/
+!Utilizr.Vpn/OpenVpn/driver/**
+
 # User-specific files
 *.rsuser
 *.suo
