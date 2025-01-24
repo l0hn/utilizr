@@ -3,10 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Always add the Utilizr.VPN/OpenVpn/drivers folder
-!Utilizr.Vpn/OpenVpn/driver/
-!Utilizr.Vpn/OpenVpn/driver/**
-
 # User-specific files
 *.rsuser
 *.suo
@@ -434,3 +430,6 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# Always add the Utilizr.VPN/OpenVpn/drivers folder, arm64 folder being excluded due to above [Aa][Rr][Mm]64/ rule
+!Utilizr.Vpn/OpenVpn/driver/**
