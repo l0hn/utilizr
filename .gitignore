@@ -430,3 +430,6 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# Always add the Utilizr.VPN/OpenVpn/drivers folder, arm64 folder being excluded due to above [Aa][Rr][Mm]64/ rule
+!Utilizr.Vpn/OpenVpn/driver/**

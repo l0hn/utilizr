@@ -14,7 +14,7 @@ namespace Utilizr.Vpn.OpenVpn
             var driverDir = GetDriverDir();
             var devconPath = Path.Combine(driverDir, "devcon.exe");
             UninstallTapDriver();
-            var instResult = Shell.Exec(devconPath, driverDir, requestAdmin, "install", "OemWin2k.inf", "tap0901");
+            var instResult = Shell.Exec(devconPath, driverDir, requestAdmin, "install", "OemVista.inf", "tap0901");
             if (!string.IsNullOrEmpty(instResult.Output))
             {
                 Log.Info(LOG_CAT, instResult.Output);
