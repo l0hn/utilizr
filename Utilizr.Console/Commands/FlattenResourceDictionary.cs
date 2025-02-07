@@ -1,10 +1,12 @@
-﻿using CommandLine;
+﻿#if WINDOWS
+
+using CommandLine;
 using System;
 using System.IO;
 using Utilizr.Globalisation.Helpers;
 using Utilizr.WPF.Util;
 
-namespace Utilizr.Console.Commands
+namespace Utilizr.Console.Commands.Win
 {
     internal class FlattenResourceDictionary
     {
@@ -36,3 +38,4 @@ namespace Utilizr.Console.Commands
         public string? Output { get; set; }
     }
 }
+#endif

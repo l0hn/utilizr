@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using Utilizr.Console.Commands;
 
+#if WINDOWS
+    using Utilizr.Console.Commands.Win;
+#endif
+
 namespace Utilizr.Console
 {
     class Program
@@ -16,6 +20,7 @@ namespace Utilizr.Console
 
             try
             {
+#if WINDOWS
                 CommandLine.Parser.Default.ParseArguments<
                     GeneratePotFileOptions,
                     GenerateSourceListOptions,
@@ -25,6 +30,17 @@ namespace Utilizr.Console
                         .WithParsed<GenerateSourceListOptions>(GenerateSourceList.Run)
                         .WithParsed<ValidateLocaleOptions>(ValidateLocales.Run)
                         .WithParsed<FlattenResourceDictionaryOptions>(FlattenResourceDictionary.Run)
+                        .WithNotParsed(HandleParseError);
+
+                return;
+#endif
+                CommandLine.Parser.Default.ParseArguments<
+                    GeneratePotFileOptions,
+                    GenerateSourceListOptions,
+                    ValidateLocaleOptions>(args)
+                        .WithParsed<GeneratePotFileOptions>(GeneratePotFile.Run)
+                        .WithParsed<GenerateSourceListOptions>(GenerateSourceList.Run)
+                        .WithParsed<ValidateLocaleOptions>(ValidateLocales.Run)
                         .WithNotParsed(HandleParseError);
             }
             catch (Exception ex)

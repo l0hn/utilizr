@@ -1,22 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net7.0-windows;net8.0-windows</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>disable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net7.0-windows;net8.0-windows</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <EnableWindowsTargeting>True</EnableWindowsTargeting>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
-    <ProjectReference Include="..\Utilizr.Win32\Utilizr.Win32.csproj" />
-    <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
-    <ProjectReference Include="..\Utilizr\Utilizr.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Utilizr.Globalisation\Utilizr.Globalisation.csproj" />
+        <ProjectReference Include="..\Utilizr.Win32\Utilizr.Win32.csproj" />
+        <ProjectReference Include="..\Utilizr.Win\Utilizr.Win.csproj" />
+        <ProjectReference Include="..\Utilizr\Utilizr.csproj" />
+    </ItemGroup>
 
 </Project>
