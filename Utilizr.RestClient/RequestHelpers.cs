@@ -19,12 +19,12 @@ namespace Utilizr.Rest.Client
         public object? Query { get; set; }
 
         Dictionary<string, string> Headers { get; set; }
+
+        public bool LogRequest { get; }
     }
 
     public interface IApiRequest<TResponse> : IApiRequest
     {
-        public bool LogRequest { get; }
-
         /// <summary>
         /// Gets the object for request logging.
         /// You should override this method is for example you need to remove any sensitive information from a specific object before logging
