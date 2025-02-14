@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using Utilizr.Logging.Formatters;
 using Utilizr.Logging.Handlers;
 using Utilizr.Logging.Interfaces;
@@ -149,6 +150,11 @@ namespace Utilizr.Logging
         public static Logger GetLogger(string name)
         {
             return Manager.GetLogger(name);
+        }
+
+
+        public static ILogger CreateILogger() {
+            return new ILoggerWrapper();
         }
 
         /// <summary>
