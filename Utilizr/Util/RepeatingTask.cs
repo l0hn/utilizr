@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Utilizr.Async;
 using Utilizr.Logging;
 
 namespace Utilizr.Util;
@@ -13,7 +14,7 @@ public class RepeatingTask: IDisposable {
 
     private Task _task;
     private TimeSpan _interval;
-    private ManualResetEvent _resetEvent;
+    private AsyncManualResetEvent _resetEvent;
     private bool _paused;
     private Func<Task> _action;
 
@@ -23,7 +24,7 @@ public class RepeatingTask: IDisposable {
     public RepeatingTask(Func<Task> actionToRepeat, TimeSpan interval, bool runImmediately = false, bool startPaused = false)
     {
         _paused = startPaused;
-        _resetEvent = new ManualResetEvent(!startPaused);
+        _resetEvent = new AsyncManualResetEvent(!startPaused);
         _interval = interval;
         _cancelInterval = new CancellationTokenSource();   
         _cancelForDispose = new CancellationTokenSource();
@@ -58,10 +59,10 @@ public class RepeatingTask: IDisposable {
         {
             try
             {
-                _resetEvent.WaitOne();
+                await _resetEvent.WaitAsync();
                 _cancelInterval.Dispose();
                 _cancelInterval = new CancellationTokenSource();
-                _resetEvent.WaitOne();
+                await _resetEvent.WaitAsync();
 
                 if (_firstRunComplete || !_runImmediately) {
                     await Task.Delay(_interval, _cancelInterval.Token);
@@ -109,7 +110,7 @@ public class RepeatingTask: IDisposable {
         {
             _cancelForDispose.Cancel();
             _cancelInterval.Cancel();
-            _resetEvent.Dispose();
+            _resetEvent?.Set();
             _task.Dispose();
             _cancelForDispose.Dispose();
             _cancelInterval.Dispose();
