@@ -23,7 +23,7 @@ namespace Utilizr.Extensions
             }
         }
 
-        public static SecureString? ToSecureString(this string password)
+        public static SecureString? ToSecureString(this string? password)
         {
             if (password == null)
                 return null;
