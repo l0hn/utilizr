@@ -116,6 +116,11 @@ namespace Utilizr.Globalisation
                 ietfLangTag = Thread.CurrentThread.CurrentCulture.IetfLanguageTag;
             }
 
+            if (string.IsNullOrEmpty(ietfLangTag))
+            {
+                return;
+            }
+
             if (!_indexedMoFiles)
             {
                 IndexMoFiles();
