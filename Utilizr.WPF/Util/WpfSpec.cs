@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Utilizr.Logging;
@@ -10,6 +11,8 @@ namespace Utilizr.WPF.Util
     {
         public static bool IsHardwareRendering => RenderCapability.Tier >> 16 > 0;
         public static bool IsFullHardwareRendering => RenderCapability.Tier >> 16 > 1;
+
+        public static bool IsFullHwRenderingInUse(HwndTarget hwndTarget) => hwndTarget.RenderMode == RenderMode.Default && IsFullHardwareRendering;
 
         public static void SetDefaultFrameRateForSystemSpec()
         {
