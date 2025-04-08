@@ -14,9 +14,11 @@ namespace Utilizr.Rest.Client
     {
         public delegate void ResponseReceivedDelegate(object? response, Type requestType);
         public delegate void AuthenticationInvalidDelegate(HttpStatusCode statusCode, string? message);
+        public delegate void AnyHttpStatusErrorDelegate(string method, string domain, string resource, HttpStatusCode statusCode, string? message);
 
         public event ResponseReceivedDelegate? ResponseReceived;
         public event AuthenticationInvalidDelegate? AuthenticationError;
+        public event AnyHttpStatusErrorDelegate? AnyHttpStatusError;
 
         public bool LogRequests { get; set; } = true;
 
@@ -92,6 +94,8 @@ namespace Utilizr.Rest.Client
                     var detailedErrorDescription = apiRequest.GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(response.StatusCode, response.Data);
                     if (!string.IsNullOrEmpty(detailedErrorDescription))
                         description = detailedErrorDescription;
+
+                    OnAnyHttpStatusError(request.Method.ToString().ToUpperInvariant(), _serviceUrl, request.Resource, response.StatusCode, description);
 
                     throw new ApiException((int)response.StatusCode, description, response.Content);
                 }
@@ -245,6 +249,11 @@ namespace Utilizr.Rest.Client
         protected virtual void OnAuthenticationError(HttpStatusCode statusCode, string? message)
         {
             AuthenticationError?.Invoke(statusCode, message);
+        }
+
+        protected virtual void OnAnyHttpStatusError(string method, string domain, string resource, HttpStatusCode statusCode, string? message)
+        {
+            AnyHttpStatusError?.Invoke(method, domain, resource, statusCode, message);
         }
 
     }
