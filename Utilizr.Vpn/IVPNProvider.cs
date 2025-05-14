@@ -16,7 +16,7 @@ namespace Utilizr.Vpn
         TimeSpan ConnectedDuration { get; }
         bool IsConnected { get; }
 
-        string CurrentServer { get; }
+        string? CurrentServer { get; }
 
         event ConnectionStateHandler Connecting;
         event ConnectionStateHandler Connected;
