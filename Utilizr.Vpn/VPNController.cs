@@ -26,7 +26,7 @@ namespace Utilizr.Vpn
 
         public Exception? LastError { get; private set; }
 
-        public ConnectionType CurrentConnectionType { get; private set; } = ConnectionType.PPTP;
+        public ConnectionType CurrentConnectionType { get; private set; }
 
         public bool SupressErrors { get; set; }
 
@@ -130,6 +130,7 @@ namespace Utilizr.Vpn
                 CurrentProvider = provider;
 
                 await provider.Connect(startParams);
+                CurrentConnectionType = startParams.ConnectionType;
             }
             catch (Exception ex)
             {
