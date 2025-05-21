@@ -173,10 +173,14 @@ namespace Utilizr.WPF.Util
             try
             {
                 CheckDesignMode();
+                Log.Info(nameof(ResourceHelper), $"Getting icon, inDesignMode='{_inDesignMode}'");
 
                 var result = ImageCache.Get(resourceKey);
                 if (result != null)
+                {
+                    Log.Info(nameof(ResourceHelper), $"Returning cached icon for resource='{resourceKey}'");
                     return result;
+                }
 
                 if (_inDesignMode == true)
                 {
