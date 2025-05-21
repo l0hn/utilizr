@@ -30,7 +30,7 @@ namespace Utilizr.Vpn
 
         public bool SupressErrors { get; set; }
 
-        public VpnController(UserPassHandler? authenticationHandler, bool initializeNow = true, params IVpnProvider[] providers)
+        public VpnController(UserPassHandler authenticationHandler, bool initializeNow = true, params IVpnProvider[] providers)
         {
             _userPassHandler = authenticationHandler;
             Providers = providers;
