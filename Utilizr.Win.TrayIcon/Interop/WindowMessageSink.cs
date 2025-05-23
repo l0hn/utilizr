@@ -180,14 +180,16 @@ namespace Utilizr.Win.TrayIcon.Interop
             wc.lpszClassName = WindowId;
 
             // Register the window class
-            WinApi.RegisterClass(ref wc);
+            var result = WinApi.RegisterClass(ref wc);
+            if (result == 0)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
 
             // Get the message used to indicate the taskbar has been restarted
             // This is used to re-add icons when the taskbar restarts
             taskbarRestartMessageId = WinApi.RegisterWindowMessage("TaskbarCreated");
 
             // Create the message window
-            MessageWindowHandle = WinApi.CreateWindowEx(0, WindowId, "", 0, 0, 0, 1, 1, 0, 0, 0, 0);
+            MessageWindowHandle = WinApi.CreateWindowEx(IntPtr.Zero, WindowId, "", IntPtr.Zero, 0, 0, 1, 1, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
             if (MessageWindowHandle == IntPtr.Zero)
             {
@@ -203,7 +205,7 @@ namespace Utilizr.Win.TrayIcon.Interop
         /// <summary>
         /// Callback method that receives messages from the taskbar area.
         /// </summary>
-        private long OnWindowMessageReceived(IntPtr hwnd, uint messageId, uint wparam, uint lparam)
+        private long OnWindowMessageReceived(IntPtr hwnd, uint messageId, IntPtr wparam, IntPtr lparam)
         {
             if (messageId == taskbarRestartMessageId)
             {
@@ -227,7 +229,7 @@ namespace Utilizr.Win.TrayIcon.Interop
         /// or higher, this parameter can be used to resolve mouse coordinates.
         /// Currently not in use.</param>
         /// <param name="lParam">Provides information about the event.</param>
-        private void ProcessWindowMessage(uint msg, uint wParam, uint lParam)
+        private void ProcessWindowMessage(uint msg, IntPtr wParam, IntPtr lParam)
         {
             if (msg != CallbackMessageId) return;
 
