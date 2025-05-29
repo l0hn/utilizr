@@ -39,12 +39,13 @@ namespace Utilizr.Vpn.OpenVpn
         public string CurrentServer => _currentServer;
         public object CurrentUserContext => _currentContext;
 
-        public async Task Connect(IConnectionStartParams startParams)
+        public async Task<string> Connect(IConnectionStartParams startParams)
         {
             _currentServer = startParams.Hostname;
             _currentContext = startParams.Context;
 
             await ConnectOpenVPNAsync(startParams);
+            return _currentServer;
         }
 
         public void Disconnect()

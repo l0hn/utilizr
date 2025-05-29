@@ -3,8 +3,8 @@
 namespace Utilizr.Vpn
 {
 
-    public delegate void ConnectionStateHandler(object sender, string host, Exception? error, object? userContext=null);
-    public delegate void UsageHandler(object sender, string host, BandwidthUsage usage, object? userContext = null);
+    public delegate void ConnectionStateHandler(object? sender, string host, Exception? error, object? userContext=null);
+    public delegate void UsageHandler(object? sender, string host, BandwidthUsage usage, object? userContext = null);
 
     public interface IVpnController: IDisposable
     {
@@ -24,7 +24,7 @@ namespace Utilizr.Vpn
 
         event EventHandler TapDriverInstallationRequired;
 
-        Task ConnectAsync(IConnectionStartParams startParams);
+        Task<string> ConnectAsync(IConnectionStartParams startParams);
 
         Task DisconnectAsync();
 
@@ -107,6 +107,8 @@ namespace Utilizr.Vpn
         CISCO_IPSEC = 4,
         SSTP = 5,
         OPEN_VPN = 6,
+        WIREGUARD = 7,
+        HYDRA = 8,
     }
 
     public enum ConnectionState

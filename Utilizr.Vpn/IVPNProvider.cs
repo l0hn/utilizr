@@ -11,12 +11,12 @@ namespace Utilizr.Vpn
         /// Same as <see cref="Disconnect"/> but will always fire disconnecting / disconnected events.
         /// </summary>
         void Abort();
-        Task Connect(IConnectionStartParams startParams);
+        Task<string> Connect(IConnectionStartParams startParams);
         BandwidthUsage Usage { get; }
         TimeSpan ConnectedDuration { get; }
         bool IsConnected { get; }
 
-        string CurrentServer { get; }
+        string? CurrentServer { get; }
 
         event ConnectionStateHandler Connecting;
         event ConnectionStateHandler Connected;

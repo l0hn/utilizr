@@ -7,14 +7,14 @@ namespace Utilizr.Win.TrayIcon.Interop
     /// Callback delegate which is used by the Windows API to
     /// submit window messages.
     /// </summary>
-    public delegate long WindowProcedureHandler(IntPtr hwnd, uint uMsg, uint wparam, uint lparam);
+    public delegate long WindowProcedureHandler(IntPtr hwnd, uint uMsg, IntPtr wparam, IntPtr lparam);
 
 
     /// <summary>
     /// Win API WNDCLASS struct - represents a single window.
     /// Used to receive window messages.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct WindowClass
     {
         public uint style;
