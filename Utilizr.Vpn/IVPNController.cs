@@ -24,7 +24,7 @@ namespace Utilizr.Vpn
 
         event EventHandler TapDriverInstallationRequired;
 
-        Task ConnectAsync(IConnectionStartParams startParams);
+        Task<string> ConnectAsync(IConnectionStartParams startParams);
 
         Task DisconnectAsync();
 

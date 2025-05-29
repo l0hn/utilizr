@@ -84,13 +84,14 @@ namespace Utilizr.Vpn
         public event ConnectionStateHandler ConnectError;
         public event EventHandler DurationUpdate;
 
-        public Task ConnectAsync(IConnectionStartParams startParams)
+        public Task<string> ConnectAsync(IConnectionStartParams startParams)
         {
             return Task.Run(() => Connect(startParams));
         }
 
-        async Task Connect(IConnectionStartParams startParams)
+        async Task<string> Connect(IConnectionStartParams startParams)
         {
+            var connectedCountry = string.Empty;
             try
             {
                 LastError = null;
@@ -129,7 +130,7 @@ namespace Utilizr.Vpn
 
                 CurrentProvider = provider;
 
-                await provider.Connect(startParams);
+                connectedCountry = await provider.Connect(startParams);
                 CurrentConnectionType = startParams.ConnectionType;
             }
             catch (Exception ex)
@@ -141,6 +142,8 @@ namespace Utilizr.Vpn
             {
                 throw LastError;
             }
+
+            return connectedCountry;
         }
 
 

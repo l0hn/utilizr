@@ -196,7 +196,7 @@ namespace Utilizr.Vpn.Ras
             Disconnect();
         }
 
-        public Task Connect(IConnectionStartParams startParams)
+        public Task<string> Connect(IConnectionStartParams startParams)
         {
             return Task.Run(() =>
             {
@@ -239,6 +239,8 @@ namespace Utilizr.Vpn.Ras
                     OnDisconnected(_currentServer, _context);
                     _rasDialerDone.Set();
                 }
+
+                return _currentServer;
             });
         }
 
