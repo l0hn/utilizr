@@ -209,8 +209,8 @@ namespace Utilizr.Win.Info
             exitCode = null;
 
             var pi = new PROCESS_INFORMATION();
-            var saProcess = new Win32.Kernel32.Structs.SECURITY_ATTRIBUTES();
-            var saThread = new Win32.Kernel32.Structs.SECURITY_ATTRIBUTES();
+            var saProcess = new SECURITY_ATTRIBUTES();
+            var saThread = new SECURITY_ATTRIBUTES();
             saProcess.nLength = (uint)Marshal.SizeOf(saProcess);
             saThread.nLength = (uint)Marshal.SizeOf(saThread);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Kernel32.Structs;
@@ -23,9 +24,12 @@ namespace Utilizr.Win.Info
         public bool StartProcessAndWait(PROCESS_INFORMATION? pi, nint? hProcess = null, nint? hThread = null)
         {
             IntPtr job = Kernel32.CreateJobObject(IntPtr.Zero, null);
-            IntPtr ioPort = Kernel32.CreateIoCompletionPort(IntPtr.Zero, IntPtr.Zero, UIntPtr.Zero, 1);
-            var success = false;
+            //IntPtr ioPort = Kernel32.CreateIoCompletionPort(IntPtr.Zero, IntPtr.Zero, UIntPtr.Zero, 1);
+            IntPtr ioPort = Kernel32.CreateIoCompletionPort(new IntPtr(-1), IntPtr.Zero, UIntPtr.Zero, 1);
+            if (ioPort == IntPtr.Zero)
+                throw new Exception("Unable to create completion port", new Win32Exception(Marshal.GetLastWin32Error()));
 
+            var success = false;
             JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
             {
                 CompletionKey = (UIntPtr)job,
@@ -53,17 +57,26 @@ namespace Utilizr.Win.Info
             IntPtr overlapped;
 
             // Wait for job notifications
+            bool gotCompletionPacket = false;
             while (Kernel32.GetQueuedCompletionStatus(ioPort, out numberOfBytes, out completionKey, out overlapped, uint.MaxValue))
             {
                 if (completionKey == (UIntPtr)job)
                 {
-                    success = true;
-                    break;
+                    gotCompletionPacket = true;
+
+                    if (numberOfBytes == /*JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO*/ 4)
+                    {
+                        // all processes from job finished
+                        success = true;
+                        break;
+                    }
                 }
             }
 
-            Marshal.FreeHGlobal(completionPortPtr);
+            if (!gotCompletionPacket)
+                throw new Exception("Failed to get completion status", new Win32Exception(Marshal.GetLastWin32Error()));
 
+            Marshal.FreeHGlobal(completionPortPtr);
             return success;
         }
     }
