@@ -135,16 +135,16 @@ namespace Utilizr
         }
 
         public string Info() {
-            StringBuilder sb = new StringBuilder($"cmd: {CommandWithArgs}");
+            var sb = new StringBuilder($"cmd: {CommandWithArgs}{Environment.NewLine}");
             sb.AppendLine($"exit code: {ExitCode}");
             if (Output.IsNotNullOrEmpty())
             {
-                sb.AppendLine($"\noutput:\n{Output}");
+                sb.AppendLine($"{Environment.NewLine}output:{Environment.NewLine}{Output}");
             }
 
             if (ErrorOutput.IsNotNullOrEmpty())
             {
-                sb.AppendLine($"\nerror: {ErrorOutput}");
+                sb.AppendLine($"{Environment.NewLine}error: {ErrorOutput}");
             }
 
             return sb.ToString();

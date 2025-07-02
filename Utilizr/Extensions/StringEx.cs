@@ -8,16 +8,16 @@ namespace Utilizr.Extensions
 {
     public static class StringEx
     {
-        public static bool IsNullOrEmpty(this string str) {
+        public static bool IsNullOrEmpty(this string? str) {
             return string.IsNullOrEmpty(str);
         }
 
-        public static bool IsNotNullOrEmpty(this string str)
+        public static bool IsNotNullOrEmpty(this string? str)
         {
             return !string.IsNullOrEmpty(str);
         }
 
-        public static bool IsNullOrWhitespace(this string str)
+        public static bool IsNullOrWhitespace(this string? str)
         {
             if (string.IsNullOrEmpty(str))
                 return true;
@@ -25,12 +25,12 @@ namespace Utilizr.Extensions
             return !str.Any(p => !char.IsWhiteSpace(p));
         }
 
-        public static bool IsNotNullOrWhitespace(this string str)
+        public static bool IsNotNullOrWhitespace(this string? str)
         {
             return !IsNullOrWhitespace(str);
         }
 
-        public static bool IsWhiteSpaceOnly(this string str)
+        public static bool IsWhiteSpaceOnly(this string? str)
         {
             if (str.IsNullOrEmpty())
                 return false;
