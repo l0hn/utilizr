@@ -26,8 +26,15 @@ namespace Utilizr.Rest.Client
         readonly string _serviceUrl;
         protected readonly List<HookHolder> _hooks;
 
-        public AbstractRestClient(string serviceUrl)
-            : base(serviceUrl, configureSerialization:sOptions => sOptions.UseNewtonsoftJson())
+        public AbstractRestClient(string serviceUrl, string? customUserAgent = null)
+            : base(
+                  serviceUrl,
+                  configureRestClient:restClient =>
+                  {
+                      if (!string.IsNullOrEmpty(customUserAgent))
+                          restClient.UserAgent = customUserAgent;
+                  },
+                  configureSerialization:sOptions => sOptions.UseNewtonsoftJson())
         {
             _serviceUrl = serviceUrl;
             _hooks = new List<HookHolder>();
