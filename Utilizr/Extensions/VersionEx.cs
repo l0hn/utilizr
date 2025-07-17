@@ -4,6 +4,13 @@ namespace Utilizr.Extensions
 {
     public static class VersionEx
     {
+        /// <summary>
+        /// Returns ToString(fieldCount), but ensuring an ArgumentException will not be thrown if a larger fieldCount
+        /// has been specified than what's currently set on the Version instance. Return what's available.
+        /// </summary>
+        /// <param name="version"></param>
+        /// <param name="fieldCount"></param>
+        /// <returns></returns>
         public static string SafeToString(this Version version, int fieldCount)
         {
             var safeFieldCount = Math.Min(fieldCount, GetDefinedFieldCount(version));
