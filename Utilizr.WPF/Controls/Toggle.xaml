@@ -27,7 +27,20 @@
         </Storyboard>
     </UserControl.Resources>-->
 
-    <Grid x:Name="LayoutRoot">
+    <UserControl.Resources>
+        <Style x:Key="KeyboardFocusStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Stroke="Orange" StrokeThickness="2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>        
+    </UserControl.Resources>
+
+    <Grid x:Name="LayoutRoot"
+          FocusVisualStyle="{Binding Source={StaticResource KeyboardFocusStyle}}">
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">
                 <Style.Triggers>
