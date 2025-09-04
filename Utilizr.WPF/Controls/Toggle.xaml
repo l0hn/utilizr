@@ -6,41 +6,28 @@
              xmlns:local="clr-namespace:Utilizr.WPF.Controls"
              mc:Ignorable="d" 
              MinWidth="38"
-             MinHeight="24">
-
-    <!--<UserControl.Resources>
-        <Storyboard x:Key="OnStoryBoard">
-            <ColorAnimation Storyboard.TargetName="Border"
-                            Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)"
-                            To="{Binding Path=BackgroundOn.Color,
-                                         RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Toggle}}}"
-                            Duration="00:00:00.2"
-                            FillBehavior="Stop"/>
-        </Storyboard>
-        <Storyboard x:Key="OffStoryBoard">
-            <ColorAnimation Storyboard.TargetName="Border"
-                            Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)"
-                            To="{Binding Path=BackgroundOff.Color,
-                                         RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Toggle}}}"
-                            Duration="00:00:00.2"
-                            FillBehavior="Stop"/>
-        </Storyboard>
-    </UserControl.Resources>-->
+             MinHeight="24"
+             Focusable="True"
+             IsTabStop="True">
 
     <UserControl.Resources>
-        <Style x:Key="KeyboardFocusStyle">
+        <Style x:Key="KeyboardFocusStyle2">
             <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <Rectangle Stroke="Orange" StrokeThickness="2"/>
+                        <Rectangle Stroke="{StaticResource NavigationBarActiveBrush}" StrokeThickness="2" RadiusX="7" RadiusY="7"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>        
     </UserControl.Resources>
 
-    <Grid x:Name="LayoutRoot"
-          FocusVisualStyle="{Binding Source={StaticResource KeyboardFocusStyle}}">
+    <UserControl.FocusVisualStyle>
+        <Style TargetType="{x:Type UserControl}"
+               BasedOn="{StaticResource KeyboardFocusStyle2}"/>
+    </UserControl.FocusVisualStyle>
+
+    <Grid x:Name="LayoutRoot">
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">
                 <Style.Triggers>
@@ -52,7 +39,7 @@
                 </Style.Triggers>
             </Style>
         </Grid.Style>
-        
+
         <Border x:Name="Border"/>
 
         <Ellipse Fill="{Binding Path=BackgroundHandle}"

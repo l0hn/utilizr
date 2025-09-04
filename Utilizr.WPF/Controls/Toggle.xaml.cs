@@ -190,6 +190,18 @@ namespace Utilizr.WPF.Controls
                 SetToggleMargin(IsToggled);
                 ToggleEllipse.Margin = ToggleMargin;
             };
+
+            PreviewKeyDown += (s, e) =>
+            {
+                if (IsKeyboardFocused)
+                {
+                    if (e.Key == Key.Space)
+                    {
+                        OnMouseLeftButtonDown(null);
+                        e.Handled = true;
+                    }
+                }
+            };
         }
 
         void SetupOnStoryboard()
