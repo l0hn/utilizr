@@ -114,7 +114,7 @@ namespace Utilizr.Extensions
         /// <returns></returns>
         public static DateTime GetNextDay(this DateTime dateTime, DayOfWeek dayToFind, bool futureDate, out bool alreadyMatched)
         {
-            var dayDelta = CalculateDayOffset(dateTime.DayOfWeek, dayToFind);
+            var dayDelta = CalculateDayOffset(dateTime.DayOfWeek, dayToFind, futureDate);
             alreadyMatched = dayDelta == 0;
             return dateTime.AddDays(futureDate ? dayDelta : (0 - dayDelta));
         }
@@ -125,11 +125,13 @@ namespace Utilizr.Extensions
         /// <param name="currentDay"></param>
         /// <param name="dayOfDesiredWeek"></param>
         /// <returns></returns>
-        public static int CalculateDayOffset(DayOfWeek currentDay, DayOfWeek dayOfDesiredWeek)
+        public static int CalculateDayOffset(DayOfWeek currentDay, DayOfWeek dayOfDesiredWeek, bool futureDate)
         {
             int c = (int)currentDay;
             int d = (int)dayOfDesiredWeek;
-            return (7 - c + d) % 7;
+            return futureDate
+                ? (d - c + 7) % 7
+                : (c - d + 7) % 7;
         }
 
         /// <summary>
