@@ -1,31 +1,16 @@
 ﻿<UserControl x:Class="Utilizr.WPF.Controls.Toggle"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Utilizr.WPF.Controls"
-             mc:Ignorable="d" 
-             MinWidth="38"
-             MinHeight="24"
+             mc:Ignorable="d"
              Focusable="True"
-             IsTabStop="True">
-
-    <UserControl.Resources>
-        <Style x:Key="KeyboardFocusStyle2">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Stroke="{StaticResource NavigationBarActiveBrush}" StrokeThickness="2" RadiusX="7" RadiusY="7"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>        
-    </UserControl.Resources>
-
-    <UserControl.FocusVisualStyle>
-        <Style TargetType="{x:Type UserControl}"
-               BasedOn="{StaticResource KeyboardFocusStyle2}"/>
-    </UserControl.FocusVisualStyle>
+             IsTabStop="True"
+             MinWidth="46"
+             MinHeight="32"
+             FocusVisualStyle="{x:Null}"
+             x:Name="ToggleUserControlRoot">
 
     <Grid x:Name="LayoutRoot">
         <Grid.Style>
@@ -40,12 +25,33 @@
             </Style>
         </Grid.Style>
 
-        <Border x:Name="Border"/>
+        <Border x:Name="HighlightBorder"
+                Background="Transparent"
+                BorderThickness="2">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="BorderBrush"
+                            Value="Transparent" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsKeyboardFocusWithin, ElementName=ToggleUserControlRoot}"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{Binding Path=DataContext.HighlightBorderBrush, ElementName=LayoutRoot}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
 
-        <Ellipse Fill="{Binding Path=BackgroundHandle}"
-                 StrokeThickness="0"
-                 VerticalAlignment="Center"
-                 x:Name="ToggleEllipse"
-                 HorizontalAlignment="Left"/>
+            <Grid>
+                <Border x:Name="Border"
+                        Margin="2"/>
+
+                <Ellipse Fill="{Binding Path=BackgroundHandle}"
+                         StrokeThickness="0"
+                         VerticalAlignment="Center"
+                         x:Name="ToggleEllipse"
+                         HorizontalAlignment="Left" />
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

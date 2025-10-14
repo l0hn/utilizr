@@ -19,6 +19,22 @@ namespace Utilizr.WPF.Controls
         public event EventHandler SwitchedOn;
         public event EventHandler SwitchedOff;
 
+
+        public static readonly DependencyProperty HighlightBorderBrushProperty =
+            DependencyProperty.Register(
+                nameof(HighlightBorderBrush),
+                typeof(Brush),
+                typeof(Toggle),
+                new PropertyMetadata(new SolidColorBrush("#FF2D7EFF".ARGBToColor()))
+            );
+
+        public Brush HighlightBorderBrush
+        {
+            get { return (Brush)GetValue(HighlightBorderBrushProperty); }
+            set { SetValue(HighlightBorderBrushProperty, value); }
+        }
+
+
         public static readonly DependencyProperty BackgroundOnProperty =
             DependencyProperty.Register(
                 nameof(BackgroundOn),
@@ -158,7 +174,6 @@ namespace Utilizr.WPF.Controls
             set { SetValue(PreToggledProperty, value); }
         }
 
-
         Storyboard? _onStoryboard;
         Storyboard? _offStoryboard;
 
@@ -268,24 +283,30 @@ namespace Utilizr.WPF.Controls
         void UpdateHandleSize()
         {
             var handlePadding = 6;
-            ToggleEllipse.Height = Math.Max(ActualHeight - handlePadding, 10);
-            ToggleEllipse.Width = Math.Max(ActualHeight - handlePadding, 10);
+            ToggleEllipse.Height = Math.Max(Border.ActualHeight - handlePadding, 10);
+            ToggleEllipse.Width = Math.Max(Border.ActualHeight - handlePadding, 10);
         }
 
         void UpdateBorderCornerRadius()
         {
-            var uniform = ActualHeight < double.PositiveInfinity
-                ? ActualHeight / 2
+            var uniformBackgroundRadius = Border.ActualHeight < double.PositiveInfinity
+                ? (Border.ActualHeight - /*(Border.Margin.Top + Border.Margin.Bottom)*/0) / 2
                 : 0;
-            Border.CornerRadius = new CornerRadius(uniform);
+            Border.CornerRadius = new CornerRadius(uniformBackgroundRadius);
+
+            // these are different sizes, will look a little off if not the same
+            var uniformHighlightRadius = HighlightBorder.ActualHeight < double.PositiveInfinity
+                ? (HighlightBorder.ActualHeight - /*(HighlightBorder.Margin.Top + HighlightBorder.Margin.Bottom)*/0) / 2
+                : 0;
+            HighlightBorder.CornerRadius = new CornerRadius(uniformHighlightRadius);
         }
 
         void SetToggleMargin(bool toggled)
         {
             ToggleMargin = new Thickness(
                 toggled
-                    ? ActualWidth - ToggleEllipse.ActualWidth - 4
-                    : 4,
+                    ? Border.ActualWidth + Border.Margin.Left - ToggleEllipse.ActualWidth - 4
+                    : Border.Margin.Right + 4,
                 0,
                 0,
                 0
@@ -314,7 +335,7 @@ namespace Utilizr.WPF.Controls
                 // this means the property won't be under the animation anymore and will revert
                 // to the previous value, set corectly in the complete event.
                 // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/how-to-set-a-property-after-animating-it-with-a-storyboard
-                void complete(object sender, EventArgs args)
+                void complete(object? sender, EventArgs args)
                 {
                     ToggleEllipse.Margin = ToggleMargin;
                     ta.Completed -= complete;
