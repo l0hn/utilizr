@@ -60,7 +60,7 @@ namespace Utilizr.Globalisation
                     {
                         var usersMachine = Thread.CurrentThread.CurrentCulture.Name;
                         if (usersMachine.StartsWith($"{searchTag}-"))
-                            searchTag = usersMachine; // matched neutral, user machine's specific culture
+                            searchTag = usersMachine; // matched neutral, use machine's specific culture
                     }
 
                     var cultureType = searchTag.Contains("-")
