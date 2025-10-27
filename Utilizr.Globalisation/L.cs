@@ -27,17 +27,69 @@ namespace Utilizr.Globalisation
 
         private static bool _indexedMoFiles = false;
         public const string LogCat = "Utilizr.Globalisation";
+        const string _debugLanguageTag = "blank";
 
         public static string CurrentLanguage { get; private set; }
 #if DEBUG
         public static SupportedLanguage DebugLanguage { get; }
 #endif
 
+        private static string? _cachedLanguageCheck;
+        private static CultureInfo? _cachedLanguageCulture;
+        /// <summary>
+        /// Attempts to return the matching .NET CultureInfo from <see cref="CurrentLanguage"/> and remains 
+        /// cached until the language has changed.
+        /// 
+        /// If a neutral language is used, such as 'en', it will check the current thread's culture to see
+        /// if it can return the specific region, such as 'en-US' or 'en-GB'.
+        /// 
+        /// Falls back to the thread's culture if no match has been found.
+        /// </summary>
+        public static CultureInfo CurrentLanguageCulture
+        {
+            get
+            {
+                var currentLanguage = CurrentLanguage;
+                if (_cachedLanguageCheck == currentLanguage && _cachedLanguageCulture != null)
+                    return _cachedLanguageCulture; // can't use _cachedCultureInfo.Name due to debug language
+
+                if (currentLanguage != _debugLanguageTag)
+                {
+                    var searchTag = currentLanguage;
+                    if (!searchTag.Contains("-"))
+                    {
+                        var usersMachine = Thread.CurrentThread.CurrentCulture.Name;
+                        if (usersMachine.StartsWith($"{searchTag}-"))
+                            searchTag = usersMachine; // matched neutral, use machine's specific culture
+                    }
+
+                    var cultureType = searchTag.Contains("-")
+                        ? CultureTypes.SpecificCultures
+                        : CultureTypes.NeutralCultures;
+
+                    var match = CultureInfo.GetCultures(cultureType)
+                        .FirstOrDefault(p => string.Equals(p.Name, searchTag, StringComparison.OrdinalIgnoreCase));
+
+                    if (match != null)
+                    {
+                        _cachedLanguageCulture = match;
+                        _cachedLanguageCheck = currentLanguage;
+                        return _cachedLanguageCulture;
+                    }
+                }
+
+                // fallback to UI thread language
+                _cachedLanguageCulture = Thread.CurrentThread.CurrentCulture;
+                _cachedLanguageCheck = currentLanguage;
+                return _cachedLanguageCulture;
+            }
+        }
+
         static L()
         {
             CurrentLanguage = "en-GB"; // placeholder
 #if DEBUG
-            DebugLanguage = new SupportedLanguage(name: "Blank", nativeName: "*****", ietfLanguageTag: "blank");
+            DebugLanguage = new SupportedLanguage(name: "Blank", nativeName: "*****", ietfLanguageTag: _debugLanguageTag);
 #endif
         }
 
