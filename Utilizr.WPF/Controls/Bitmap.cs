@@ -9,6 +9,10 @@ namespace Utilizr.WPF.Controls
 {
     public class Bitmap : FrameworkElement
     {
+        private EventHandler _sourceDownloaded;
+        private EventHandler<ExceptionEventArgs> _sourceFailed;
+        private Point _pixelOffset;
+
         public Bitmap()
         {
             _sourceDownloaded = new EventHandler(OnSourceDownloaded);
@@ -18,7 +22,7 @@ namespace Utilizr.WPF.Controls
         }
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
-            "Source",
+            nameof(Source),
             typeof(ImageSource),
             typeof(Bitmap),
             new FrameworkPropertyMetadata(
@@ -28,13 +32,14 @@ namespace Utilizr.WPF.Controls
                 FrameworkPropertyMetadataOptions.AffectsArrange |
                 FrameworkPropertyMetadataOptions.AffectsParentArrange |
                 FrameworkPropertyMetadataOptions.AffectsParentMeasure,
-                new PropertyChangedCallback(Bitmap.OnSourceChanged)));
+                new PropertyChangedCallback(Bitmap.OnSourceChanged))
+            );
 
-        public ImageSource Source
+        public ImageSource? Source
         {
             get
             {
-                return (ImageSource)GetValue(SourceProperty);
+                return GetValue(SourceProperty) as ImageSource;
             }
             set
             {
@@ -42,8 +47,13 @@ namespace Utilizr.WPF.Controls
             }
         }
 
-        public static readonly DependencyProperty DebugModeProperty = DependencyProperty.Register(
-            "DebugMode", typeof(bool), typeof(Bitmap), new PropertyMetadata(default(bool)));
+        public static readonly DependencyProperty DebugModeProperty =
+            DependencyProperty.Register(
+            nameof(DebugMode),
+            typeof(bool),
+            typeof(Bitmap),
+            new PropertyMetadata(default(bool))
+        );
 
         public bool DebugMode
         {
@@ -52,7 +62,7 @@ namespace Utilizr.WPF.Controls
         }
 
         
-        public event EventHandler<ExceptionEventArgs> BitmapFailed;
+        public event EventHandler<ExceptionEventArgs>? BitmapFailed;
 
         private void DebugPrint(string message)
         {
@@ -67,10 +77,9 @@ namespace Utilizr.WPF.Controls
         // Return our measure size to be the size needed to display the bitmap pixels.
         protected override Size MeasureOverride(Size availableSize)
         {
+            var measureSize = new Size();
 
-            Size measureSize = new Size();
-
-            BitmapSource bitmapSource = (BitmapSource) Source;
+            var bitmapSource = Source as BitmapSource;
             if (bitmapSource != null)
             {
                 measureSize = new Size(
@@ -86,7 +95,7 @@ namespace Utilizr.WPF.Controls
 
         protected override void OnRender(DrawingContext dc)
         {
-            BitmapSource bitmapSource = (BitmapSource) this.Source;
+            var bitmapSource = Source as BitmapSource;
 
             //TODO: removing this null check causes weird layout issues, however having the null check causes high cpu usage if no Source is set.. need to solve the root issue :/
             if (bitmapSource != null)
@@ -121,20 +130,19 @@ namespace Utilizr.WPF.Controls
             }
         }
 
-        private void OnSourceDownloaded(object sender, EventArgs e)
+        private void OnSourceDownloaded(object? sender, EventArgs e)
         {
             InvalidateMeasure();
             InvalidateVisual();
         }
 
-        private void OnSourceFailed(object sender, ExceptionEventArgs e)
+        private void OnSourceFailed(object? sender, ExceptionEventArgs e)
         {
-            Source = null; // setting a local value seems scetchy...
-
-            BitmapFailed(this, e);
+            SetCurrentValue(SourceProperty, null);
+            BitmapFailed?.Invoke(this, e);
         }
 
-        private void OnLayoutUpdated(object sender, EventArgs e)
+        private void OnLayoutUpdated(object? sender, EventArgs e)
         {
             // This event just means that layout happened somewhere.  However, this is
             // what we need since layout anywhere could affect our pixel positioning.
@@ -251,7 +259,7 @@ namespace Utilizr.WPF.Controls
             catch
             {
 
-            }            
+            }
 
             return pixelOffset;
         }
@@ -270,9 +278,5 @@ namespace Utilizr.WPF.Controls
             double delta = value1 - value2;
             return ((delta < 1.53E-06) && (delta > -1.53E-06));
         }
-
-        private EventHandler _sourceDownloaded;
-        private EventHandler<ExceptionEventArgs> _sourceFailed;
-        private Point _pixelOffset;
     }
 }
