@@ -177,7 +177,7 @@ namespace Utilizr.WPF.Controls
                 IsOn = newState;
                 OnButtonIconClicked(newState);
             };
-            FakeCurrentIconChanged();            
+            FakeCurrentIconChanged();
         }
 
         private void FakeCurrentIconChanged()
