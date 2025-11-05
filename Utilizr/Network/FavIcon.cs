@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,42 +10,33 @@ using Utilizr.Info;
 
 namespace Utilizr.Network
 {
-    public static class Favicon
+    public enum FavIcoSize
+    {
+        Small,
+        Medium,
+        Large
+    }
+
+    public static class FavIcon
     {
         private const string DOMAIN_REGEX = "\\b((?=[a-z0-9-]{1,63}\\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,63}\\b";
         static Regex _domainRegex = new Regex(DOMAIN_REGEX, RegexOptions.IgnoreCase);
         private const string USER_AGENT = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)";
-        static object DICT_LOCK = new object();
-        static Dictionary<string, object> _locks = new Dictionary<string, object>();
-        public static readonly string ICO_CACHE_DIR = Path.Combine(AppInfo.CacheDir, "favicons");
+        static object DICT_LOCK = new();
+        static Dictionary<string, object> _locks = new();
+        public static readonly string ICO_CACHE_DIR = Path.Combine(AppInfo.CacheDir, "favicons2");
 
-        private static string[] _icoTypes =
+        public static Task GetFavIconAsync(string? url, params FavIcoSize[] sizeOrder)
         {
-            "shortcut icon",
-            "icon",
-            "apple-touch-icon",
-            "apple-touch-icon-precomposed"
-        };
-
-        private static Dictionary<string, FavIcoSize> _sizes = new Dictionary<string, FavIcoSize>()
-        {
-            {"shortcut icon", FavIcoSize.Small},
-            {"icon", FavIcoSize.Small},
-            {"apple-touch-icon", FavIcoSize.Large},
-            {"apple-touch-icon-precomposed", FavIcoSize.Large},
-        };
-
-        public static Task GetFaviconAsync(string? url, params FavIcoSize[] sizeOrder)
-        {
-            return Task.Run(() => GetFavicon(url, sizeOrder));
+            return Task.Run(() => GetFavIcon(url, sizeOrder));
         }
 
-        public static FavIco? GetFavicon(string? url, params FavIcoSize[] sizeOrder)
+        public static FavIco? GetFavIcon(string? url, params FavIcoSize[] sizeOrder)
         {
-            return GetFavicons(url, sizeOrder)?.FirstOrDefault();
+            return GetFavIcons(url, sizeOrder)?.FirstOrDefault();
         }
 
-        public static FavIco[]? GetFavicons(string? url, params FavIcoSize[] sizeOrder)
+        public static FavIco[]? GetFavIcons(string? url, params FavIcoSize[] sizeOrder)
         {
             var cleanUrl = SanitizeUrl(url);
 
@@ -80,8 +72,8 @@ namespace Utilizr.Network
 
                     var links = GetIconLinks(cleanUrl)
                         .Where(p => p != null)
-                        .OrderBy(i => orderDict.ContainsKey(i.FavIcoSize) ? orderDict[i.FavIcoSize] : 99)
-                        .ThenBy(i => i.Rel != "shortcut icon");
+                        .OrderBy(i => orderDict.ContainsKey(i.FavIcoSize) ? orderDict[i.FavIcoSize] : 99);
+                        //.ThenBy(i => i.Rel != "shortcut icon");
 
                     return DownloadIcos(links).ToArray();
                 }
@@ -95,25 +87,33 @@ namespace Utilizr.Network
             }
         }
 
-        static IEnumerable<FavIco> DownloadIcos(IEnumerable<FavIco> icoLinks)
+        static IEnumerable<FavIco> DownloadIcos(IEnumerable<FavIco?> icoLinks)
         {
             foreach (var icoLink in icoLinks)
             {
+                if (icoLink == null)
+                    continue;
+
                 if (!Directory.Exists(ICO_CACHE_DIR))
                     Directory.CreateDirectory(ICO_CACHE_DIR);
                 else if (File.Exists(icoLink.FilePath))
                     continue;
 
-                var path = Path.Combine(ICO_CACHE_DIR, $"{Hash.MD5(icoLink.Domain)}_{icoLink.FavIcoSize}_");
-                if (icoLink.Rel == "icon")
-                    path += "1.dat";
-                else
-                    path += "0.dat";
+                var path = Path.Combine(ICO_CACHE_DIR, $"{Hash.MD5(icoLink.Domain)}_{icoLink.FavIcoSize}_0.dat");
+
+                //var path = Path.Combine(ICO_CACHE_DIR, $"{Hash.MD5(icoLink.Domain)}_{icoLink.FavIcoSize}_");
+                //if (icoLink.Rel == "icon")
+                //    path += "1.dat";
+                //else
+                //    path += "0.dat";
 
                 icoLink.FilePath = path;
 
                 try
                 {
+                    if (string.IsNullOrEmpty(icoLink.Href))
+                        continue;
+
                     NetUtil.DownloadFile(icoLink.Href, path, requestTimeout: 5000, userAgent: USER_AGENT);
                 }
                 catch
@@ -124,74 +124,34 @@ namespace Utilizr.Network
             }
         }
 
-        static IEnumerable<FavIco>? GetIconLinks(string url)
+        static IEnumerable<FavIco?> GetIconLinks(string? url)
         {
-            return null;
-            //Uri baseUri = new Uri(url);
-            //HtmlWeb htmlWeb = new HtmlWeb();
-            //List<string> found = new List<string>();
-            //HtmlDocument doc = null;
-            //HtmlNodeCollection nodes = null;
+            if (string.IsNullOrEmpty(url))
+                yield break;
 
-            //try
-            //{
-            //    doc = htmlWeb.Load(url);
-            //}
-            //catch
-            //{
-            //    htmlWeb.UserAgent = USER_AGENT;
-            //    try
-            //    {
-            //        doc = htmlWeb.Load(url);
-            //    }
-            //    catch
-            //    {
-            //        yield break;
-            //    }
-            //}
+            // https://www.google.com/s2/favicons?domain=facebook.com&sz=32
+            // https://icons.duckduckgo.com/ip3/facebook.com.ico
 
-            //nodes = doc.DocumentNode.SelectNodes("/html/head/link[@rel][@href]");
-            //baseUri = new Uri(htmlWeb.ResponseUri.Scheme + "://" + htmlWeb.ResponseUri.Host);
+            var googleIcons = new List<(FavIcoSize Size, int SzParam)>
+            {
+                (FavIcoSize.Large, 64),
+                (FavIcoSize.Medium, 32),
+                (FavIcoSize.Small, 16),
+            };
 
-            //foreach (var node in nodes ?? new HtmlNodeCollection(null))
-            //{
-            //    var rel = node.Attributes["rel"]?.Value;
-            //    if (rel.IsNullOrEmpty())
-            //        continue;
+            foreach (var googleIcon in googleIcons)
+            {
+                yield return new FavIco(url, googleIcon.Size)
+                {
+                    Href = $"https://www.google.com/s2/favicons?domain={url}&sz={googleIcon.SzParam}",
+                };
+            }
 
-            //    if (found.Contains(rel))
-            //        continue;
-                
-            //    rel = rel.ToLower();
-
-            //    var link = node.Attributes["href"]?.Value;
-            //    if (link.IsNullOrEmpty())
-            //        continue;
-                
-            //    if (_icoTypes.Contains(rel))
-            //    {
-            //        found.Add(rel);
-            //        yield return new FavIco()
-            //        {
-            //            Domain = url,
-            //            Rel = rel,
-            //            Href = new Uri(baseUri, link).AbsoluteUri,
-            //            FavIcoSize = _sizes[rel]
-            //        };
-            //    }
-            //}
-
-            //if (!found.Contains("shortcut icon"))
-            //{
-            //    //try the favicon
-            //    yield return new FavIco()
-            //    {
-            //        Domain = url,
-            //        Rel = "shortcut icon",
-            //        Href = new Uri(baseUri, "/favicon.ico").AbsoluteUri,
-            //        FavIcoSize = FavIcoSize.Small
-            //    };
-            //}
+            // ddg fallback, no size option
+            yield return new FavIco(url, FavIcoSize.Large)
+            {
+                Href = $"https://icons.duckduckgo.com/ip3/{url}.ico",
+            };
         }
 
         public static string? SanitizeUrl(string? url)
@@ -202,13 +162,12 @@ namespace Utilizr.Network
             if (!_domainRegex.IsMatch(url))
                 return null;
 
-            var scheme = "http://";
             url = url.ToLower();
-            scheme = url.StartsWith("https://") ? "https://" : "http://";
+            var scheme = url.StartsWith("https://") ? "https://" : "http://";
             url = url.Replace("http://", "").Replace("https://", "");
             //if (!url.StartsWith("www."))
             //    url = "www." + url;
-            
+
             url = scheme + url;
 
             var uri = new Uri(url);
@@ -216,33 +175,30 @@ namespace Utilizr.Network
         }
     }
 
-    public enum FavIcoSize
-    {
-        Small,
-        Medium,
-        Large
-    }
-
     public class FavIco
     {
         public string Domain { get; set; }
-        internal string Rel { get; set; }
-        internal string Href { get; set; }
-
         public FavIcoSize FavIcoSize { get; set; }
 
-        public string FilePath { get; internal set; }
+        internal string? Href { get; set; }
+        public string? FilePath { get; internal set; }
+
+        public FavIco(string domain, FavIcoSize size)
+        {
+            Domain = domain;
+            FavIcoSize = size;
+        }
 
         internal static FavIco? LoadFromCache(string domain, FavIcoSize size)
         {
-            var path = Path.Combine(Favicon.ICO_CACHE_DIR, $"{Hash.MD5(domain)}_{size}_");
-            var i = new FavIco() { Domain = domain, FavIcoSize = size };
+            var path = Path.Combine(FavIcon.ICO_CACHE_DIR, $"{Hash.MD5(domain)}_{size}_");
+            var i = new FavIco(domain, size);
           
             if (File.Exists(path + "0.dat"))
                 i.FilePath = path + "0.dat";
 
-            if (string.IsNullOrEmpty(i.FilePath) && File.Exists(path + "1.dat"))
-                i.FilePath = path + "1.dat";
+            //if (string.IsNullOrEmpty(i.FilePath) && File.Exists(path + "1.dat"))
+            //    i.FilePath = path + "1.dat";
             
             if (!string.IsNullOrEmpty(i.FilePath))
                 return i;

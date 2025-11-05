@@ -258,7 +258,7 @@ namespace Utilizr.WPF.Controls
                 return;
 
             if (_favIco != null)
-                if (Favicon.SanitizeUrl(_favIco.Domain) == Favicon.SanitizeUrl(Domain))
+                if (FavIcon.SanitizeUrl(_favIco.Domain) == FavIcon.SanitizeUrl(Domain))
                     return;
 
             Debug.WriteLine("setting to null");
@@ -271,7 +271,7 @@ namespace Utilizr.WPF.Controls
                 if (domain != _domain)
                     return;
 
-                var ico = Favicon.GetFavicon(domain, GetPreferredSizeOrder());
+                var ico = FavIcon.GetFavIcon(domain, GetPreferredSizeOrder());
                 if (domain == _domain)
                 {
                     Debug.WriteLine("setting to ico");
