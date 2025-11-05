@@ -35,7 +35,7 @@ namespace Utilizr.Globalisation
 #endif
 
         private static string? _cachedLanguageCheck;
-        private static CultureInfo? _cachedCultureInfo;
+        private static CultureInfo? _cachedLanguageCulture;
         /// <summary>
         /// Attempts to return the matching .NET CultureInfo from <see cref="CurrentLanguage"/> and remains 
         /// cached until the language has changed.
@@ -45,13 +45,13 @@ namespace Utilizr.Globalisation
         /// 
         /// Falls back to the thread's culture if no match has been found.
         /// </summary>
-        public static CultureInfo CurrentLanguageCultureInfo
+        public static CultureInfo CurrentLanguageCulture
         {
             get
             {
                 var currentLanguage = CurrentLanguage;
-                if (_cachedLanguageCheck == currentLanguage && _cachedCultureInfo != null)
-                    return _cachedCultureInfo; // can't use _cachedCultureInfo.Name due to debug language
+                if (_cachedLanguageCheck == currentLanguage && _cachedLanguageCulture != null)
+                    return _cachedLanguageCulture; // can't use _cachedCultureInfo.Name due to debug language
 
                 if (currentLanguage != _debugLanguageTag)
                 {
@@ -72,16 +72,16 @@ namespace Utilizr.Globalisation
 
                     if (match != null)
                     {
-                        _cachedCultureInfo = match;
+                        _cachedLanguageCulture = match;
                         _cachedLanguageCheck = currentLanguage;
-                        return _cachedCultureInfo;
+                        return _cachedLanguageCulture;
                     }
                 }
 
                 // fallback to UI thread language
-                _cachedCultureInfo = Thread.CurrentThread.CurrentCulture;
+                _cachedLanguageCulture = Thread.CurrentThread.CurrentCulture;
                 _cachedLanguageCheck = currentLanguage;
-                return _cachedCultureInfo;
+                return _cachedLanguageCulture;
             }
         }
 
