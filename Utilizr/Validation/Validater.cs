@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Utilizr.Globalisation;
-using System.Linq;
 using Utilizr.Extensions;
+using Utilizr.Globalisation;
 
 namespace Utilizr.Validation
 {
@@ -19,19 +17,19 @@ namespace Utilizr.Validation
 
     public class Validater
     {
-        public EventHandler ClearErrorRequest;
-        public EventHandler<ValidationResult> Validated;
+        public EventHandler? ClearErrorRequest;
+        public EventHandler<ValidationResult>? Validated;
 
         public CustomValidationDelegate ValidationDelegate { get; set; }
-        public PreValidateCoercion PreValidateCoercion { get; set; }
+        public PreValidateCoercion? PreValidateCoercion { get; set; }
 
-        public Validater(CustomValidationDelegate validationdelegate)
+        public Validater(CustomValidationDelegate validationDelegate)
         {
-            ValidationDelegate = validationdelegate;
+            ValidationDelegate = validationDelegate;
         }
 
-        public Validater(CustomValidationDelegate validationdelegate, PreValidateCoercion preValidateCoercion)
-            : this(validationdelegate)
+        public Validater(CustomValidationDelegate validationDelegate, PreValidateCoercion? preValidateCoercion)
+            : this(validationDelegate)
         {
             PreValidateCoercion = preValidateCoercion;
         }
@@ -73,30 +71,30 @@ namespace Utilizr.Validation
 
         #region DefaultValidaters
 
-        public static Validater CreateEmailValidater(PreValidateCoercion preValidateCoercion = null)
+        public static Validater CreateEmailValidater(PreValidateCoercion? preValidateCoercion = null)
         {
             return new Validater(ValidateEmail, preValidateCoercion);
         }
 
-        public static Validater CreateNameValidater(int minLength, PreValidateCoercion preValidateCoercion = null)
+        public static Validater CreateNameValidater(int minLength, PreValidateCoercion? preValidateCoercion = null)
         {
             return new Validater((input) => ValidateName(input, minLength), preValidateCoercion);
         }
 
         //TODO: expand check symbols / caps
-        public static Validater CreatePasswordValidater(int minLength, PreValidateCoercion preValidateCoercion = null)
+        public static Validater CreatePasswordValidater(int minLength, PreValidateCoercion? preValidateCoercion = null)
         {
             return new Validater((input) => ValidatePassword(input, minLength), preValidateCoercion);
         }
 
-        public static Validater CreateIntegerValidater(int? minimum = null, int? maximum = null, PreValidateCoercion preValidateCoercion = null)
+        public static Validater CreateIntegerValidater(int? minimum = null, int? maximum = null, PreValidateCoercion? preValidateCoercion = null)
         {
             return new Validater((input) => ValidateInteger(input, minimum, maximum), preValidateCoercion);
         }
 
         static ValidationResult ValidateEmail(string input)
         {
-            var result = new ValidationResult() {IsValid = true};
+            var result = new ValidationResult() { IsValid = true };
             if (input.IsNullOrEmpty())
             {
                 result.IsValid = false;
@@ -119,7 +117,7 @@ namespace Utilizr.Validation
             return ValidateMinimumLength(
                 input,
                 minLength,
-                L._("Please enter a name"), 
+                L._("Please enter a name"),
                 L._("Please enter a name (minimum {0} characters)", minLength));
         }
 
@@ -187,29 +185,6 @@ namespace Utilizr.Validation
 
             return result;
         }
-#endregion
-    }
-
-    public class ValidationResult : EventArgs
-    {
-        public bool IsValid { get; set; }
-        public List<string> Messages { get; set; }
-
-        public ValidationResult()
-        {
-            Messages = new List<string>();
-        }
-
-        public ValidationResult MergeResult(ValidationResult resultToMerge)
-        {
-            IsValid = IsValid && resultToMerge.IsValid;
-            Messages.AddRange(resultToMerge.Messages);
-            return this;
-        }
-
-        public override string ToString()
-        {
-            return String.Join(Environment.NewLine, Messages.ToArray());
-        }
+        #endregion
     }
 }
