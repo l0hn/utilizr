@@ -171,7 +171,8 @@ namespace Utilizr.Network
             url = scheme + url;
 
             var uri = new Uri(url);
-            return $"{uri.Scheme}://{uri.Host}";
+            var subDomainRemover = new SubDomainStripper(uri);
+            return $"{uri.Scheme}://{subDomainRemover.HostWithoutSubdomain}";
         }
     }
 
