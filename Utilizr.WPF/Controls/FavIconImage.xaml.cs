@@ -148,7 +148,7 @@ namespace Utilizr.WPF.Controls
             set
             {
                     _favIco = value;
-                    if (_favIco != null)
+                    if (_favIco != null && !string.IsNullOrEmpty(_favIco.FilePath))
                     {
                         try
                         {

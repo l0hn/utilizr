@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -73,7 +72,6 @@ namespace Utilizr.Network
                     var links = GetIconLinks(cleanUrl)
                         .Where(p => p != null)
                         .OrderBy(i => orderDict.ContainsKey(i.FavIcoSize) ? orderDict[i.FavIcoSize] : 99);
-                        //.ThenBy(i => i.Rel != "shortcut icon");
 
                     return DownloadIcos(links).ToArray();
                 }
@@ -100,13 +98,6 @@ namespace Utilizr.Network
                     continue;
 
                 var path = Path.Combine(ICO_CACHE_DIR, $"{Hash.MD5(icoLink.Domain)}_{icoLink.FavIcoSize}_0.dat");
-
-                //var path = Path.Combine(ICO_CACHE_DIR, $"{Hash.MD5(icoLink.Domain)}_{icoLink.FavIcoSize}_");
-                //if (icoLink.Rel == "icon")
-                //    path += "1.dat";
-                //else
-                //    path += "0.dat";
-
                 icoLink.FilePath = path;
 
                 try
@@ -203,7 +194,7 @@ namespace Utilizr.Network
             
             if (!string.IsNullOrEmpty(i.FilePath))
                 return i;
-            
+
             return null;
         }
     }
