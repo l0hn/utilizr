@@ -18,9 +18,9 @@ namespace Utilizr.WPF.Shapes
                 new PropertyMetadata(default, (d, e) => InvalidateShape(d, e, true))
             );
 
-        public SecureString Text
+        public SecureString? Text
         {
-            get { return (SecureString)GetValue(TextProperty); }
+            get { return (SecureString?)GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
         }
 
@@ -108,7 +108,7 @@ namespace Utilizr.WPF.Shapes
                 if (Text != null && Text.Length > 0)
                 {
                     pinned = new PinnedString(Text, (ex) => Log.Exception(nameof(PinnedString), ex));
-                    var formattedText = GenerateForamattedText(pinned.String);
+                    var formattedText = GenerateFormattedText(pinned.String);
                     height = formattedText.Height;
                     width = formattedText.Width;
                 }
@@ -142,7 +142,7 @@ namespace Utilizr.WPF.Shapes
             try
             {
                 pinnedText = new PinnedString(Text, (ex) => Log.Exception(nameof(PinnedString), ex));
-                var formattedText = GenerateForamattedText(pinnedText.String);
+                var formattedText = GenerateFormattedText(pinnedText.String);
 
                 var textLocation = _zeroPoint;
                 if (TextAlignment == TextAlignment.Center)
@@ -169,7 +169,7 @@ namespace Utilizr.WPF.Shapes
             }
         }
 
-        FormattedText GenerateForamattedText(string? text)
+        FormattedText GenerateFormattedText(string? text)
         {
             var ftText = new FormattedText(
                 text ?? string.Empty,
