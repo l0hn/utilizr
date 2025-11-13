@@ -84,9 +84,11 @@ namespace Utilizr.Network
                         throw new Exception($"IP lookup failed: {nslookupOutput.ErrorOutput}");
                     }
 
-                    ip = nslookupOutput.Output!.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries)
-                        .Reverse().ToArray()[0]
-                        .Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries)[1];
+                    ip = nslookupOutput.Output!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                        .AsEnumerable()
+                        .Reverse()
+                        .ToArray()[0]
+                        .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[1];
 
                     if (ip.Split('.').Length == 4)
                     {
