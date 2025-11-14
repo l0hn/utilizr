@@ -23,13 +23,13 @@ namespace Utilizr.WPF.Validation
         public CustomValidationDelegate ValidationDelegate { get; set; }
         public PreValidateCoercion? PreValidateCoercion { get; set; }
 
-        public Validater(CustomValidationDelegate validationdelegate)
+        public Validater(CustomValidationDelegate validationDelegate)
         {
-            ValidationDelegate = validationdelegate;
+            ValidationDelegate = validationDelegate;
         }
 
-        public Validater(CustomValidationDelegate validationdelegate, PreValidateCoercion? preValidateCoercion)
-            : this(validationdelegate)
+        public Validater(CustomValidationDelegate validationDelegate, PreValidateCoercion? preValidateCoercion)
+            : this(validationDelegate)
         {
             PreValidateCoercion = preValidateCoercion;
         }
@@ -97,7 +97,7 @@ namespace Utilizr.WPF.Validation
 
         static ValidationResult ValidateEmail(string? input)
         {
-            var result = new ValidationResult() {IsValid = true};
+            var result = new ValidationResult() { IsValid = true };
             if (string.IsNullOrEmpty(input))
             {
                 result.IsValid = false;
@@ -120,7 +120,7 @@ namespace Utilizr.WPF.Validation
             return ValidateMinimumLength(
                 input,
                 minLength,
-                L._I("Please enter a name."), 
+                L._I("Please enter a name."),
                 L._I("Please enter a name (minimum {0} characters).", () => L.Args(minLength)));
         }
 
@@ -187,6 +187,6 @@ namespace Utilizr.WPF.Validation
 
             return result;
         }
-#endregion
+        #endregion
     }
 }

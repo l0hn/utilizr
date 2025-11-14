@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Utilizr.WPF
+namespace Utilizr.WPF.Controls
 {
     public partial class BusyCircle : UserControl
     {
