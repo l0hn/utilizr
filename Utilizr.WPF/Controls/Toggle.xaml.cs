@@ -210,9 +210,9 @@ namespace Utilizr.WPF.Controls
             {
                 if (IsKeyboardFocused)
                 {
-                    if (e.Key == Key.Space)
+                    if (e.Key == Key.Space || e.Key == Key.Enter)
                     {
-                        OnMouseLeftButtonDown(null);
+                        _ = UpdateForMouseClickOrKeyboardAction();
                         e.Handled = true;
                     }
                 }
@@ -346,10 +346,14 @@ namespace Utilizr.WPF.Controls
             }
         }
 
-        protected async override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
+            _ = UpdateForMouseClickOrKeyboardAction();
+        }
 
+        async Task UpdateForMouseClickOrKeyboardAction()
+        {
             var newToggleValue = !IsToggled;
             if (PreToggled != null)
             {
