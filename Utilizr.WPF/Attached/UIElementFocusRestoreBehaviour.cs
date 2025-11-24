@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using Utilizr.Logging;
 
 namespace Utilizr.WPF.Attached
 {
@@ -29,7 +31,52 @@ namespace Utilizr.WPF.Attached
         {
             if (d is UIElement uiElement && !(bool)e.NewValue)
             {
-                uiElement.Focus();
+                bool canFocus(UIElement uiElement) => uiElement.IsEnabled && uiElement.Focusable;
+                if (canFocus(uiElement))
+                {
+                    uiElement.Focus();
+                }
+                else
+                {
+                    void resetFocusDispatcher()
+                    {
+                        try
+                        {
+                            uiElement.Dispatcher.BeginInvoke(
+                                () =>
+                                {
+                                    uiElement.Focus();
+                                },
+                                System.Windows.Threading.DispatcherPriority.Input
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Exception(nameof(UIElementFocusRestoreBehaviour), ex);
+                        }
+                    }
+
+                    void uiElement_IsEnabledOrFocusChanged(object sender, DependencyPropertyChangedEventArgs e)
+                    {
+                        if (canFocus(uiElement))
+                        {
+                            uiElement.FocusableChanged -= uiElement_IsEnabledOrFocusChanged;
+                            uiElement.IsEnabledChanged -= uiElement_IsEnabledOrFocusChanged;
+                            resetFocusDispatcher();
+                        }
+                    }
+
+                    uiElement.FocusableChanged -= uiElement_IsEnabledOrFocusChanged;
+                    uiElement.IsEnabledChanged += uiElement_IsEnabledOrFocusChanged;
+
+                    // double check for race condition, safe if we attempt to unregister twice
+                    if (canFocus(uiElement))
+                    {
+                        uiElement.FocusableChanged -= uiElement_IsEnabledOrFocusChanged;
+                        uiElement.IsEnabledChanged -= uiElement_IsEnabledOrFocusChanged;
+                        resetFocusDispatcher();
+                    }
+                }
             }
         }
     }
