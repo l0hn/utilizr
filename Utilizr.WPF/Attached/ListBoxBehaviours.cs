@@ -1,10 +1,121 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using Utilizr.Logging;
 
 namespace Utilizr.WPF.Attached
 {
     public static class ListBoxBehaviours
     {
+        public interface IListBoxCheckBoxToggleModel
+        {
+            void ToggleCheckState();
+        }
+
+        #region EnableCheckBoxToggle
+        public static readonly DependencyProperty EnableCheckBoxToggleProperty =
+            DependencyProperty.RegisterAttached(
+                "EnableCheckBoxToggle",
+                typeof(bool),
+                typeof(ListBoxBehaviours),
+                new PropertyMetadata(false, OnEnableCheckBoxToggleChanged)
+            );
+
+        public static bool GetEnableCheckBoxToggle(DependencyObject element)
+        {
+            return (bool)element.GetValue(EnableCheckBoxToggleProperty);
+        }
+
+        public static void SetEnableCheckBoxToggle(DependencyObject element, bool value)
+        {
+            element.SetValue(EnableCheckBoxToggleProperty, value);
+        }
+
+        private static void OnEnableCheckBoxToggleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ListBox listBox)
+            {
+                if ((bool)e.NewValue)
+                    listBox.PreviewKeyDown += ListBox_PreviewKeyDown;
+                else
+                    listBox.PreviewKeyDown -= ListBox_PreviewKeyDown;
+            }
+        }
+
+        private static void ListBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (!(sender is ListBox listBox))
+                return;
+
+            if (!(e.Key == Key.Space))
+                return;
+
+            if (!(listBox.SelectedItem is IListBoxCheckBoxToggleModel checkBoxToggleModel))
+                return;
+
+            if (checkBoxToggleModel != null)
+            {
+                checkBoxToggleModel.ToggleCheckState();
+                e.Handled = true;
+            }
+        }
+        #endregion
+
+
+
+        #region SyncSelectedItemInView Attached Property
+        public static readonly DependencyProperty SyncSelectedItemInViewProperty =
+            DependencyProperty.RegisterAttached(
+                "SyncSelectedItemInView",
+                typeof(bool),
+                typeof(ListBoxBehaviours),
+                new PropertyMetadata(false, OnSyncSelectedItemInViewChanged)
+            );
+
+        private static void OnSyncSelectedItemInViewChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is ListBox listBox))
+                return;
+
+            if ((bool)e.NewValue)
+                listBox.SelectionChanged += ListBox_SyncSelectionChanged;
+            else
+                listBox.SelectionChanged -= ListBox_SyncSelectionChanged;
+        }
+
+        private static void ListBox_SyncSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(sender is ListBox listBox))
+                return;
+
+            try
+            {
+                var newSelection = listBox.SelectedItem;
+                listBox.ScrollIntoView(newSelection);
+                var container = listBox.ItemContainerGenerator.ContainerFromItem(listBox.SelectedItem) as ListBoxItem;
+                container?.Focus();
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(nameof(ListBoxBehaviours), ex);
+            }
+        }
+
+        public static bool GetSyncSelectedItemInView(ListBox obj)
+        {
+            return (bool)obj.GetValue(SyncSelectedItemInViewProperty);
+        }
+
+        public static void SetSyncSelectedItemInView(ListBox obj, bool val)
+        {
+            obj.SetValue(SyncSelectedItemInViewProperty, val);
+        }
+        #endregion
+
+
+
+        #region SlideOnSelectedIndexChanged
         public static readonly DependencyProperty SlideOnSelectedIndexChangedProperty =
             DependencyProperty.RegisterAttached(
                 "SlideOnSelectedIndexChanged",
@@ -75,5 +186,6 @@ namespace Utilizr.WPF.Attached
 
             listBox.ScrollIntoView(newUiModel);
         }
+        #endregion
     }
 }

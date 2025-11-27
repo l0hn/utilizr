@@ -190,6 +190,5 @@ namespace Utilizr.WPF.Attached
             drawingBrush.Drawing = drawingGroup;
             scrollViewer.OpacityMask = drawingBrush;
         }
-
     }
 }
