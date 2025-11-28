@@ -3,13 +3,13 @@ using System.Windows.Controls;
 
 namespace Utilizr.WPF.Attached
 {
-    public static class BorderBehaviours
+    public static class BorderBehaviour
     {
         public static readonly DependencyProperty AutoRoundCornersProperty =
             DependencyProperty.RegisterAttached(
                 "AutoRoundCorners",
                 typeof(bool),
-                typeof(BorderBehaviours),
+                typeof(BorderBehaviour),
                 new PropertyMetadata(false, OnAutoRoundCornersChanged));
 
         public static void SetAutoRoundCorners(DependencyObject element, bool value)

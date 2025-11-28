@@ -11,7 +11,7 @@ using System.Windows.Media;
 
 namespace Utilizr.WPF.Attached
 {
-    public static class DataGridBehaviours
+    public static class DataGridBehaviour
     {
         public interface IDataGridCheckBoxToggleModel
         {
@@ -22,7 +22,7 @@ namespace Utilizr.WPF.Attached
             DependencyProperty.RegisterAttached(
                 "EnableCheckBoxToggle",
                 typeof(bool),
-                typeof(DataGridBehaviours),
+                typeof(DataGridBehaviour),
                 new PropertyMetadata(false, OnEnableCheckBoxToggleChanged)
             );
 

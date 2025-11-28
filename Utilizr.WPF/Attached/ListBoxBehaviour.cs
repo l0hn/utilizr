@@ -6,7 +6,7 @@ using Utilizr.Logging;
 
 namespace Utilizr.WPF.Attached
 {
-    public static class ListBoxBehaviours
+    public static class ListBoxBehaviour
     {
         public interface IListBoxCheckBoxToggleModel
         {
@@ -18,7 +18,7 @@ namespace Utilizr.WPF.Attached
             DependencyProperty.RegisterAttached(
                 "EnableCheckBoxToggle",
                 typeof(bool),
-                typeof(ListBoxBehaviours),
+                typeof(ListBoxBehaviour),
                 new PropertyMetadata(false, OnEnableCheckBoxToggleChanged)
             );
 
@@ -69,7 +69,7 @@ namespace Utilizr.WPF.Attached
             DependencyProperty.RegisterAttached(
                 "SyncSelectedItemInView",
                 typeof(bool),
-                typeof(ListBoxBehaviours),
+                typeof(ListBoxBehaviour),
                 new PropertyMetadata(false, OnSyncSelectedItemInViewChanged)
             );
 
@@ -98,7 +98,7 @@ namespace Utilizr.WPF.Attached
             }
             catch (Exception ex)
             {
-                Log.Exception(nameof(ListBoxBehaviours), ex);
+                Log.Exception(nameof(ListBoxBehaviour), ex);
             }
         }
 
