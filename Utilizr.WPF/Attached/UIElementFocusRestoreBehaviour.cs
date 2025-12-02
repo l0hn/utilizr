@@ -100,35 +100,4 @@ namespace Utilizr.WPF.Attached
             }
         }
     }
-
-    //public static class OnlyRestoreFocusOnKeyboardNavigation
-    //{
-    //    public static bool Enabled {  get; set; }
-
-    //    public static readonly DependencyProperty TrackFocusForRestoreProperty =
-    //    DependencyProperty.RegisterAttached(
-    //        "TrackFocusForRestore",
-    //        typeof(bool),
-    //        typeof(OnlyRestoreFocusOnKeyboardNavigation),
-    //        new PropertyMetadata(false, OnTrackFocusForRestoreChanged));
-
-    //    public static void SetTrackFocusForRestore(DependencyObject element, bool value)
-    //    {
-    //        UIElementFocusRestoreBehaviour.SetTrackFocusForRestore(element, value);
-    //    }
-
-    //    public static bool GetTrackFocusForRestore(DependencyObject element)
-    //    {
-    //        return UIElementFocusRestoreBehaviour.GetTrackFocusForRestore(element);
-    //    }
-
-    //    private static void OnTrackFocusForRestoreChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    //    {
-    //    }
-
-    //    static OnlyRestoreFocusOnKeyboardNavigation()
-    //    {
-    //        _ = InputTracker.LastInputWasKeyboard;
-    //    }
-    //}
 }
