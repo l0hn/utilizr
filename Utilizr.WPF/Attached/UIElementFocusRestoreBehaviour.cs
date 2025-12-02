@@ -1,9 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Utilizr.Logging;
 
 namespace Utilizr.WPF.Attached
 {
+    public static class InputTracker
+    {
+        public static bool LastInputWasKeyboard { get; private set; }
+
+        static InputTracker()
+        {
+            EventManager.RegisterClassHandler(typeof(UIElement),
+                UIElement.PreviewKeyDownEvent,
+                new KeyEventHandler((s, e) => LastInputWasKeyboard = true));
+
+            EventManager.RegisterClassHandler(typeof(UIElement),
+                UIElement.PreviewMouseDownEvent,
+                new MouseButtonEventHandler((s, e) => LastInputWasKeyboard = false));
+        }
+    }
+
     /// <summary>
     /// The intention here is to restore focus to the UIElement when an action has completed.
     /// E.g. UIElement is disabled while waiting for an async action, restore the focus when it completes.
@@ -29,9 +49,9 @@ namespace Utilizr.WPF.Attached
 
         private static void OnTrackFocusForRestoreChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is UIElement uiElement && !(bool)e.NewValue)
+            if (d is UIElement uiElement)
             {
-                bool canFocus(UIElement uiElement) => uiElement.IsEnabled && uiElement.Focusable;
+                bool canFocus(UIElement uiElement) => uiElement.IsEnabled && uiElement.Focusable && InputTracker.LastInputWasKeyboard;
                 if (canFocus(uiElement))
                 {
                     uiElement.Focus();
@@ -80,4 +100,35 @@ namespace Utilizr.WPF.Attached
             }
         }
     }
+
+    //public static class OnlyRestoreFocusOnKeyboardNavigation
+    //{
+    //    public static bool Enabled {  get; set; }
+
+    //    public static readonly DependencyProperty TrackFocusForRestoreProperty =
+    //    DependencyProperty.RegisterAttached(
+    //        "TrackFocusForRestore",
+    //        typeof(bool),
+    //        typeof(OnlyRestoreFocusOnKeyboardNavigation),
+    //        new PropertyMetadata(false, OnTrackFocusForRestoreChanged));
+
+    //    public static void SetTrackFocusForRestore(DependencyObject element, bool value)
+    //    {
+    //        UIElementFocusRestoreBehaviour.SetTrackFocusForRestore(element, value);
+    //    }
+
+    //    public static bool GetTrackFocusForRestore(DependencyObject element)
+    //    {
+    //        return UIElementFocusRestoreBehaviour.GetTrackFocusForRestore(element);
+    //    }
+
+    //    private static void OnTrackFocusForRestoreChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    //    {
+    //    }
+
+    //    static OnlyRestoreFocusOnKeyboardNavigation()
+    //    {
+    //        _ = InputTracker.LastInputWasKeyboard;
+    //    }
+    //}
 }
