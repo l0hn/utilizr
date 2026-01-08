@@ -98,7 +98,7 @@ namespace Utilizr.Crypto
                 aes.Key = Encoding.UTF8.GetBytes(key);
 
                 var initVectorBytes = new Span<byte>(new byte[initVectorLength]);
-                RNGCryptoServiceProvider.Fill(initVectorBytes);
+                RandomNumberGenerator.Fill(initVectorBytes);
                 initVector = initVectorBytes.ToArray();
                 aes.IV = initVector;
                 aes.Padding = PaddingMode.PKCS7;
@@ -108,7 +108,9 @@ namespace Utilizr.Crypto
                 using (MemoryStream memStream = new MemoryStream())
                 using (CryptoStream cryptoStream = new CryptoStream(memStream, encryptor, CryptoStreamMode.Write))
                 {
-                    cryptoStream.Write(Encoding.UTF8.GetBytes(plainText), 0, plainText.Length);
+                    var bytes = Encoding.UTF8.GetBytes(plainText);
+
+                    cryptoStream.Write(bytes, 0, bytes.Length);
                     cryptoStream.FlushFinalBlock();
 
                     var cipherTextBytes = memStream.ToArray();
