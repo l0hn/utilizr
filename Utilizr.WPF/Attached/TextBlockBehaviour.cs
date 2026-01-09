@@ -10,12 +10,12 @@ using System.Windows.Markup;
 
 namespace Utilizr.WPF.Attached
 {
-    public class TextBlockBehaviours
+    public class TextBlockBehaviour
     {
         public static readonly DependencyProperty InlineTextTextProperty = DependencyProperty.RegisterAttached(
             "InlineText",
             typeof(string),
-            typeof(TextBlockBehaviours),
+            typeof(TextBlockBehaviour),
             new FrameworkPropertyMetadata(
                 string.Empty,
                 FrameworkPropertyMetadataOptions.AffectsMeasure,
@@ -85,7 +85,7 @@ namespace Utilizr.WPF.Attached
         private static string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
         static readonly Dictionary<char, string> _invalidXamlCharacters;
 
-        static TextBlockBehaviours()
+        static TextBlockBehaviour()
         {
             // all invalid xaml entries
             _invalidXamlCharacters = new Dictionary<char, string>
