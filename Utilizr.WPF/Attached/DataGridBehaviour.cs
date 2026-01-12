@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
+using Utilizr.WPF.Extension;
 
 namespace Utilizr.WPF.Attached
 {
@@ -83,6 +81,55 @@ namespace Utilizr.WPF.Attached
                 dep = VisualTreeHelper.GetParent(dep);
             }
             return false;
+        }
+
+
+        public static readonly DependencyProperty ForceUiRefreshOnLoadedProperty =
+            DependencyProperty.RegisterAttached(
+                "ForceUiRefreshOnLoaded",
+                typeof(bool),
+                typeof(DataGridBehaviour),
+                new PropertyMetadata(false, OnForceUiRefreshOnLoadedChanged)
+            );
+
+        public static void SetForceUiRefreshOnLoaded(DependencyObject obj, bool value)
+            => obj.SetValue(ForceUiRefreshOnLoadedProperty, value);
+
+        public static bool GetForceUiRefreshOnLoaded(DependencyObject obj)
+            => (bool)obj.GetValue(ForceUiRefreshOnLoadedProperty);
+
+        private static void OnForceUiRefreshOnLoadedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is DataGrid dataGrid))
+                return;
+
+            if ((bool)e.NewValue)
+            {
+                dataGrid.Loaded += DataGrid_Loaded;
+            }
+            else
+            {
+                dataGrid.Loaded -= DataGrid_Loaded;
+            }
+        }
+
+        private static void DataGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not DataGrid dataGrid)
+                return;
+
+            dataGrid?.Dispatcher.SafeBeginInvoke(() =>
+            {
+                dataGrid.UpdateLayout();
+
+                foreach (var col in dataGrid.Columns)
+                {
+                    var original = col.Width;
+                    col.Width = 0;
+                    col.Width = original;
+                }
+
+            }, DispatcherPriority.Background);
         }
     }
 }
