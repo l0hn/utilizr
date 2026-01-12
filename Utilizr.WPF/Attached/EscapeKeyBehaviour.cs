@@ -23,23 +23,6 @@ namespace Utilizr.WPF.Attached
             return (bool)element.GetValue(EnableEscapeKeyProperty);
         }
 
-        public static readonly DependencyProperty EscapeKeyActionProperty =
-            DependencyProperty.RegisterAttached(
-                "EscapeKeyAction",
-                typeof(Action<UIElement>),
-                typeof(EscapeKeyBehaviour),
-                new PropertyMetadata(null));
-
-        public static void SetEscapeKeyAction(UIElement element, Action<UIElement> value)
-        {
-            element.SetValue(EscapeKeyActionProperty, value);
-        }
-
-        public static Action<UIElement> GetEscapeKeyAction(UIElement element)
-        {
-            return (Action<UIElement>)element.GetValue(EscapeKeyActionProperty);
-        }
-
         private static void OnEnableEscapeKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is UIElement uiElement)
@@ -62,6 +45,25 @@ namespace Utilizr.WPF.Attached
                 var action = GetEscapeKeyAction(element);
                 action?.Invoke(element);
             }
+        }
+
+
+        public static readonly DependencyProperty EscapeKeyActionProperty =
+            DependencyProperty.RegisterAttached(
+                "EscapeKeyAction",
+                typeof(Action<UIElement>),
+                typeof(EscapeKeyBehaviour),
+                new PropertyMetadata(null)
+            );
+
+        public static void SetEscapeKeyAction(UIElement element, Action<UIElement>? value)
+        {
+            element.SetValue(EscapeKeyActionProperty, value);
+        }
+
+        public static Action<UIElement>? GetEscapeKeyAction(UIElement element)
+        {
+            return (Action<UIElement>?)element.GetValue(EscapeKeyActionProperty);
         }
     }
 }

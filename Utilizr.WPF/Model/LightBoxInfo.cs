@@ -54,21 +54,27 @@ namespace Utilizr.WPF.Model
             get { return _view; }
             set
             {
-                var newView = value != null && _view == null;
+                if (_view != null && _view != value)
+                {
+                    // unregister if new and not the same view
+                    _view.IsVisibleChanged -= View_IsVisibleChanged;
+                    EscapeKeyBehaviour.SetEscapeKeyAction(_view, null);
+                    EscapeKeyBehaviour.SetEnableEscapeKey(_view, false);
+                }
 
                 _view = value;
 
-                if (newView)
+                if (value != null)
                 {
-                    EscapeKeyBehaviour.SetEscapeKeyAction(_view!, (uie) =>
+                    EscapeKeyBehaviour.SetEscapeKeyAction(value, (uie) =>
                     {
                         Show = false;
                     });
 
-                    EscapeKeyBehaviour.SetEnableEscapeKey(View!, true);
+                    EscapeKeyBehaviour.SetEnableEscapeKey(value, true);
 
-                    _view!.Focusable = true;
-                    _view!.IsVisibleChanged += View_IsVisibleChanged;
+                    value.Focusable = true;
+                    value.IsVisibleChanged += View_IsVisibleChanged;
                 }
 
                 OnPropertyChanged(nameof(View));
