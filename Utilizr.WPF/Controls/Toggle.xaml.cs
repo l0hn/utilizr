@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -11,6 +14,27 @@ using Utilizr.WPF.Extension;
 
 namespace Utilizr.WPF.Controls
 {
+    public class ToggleAutomationPeer : FrameworkElementAutomationPeer, IToggleProvider
+    {
+        public ToggleAutomationPeer(Toggle owner)
+            : base(owner)
+        {
+        }
+
+        protected override AutomationControlType GetAutomationControlTypeCore()
+            => AutomationControlType.Button;
+
+        protected override string GetClassNameCore()
+            => "Toggle";
+
+        public ToggleState ToggleState
+            => ((Toggle)Owner).IsToggled ? ToggleState.On : ToggleState.Off;
+
+        public void Toggle()
+        { }
+    }
+
+
     public partial class Toggle : UserControl, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -154,6 +178,15 @@ namespace Utilizr.WPF.Controls
             }
         }
 
+        public override string ToString()
+        {
+            return string.Empty;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ToggleAutomationPeer(this);
+        }
 
         public static readonly DependencyProperty PreToggledProperty =
             DependencyProperty.Register(
