@@ -63,7 +63,42 @@ namespace Utilizr.WPF.Controls
             set { SetValue(MouseDownCommandParameterProperty, value); }
         }
 
-        
+        public static readonly DependencyProperty EnterKeyPressedCommandProperty =
+            DependencyProperty.Register(
+                nameof(EnterKeyPressedCommand),
+                typeof(ICommand),
+                typeof(ClickableRun),
+                new PropertyMetadata(default(ICommand), OnEnterKeyPressedCommandPropertyChanged)
+            );
+
+        static void OnEnterKeyPressedCommandPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ClickableRun cRun)
+            {
+                cRun.RegisterEnterKeyChange(e.NewValue != null);
+            }
+        }
+
+        public ICommand EnterKeyPressedCommand
+        {
+            get { return (ICommand)GetValue(EnterKeyPressedCommandProperty); }
+            set { SetValue(EnterKeyPressedCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty EnterKeyPressedCommandParameterProperty =
+            DependencyProperty.Register(
+                nameof(EnterKeyPressedCommandParameter),
+                typeof(object),
+                typeof(ClickableRun),
+                new PropertyMetadata(default(object))
+            );
+
+        public object EnterKeyPressedCommandParameter
+        {
+            get { return GetValue(EnterKeyPressedCommandParameterProperty); }
+            set { SetValue(EnterKeyPressedCommandParameterProperty, value); }
+        }
+
         public ClickableRun()
         {
             MouseLeftButtonUp += (s, e) =>
@@ -83,6 +118,29 @@ namespace Utilizr.WPF.Controls
                     MouseDownCommand?.Execute(MouseDownCommandParameter);
                 }
             };
+        }
+
+        void RegisterEnterKeyChange(bool subscribe)
+        {
+            if (subscribe)
+            {
+                KeyUp += ClickableRun_KeyUp;
+            }
+            else
+            {
+                KeyUp -= ClickableRun_KeyUp;
+            }
+        }
+
+        void ClickableRun_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            if (EnterKeyPressedCommand?.CanExecute(EnterKeyPressedCommandParameter) == true)
+            {
+                EnterKeyPressedCommand?.Execute(EnterKeyPressedCommandParameter);
+            }
         }
     }
 }
