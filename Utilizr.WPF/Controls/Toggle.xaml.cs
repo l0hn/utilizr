@@ -16,22 +16,27 @@ namespace Utilizr.WPF.Controls
 {
     public class ToggleAutomationPeer : FrameworkElementAutomationPeer, IToggleProvider
     {
+        readonly Toggle _owner;
+
         public ToggleAutomationPeer(Toggle owner)
             : base(owner)
         {
+            _owner = owner;
         }
 
         protected override AutomationControlType GetAutomationControlTypeCore()
-            => AutomationControlType.Button;
+            => AutomationControlType.CheckBox;
 
         protected override string GetClassNameCore()
             => "Toggle";
 
         public ToggleState ToggleState
-            => ((Toggle)Owner).IsToggled ? ToggleState.On : ToggleState.Off;
+            => _owner.IsToggled ? ToggleState.On : ToggleState.Off;
 
         public void Toggle()
-        { }
+        {
+            _ = _owner.UpdateForMouseClickOrKeyboardAction();
+        }
     }
 
 
@@ -40,8 +45,8 @@ namespace Utilizr.WPF.Controls
         public event PropertyChangedEventHandler? PropertyChanged;
         public delegate Task<bool> PreToggledCheckDelegate(bool newStateToAllow);
 
-        public event EventHandler SwitchedOn;
-        public event EventHandler SwitchedOff;
+        public event EventHandler? SwitchedOn;
+        public event EventHandler? SwitchedOff;
 
 
         public static readonly DependencyProperty HighlightBorderBrushProperty =
@@ -385,7 +390,7 @@ namespace Utilizr.WPF.Controls
             _ = UpdateForMouseClickOrKeyboardAction();
         }
 
-        async Task UpdateForMouseClickOrKeyboardAction()
+        internal async Task UpdateForMouseClickOrKeyboardAction()
         {
             var newToggleValue = !IsToggled;
             if (PreToggled != null)
