@@ -6,14 +6,17 @@ namespace Utilizr.WPF.Extension
 {
     public static class DispatcherEx
     {
-        public static void SafeInvoke(this Dispatcher d, Action action)
+        public static void SafeInvoke(
+            this Dispatcher d,
+            Action action,
+            DispatcherPriority priority = DispatcherPriority.Normal)
         {
             try
             {
                 if (!d.CheckAccess())
                 {
                     d.Invoke(
-                        DispatcherPriority.Normal,
+                        priority,
                         () =>
                         {
                             try
@@ -38,7 +41,10 @@ namespace Utilizr.WPF.Extension
             }
         }
 
-        public static void SafeBeginInvoke(this Dispatcher d, Action action)
+        public static void SafeBeginInvoke(
+            this Dispatcher d,
+            Action action,
+            DispatcherPriority priority = DispatcherPriority.Normal)
         {
             try
             {
@@ -56,7 +62,7 @@ namespace Utilizr.WPF.Extension
                                 Log.Exception(e);
                             }
                         },
-                        DispatcherPriority.Normal
+                        priority
                     );
                 }
                 else

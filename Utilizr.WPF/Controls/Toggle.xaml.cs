@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -11,13 +14,55 @@ using Utilizr.WPF.Extension;
 
 namespace Utilizr.WPF.Controls
 {
+    public class ToggleAutomationPeer : FrameworkElementAutomationPeer, IToggleProvider
+    {
+        readonly Toggle _owner;
+
+        public ToggleAutomationPeer(Toggle owner)
+            : base(owner)
+        {
+            _owner = owner;
+        }
+
+        protected override AutomationControlType GetAutomationControlTypeCore()
+            => AutomationControlType.CheckBox;
+
+        protected override string GetClassNameCore()
+            => "Toggle";
+
+        public ToggleState ToggleState
+            => _owner.IsToggled ? ToggleState.On : ToggleState.Off;
+
+        public void Toggle()
+        {
+            _ = _owner.UpdateForMouseClickOrKeyboardAction();
+        }
+    }
+
+
     public partial class Toggle : UserControl, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         public delegate Task<bool> PreToggledCheckDelegate(bool newStateToAllow);
 
-        public event EventHandler SwitchedOn;
-        public event EventHandler SwitchedOff;
+        public event EventHandler? SwitchedOn;
+        public event EventHandler? SwitchedOff;
+
+
+        public static readonly DependencyProperty HighlightBorderBrushProperty =
+            DependencyProperty.Register(
+                nameof(HighlightBorderBrush),
+                typeof(Brush),
+                typeof(Toggle),
+                new PropertyMetadata(new SolidColorBrush("#FF2D7EFF".ARGBToColor()))
+            );
+
+        public Brush HighlightBorderBrush
+        {
+            get { return (Brush)GetValue(HighlightBorderBrushProperty); }
+            set { SetValue(HighlightBorderBrushProperty, value); }
+        }
+
 
         public static readonly DependencyProperty BackgroundOnProperty =
             DependencyProperty.Register(
@@ -138,6 +183,15 @@ namespace Utilizr.WPF.Controls
             }
         }
 
+        public override string ToString()
+        {
+            return string.Empty;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ToggleAutomationPeer(this);
+        }
 
         public static readonly DependencyProperty PreToggledProperty =
             DependencyProperty.Register(
@@ -157,7 +211,6 @@ namespace Utilizr.WPF.Controls
             get { return (PreToggledCheckDelegate)GetValue(PreToggledProperty); }
             set { SetValue(PreToggledProperty, value); }
         }
-
 
         Storyboard? _onStoryboard;
         Storyboard? _offStoryboard;
@@ -189,6 +242,18 @@ namespace Utilizr.WPF.Controls
 
                 SetToggleMargin(IsToggled);
                 ToggleEllipse.Margin = ToggleMargin;
+            };
+
+            PreviewKeyDown += (s, e) =>
+            {
+                if (IsKeyboardFocused)
+                {
+                    if (e.Key == Key.Space || e.Key == Key.Enter)
+                    {
+                        _ = UpdateForMouseClickOrKeyboardAction();
+                        e.Handled = true;
+                    }
+                }
             };
         }
 
@@ -256,24 +321,30 @@ namespace Utilizr.WPF.Controls
         void UpdateHandleSize()
         {
             var handlePadding = 6;
-            ToggleEllipse.Height = Math.Max(ActualHeight - handlePadding, 10);
-            ToggleEllipse.Width = Math.Max(ActualHeight - handlePadding, 10);
+            ToggleEllipse.Height = Math.Max(Border.ActualHeight - handlePadding, 10);
+            ToggleEllipse.Width = Math.Max(Border.ActualHeight - handlePadding, 10);
         }
 
         void UpdateBorderCornerRadius()
         {
-            var uniform = ActualHeight < double.PositiveInfinity
-                ? ActualHeight / 2
+            var uniformBackgroundRadius = Border.ActualHeight < double.PositiveInfinity
+                ? (Border.ActualHeight - /*(Border.Margin.Top + Border.Margin.Bottom)*/0) / 2
                 : 0;
-            Border.CornerRadius = new CornerRadius(uniform);
+            Border.CornerRadius = new CornerRadius(uniformBackgroundRadius);
+
+            // these are different sizes, will look a little off if not the same
+            var uniformHighlightRadius = HighlightBorder.ActualHeight < double.PositiveInfinity
+                ? (HighlightBorder.ActualHeight - /*(HighlightBorder.Margin.Top + HighlightBorder.Margin.Bottom)*/0) / 2
+                : 0;
+            HighlightBorder.CornerRadius = new CornerRadius(uniformHighlightRadius);
         }
 
         void SetToggleMargin(bool toggled)
         {
             ToggleMargin = new Thickness(
                 toggled
-                    ? ActualWidth - ToggleEllipse.ActualWidth - 4
-                    : 4,
+                    ? Border.ActualWidth + Border.Margin.Left - ToggleEllipse.ActualWidth - 4
+                    : Border.Margin.Right + 4,
                 0,
                 0,
                 0
@@ -302,7 +373,7 @@ namespace Utilizr.WPF.Controls
                 // this means the property won't be under the animation anymore and will revert
                 // to the previous value, set corectly in the complete event.
                 // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/how-to-set-a-property-after-animating-it-with-a-storyboard
-                void complete(object sender, EventArgs args)
+                void complete(object? sender, EventArgs args)
                 {
                     ToggleEllipse.Margin = ToggleMargin;
                     ta.Completed -= complete;
@@ -313,10 +384,14 @@ namespace Utilizr.WPF.Controls
             }
         }
 
-        protected async override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
+            _ = UpdateForMouseClickOrKeyboardAction();
+        }
 
+        internal async Task UpdateForMouseClickOrKeyboardAction()
+        {
             var newToggleValue = !IsToggled;
             if (PreToggled != null)
             {

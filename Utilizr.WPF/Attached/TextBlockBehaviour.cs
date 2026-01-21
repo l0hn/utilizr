@@ -4,18 +4,47 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Markup;
 
 namespace Utilizr.WPF.Attached
 {
-    public class TextBlockBehaviours
+    public class TextBlockBehaviour
     {
+        public static readonly DependencyProperty UseNarrationProperty = DependencyProperty.RegisterAttached(
+            "UseNarration",
+            typeof(bool),
+            typeof(TextBlockBehaviour),
+            new FrameworkPropertyMetadata(false, UseNarrationPropertyChanged)
+            );
+
+        private static void UseNarrationPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not TextBlock textBlock)
+                return;
+
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(textBlock)
+                ?? UIElementAutomationPeer.CreatePeerForElement(textBlock);
+
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+
+        public static void SetUseNarration(DependencyObject textBlock, bool value)
+        {
+            textBlock.SetValue(UseNarrationProperty, value);
+        }
+
+        public static bool GetUseNarration(DependencyObject textBlock)
+        {
+            return (bool)textBlock.GetValue(UseNarrationProperty);
+        }
+
         public static readonly DependencyProperty InlineTextTextProperty = DependencyProperty.RegisterAttached(
             "InlineText",
             typeof(string),
-            typeof(TextBlockBehaviours),
+            typeof(TextBlockBehaviour),
             new FrameworkPropertyMetadata(
                 string.Empty,
                 FrameworkPropertyMetadataOptions.AffectsMeasure,
@@ -85,7 +114,7 @@ namespace Utilizr.WPF.Attached
         private static string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
         static readonly Dictionary<char, string> _invalidXamlCharacters;
 
-        static TextBlockBehaviours()
+        static TextBlockBehaviour()
         {
             // all invalid xaml entries
             _invalidXamlCharacters = new Dictionary<char, string>

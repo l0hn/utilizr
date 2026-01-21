@@ -2,7 +2,10 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+
+using Utilizr.WPF.Attached;
 
 namespace Utilizr.WPF.Model
 {
@@ -33,6 +36,15 @@ namespace Utilizr.WPF.Model
             }
         }
 
+        private void View_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is bool isVisible && isVisible)
+            {
+                Keyboard.Focus(View!);
+                View!.Focus();
+            }
+        }
+
         private UIElement? _view;
         /// <summary>
         /// The view which the lightbox will host
@@ -42,7 +54,29 @@ namespace Utilizr.WPF.Model
             get { return _view; }
             set
             {
+                if (_view != null && _view != value)
+                {
+                    // unregister if new and not the same view
+                    _view.IsVisibleChanged -= View_IsVisibleChanged;
+                    EscapeKeyBehaviour.SetEscapeKeyAction(_view, null);
+                    EscapeKeyBehaviour.SetEnableEscapeKey(_view, false);
+                }
+
                 _view = value;
+
+                if (value != null)
+                {
+                    EscapeKeyBehaviour.SetEscapeKeyAction(value, (uie) =>
+                    {
+                        Show = false;
+                    });
+
+                    EscapeKeyBehaviour.SetEnableEscapeKey(value, true);
+
+                    value.Focusable = true;
+                    value.IsVisibleChanged += View_IsVisibleChanged;
+                }
+
                 OnPropertyChanged(nameof(View));
             }
         }

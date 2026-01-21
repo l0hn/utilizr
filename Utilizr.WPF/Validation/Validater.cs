@@ -158,7 +158,7 @@ namespace Utilizr.WPF.Validation
             if (string.IsNullOrEmpty(input))
             {
                 result.IsValid = false;
-                //## Data validation on user inputted text
+                 //## Data validation on user inputted text
                 result.Messages.Add(L._I("Please enter a number."));
                 return result;
             }

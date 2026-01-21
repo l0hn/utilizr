@@ -88,7 +88,6 @@ namespace Utilizr.WPF.Controls
         }
 
 
-
         public static readonly DependencyProperty EnterKeyPressedCommandParameterProperty =
             DependencyProperty.Register(
                 nameof(EnterKeyPressedCommandParameter),
@@ -103,6 +102,39 @@ namespace Utilizr.WPF.Controls
             set { SetValue(EnterKeyPressedCommandParameterProperty, value); }
         }
 
+
+
+        public static readonly DependencyProperty SpaceKeyPressedCommandProperty =
+            DependencyProperty.Register(
+                nameof(SpaceKeyPressedCommand),
+                typeof(ICommand),
+                typeof(ClickableBorder),
+                new PropertyMetadata(default)
+            );
+
+        /// <summary>
+        /// Useful to toggle something within some sort of ItemsControl, without selecting the item.
+        /// </summary>
+        public ICommand SpaceKeyPressedCommand
+        {
+            get { return (ICommand)GetValue(SpaceKeyPressedCommandProperty); }
+            set { SetValue(SpaceKeyPressedCommandProperty, value); }
+        }
+
+
+        public static readonly DependencyProperty SpaceKeyPressedCommandParameterProperty =
+            DependencyProperty.Register(
+                nameof(SpaceKeyPressedCommandParameter),
+                typeof(object),
+                typeof(ClickableBorder),
+                new PropertyMetadata(default)
+            );
+
+        public object SpaceKeyPressedCommandParameter
+        {
+            get { return (object)GetValue(SpaceKeyPressedCommandParameterProperty); }
+            set { SetValue(SpaceKeyPressedCommandParameterProperty, value); }
+        }
 
 
         public ClickableBorder()
@@ -133,15 +165,17 @@ namespace Utilizr.WPF.Controls
 
             KeyUp += (s, e) =>
             {
-                if (e.Key != Key.Enter)
-                    return;
-
                 if (e.Handled)
                     return;
 
-                if (EnterKeyPressedCommand?.CanExecute(EnterKeyPressedCommandParameter) == true)
+                if (e.Key == Key.Enter && EnterKeyPressedCommand?.CanExecute(EnterKeyPressedCommandParameter) == true)
                 {
                     EnterKeyPressedCommand?.Execute(EnterKeyPressedCommandParameter);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Space && SpaceKeyPressedCommand?.CanExecute(SpaceKeyPressedCommandParameter) == true)
+                {
+                    SpaceKeyPressedCommand?.Execute(SpaceKeyPressedCommandParameter);
                     e.Handled = true;
                 }
             };

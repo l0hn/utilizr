@@ -7,13 +7,13 @@ using System.Windows.Media;
 
 namespace Utilizr.WPF.Attached
 {
-    public static class ScrollViewerBehaviours
+    public static class ScrollViewerBehaviour
     {
         public static readonly DependencyProperty ScrollHorizontalOffsetProperty =
            DependencyProperty.RegisterAttached(
                "ScrollHorizontalOffset",
                typeof(double),
-               typeof(ScrollViewerBehaviours),
+               typeof(ScrollViewerBehaviour),
                new FrameworkPropertyMetadata(0.0, OnScrollHorizontalOffsetChanged)
             );
 
@@ -44,7 +44,7 @@ namespace Utilizr.WPF.Attached
             DependencyProperty.RegisterAttached(
                 "AutoScrollToTop",
                 typeof(bool),
-                typeof(ScrollViewerBehaviours),
+                typeof(ScrollViewerBehaviour),
                 new PropertyMetadata(false, OnAutoScrollTopChanged)
             );
 
@@ -81,7 +81,7 @@ namespace Utilizr.WPF.Attached
             DependencyProperty.RegisterAttached(
                 "ApplyCutOffOpacity",
                 typeof(bool),
-                typeof(ScrollViewerBehaviours),
+                typeof(ScrollViewerBehaviour),
                 new PropertyMetadata(false, OnApplyCutOffOpacityChanged)
             );
 
@@ -190,6 +190,5 @@ namespace Utilizr.WPF.Attached
             drawingBrush.Drawing = drawingGroup;
             scrollViewer.OpacityMask = drawingBrush;
         }
-
     }
 }
