@@ -283,7 +283,7 @@ namespace Utilizr.WPF.Attached
             if (e.NewValue is not ICommand ic)
                 return;
 
-            SetupHandler(lbi, ic, GetCheckCommandParameter(lbi), Key.Enter);
+            SetupHandler(lbi, ic, GetEnterCommandParameter(lbi), Key.Enter);
         }
 
         public static ICommand GetEnterCommand(ListBoxItem obj)

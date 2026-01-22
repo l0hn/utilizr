@@ -16,6 +16,9 @@ namespace Utilizr.WPF.Controls
 {
     public class ToggleAutomationPeer : FrameworkElementAutomationPeer, IToggleProvider
     {
+        public ToggleState ToggleState
+            => _owner.IsToggled ? ToggleState.On : ToggleState.Off;
+
         readonly Toggle _owner;
 
         public ToggleAutomationPeer(Toggle owner)
@@ -30,8 +33,13 @@ namespace Utilizr.WPF.Controls
         protected override string GetClassNameCore()
             => "Toggle";
 
-        public ToggleState ToggleState
-            => _owner.IsToggled ? ToggleState.On : ToggleState.Off;
+        public override object GetPattern(PatternInterface patternInterface)
+        {
+            if (patternInterface == PatternInterface.Toggle)
+                return this;
+
+            return base.GetPattern(patternInterface);
+        }
 
         public void Toggle()
         {
