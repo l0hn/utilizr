@@ -55,6 +55,7 @@ namespace Utilizr.WPF.Attached
                 if (canFocus(uiElement))
                 {
                     uiElement.Focus();
+                    Keyboard.Focus(uiElement);
                 }
                 else
                 {
@@ -66,6 +67,7 @@ namespace Utilizr.WPF.Attached
                                 () =>
                                 {
                                     uiElement.Focus();
+                                    Keyboard.Focus(uiElement);
                                 },
                                 System.Windows.Threading.DispatcherPriority.Input
                             );
