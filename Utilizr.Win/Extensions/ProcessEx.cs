@@ -102,17 +102,23 @@ namespace Utilizr.Win.Extensions
         }
 
         /// <summary>
-        /// Wait for a process to exit, without an access denied error.
+        /// Wait for the process with the given PID to exit.
         /// </summary>
-        public static void SafeWaitForExit(this Process p)
+        /// <param name="pid"></param>
+        /// <returns>The exit code of the terminated process.</returns>
+        /// <exception cref="Win32Exception"></exception>
+        public static int SafeWaitForExit(this Process p)
         {
-            SafeWaitForExit((uint)p.Id);
+            return SafeWaitForExit((uint)p.Id);
         }
 
         /// <summary>
         /// Wait for the process with the given PID to exit.
         /// </summary>
-        public static void SafeWaitForExit(uint pid)
+        /// <param name="pid"></param>
+        /// <returns>The exit code of the terminated process.</returns>
+        /// <exception cref="Win32Exception"></exception>
+        public static int SafeWaitForExit(uint pid)
         {
             var flags = ProcessAccessFlags.QueryLimitedInformation | ProcessAccessFlags.Synchronize;
 
@@ -124,6 +130,11 @@ namespace Utilizr.Win.Extensions
             {
                 if (Kernel32.WaitForSingleObject(hProcess, Kernel32.WAIT_FOR_OBJECT_INFINITE) != 0)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                if (!Kernel32.GetExitCodeProcess(hProcess, out uint exitCode))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                return unchecked((int)exitCode); // Win32 stores as unsigned DWORD, match .NET signed
             }
             finally
             {
