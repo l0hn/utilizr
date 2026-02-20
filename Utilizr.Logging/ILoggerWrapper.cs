@@ -22,7 +22,7 @@ public class ILoggerWrapper : ILogger
     }
 
 
-    LoggingLevel GetLogLevel(LogLevel level)
+    public static LoggingLevel GetLogLevel(LogLevel level)
     {
         switch (level)
         {
