@@ -30,14 +30,14 @@ namespace Utilizr.Win.FileSystem
             if (source.StartsWith(_uncPrefix) || IsUncPath(source))
                 return optionalSuffix == null
                     ? source
-                    : Path.Combine(source, optionalSuffix);
+                    : $"{source}{Path.DirectorySeparatorChar}{optionalSuffix}";
 
             // Don't include environment variables
             source = Environment.ExpandEnvironmentVariables(source);
 
             return optionalSuffix == null
                 ? $"{_uncPrefix}{source}"
-                : $"{_uncPrefix}{Path.Combine(source, optionalSuffix)}";
+                : $"{_uncPrefix}{source}{Path.DirectorySeparatorChar}{optionalSuffix}";
         }
 
 
