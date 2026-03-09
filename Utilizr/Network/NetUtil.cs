@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -140,6 +141,52 @@ namespace Utilizr.Network
 
         public static async Task DownloadFileAsync(
             string url,
+            MemoryStream destination,
+            DownloadProgressDelegate? progressCallback = null,
+            int requestTimeout = -1,
+            string? userAgent = null)
+        {
+            using var httpClient = new HttpClient()
+            {
+                Timeout = requestTimeout > 0
+                    ? TimeSpan.FromMilliseconds(requestTimeout)
+                    : Timeout.InfiniteTimeSpan,
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (!string.IsNullOrEmpty(userAgent))
+                request.Headers.UserAgent.ParseAdd(userAgent);
+
+            using var response = await httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead
+            );
+
+            response.EnsureSuccessStatusCode();
+
+            var totalSize = response.Content.Headers.ContentLength ?? 0L;
+            var totalRead = 0L;
+
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+
+            var buffer = new byte[8 * 1024];
+            int bytesRead = 0;
+
+            while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead);
+                totalRead += bytesRead;
+                progressCallback?.Invoke(
+                    (double)totalRead / totalSize,
+                    totalRead,
+                    totalSize
+                );
+            }
+        }
+
+        public static async Task DownloadFileAsync(
+            string url,
             string destination,
             DownloadProgressDelegate? progressCallback = null,
             bool autoResume = false,
@@ -147,7 +194,7 @@ namespace Utilizr.Network
             string? userAgent = null,
             Action<PipelineActionArgs>? pipelineAction = null)
         {
-            using var http = new HttpClient()
+            using var httpClient = new HttpClient()
             {
                 Timeout = requestTimeout > 0
                     ? TimeSpan.FromMilliseconds(requestTimeout)
@@ -168,7 +215,7 @@ namespace Utilizr.Network
                     request.Headers.Range = new RangeHeaderValue(resumeFrom, null);
             }
 
-            using var response = await http.SendAsync(
+            using var response = await httpClient.SendAsync(
                 request,
                 HttpCompletionOption.ResponseHeadersRead
             );
