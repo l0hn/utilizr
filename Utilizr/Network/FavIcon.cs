@@ -105,7 +105,7 @@ namespace Utilizr.Network
                     if (string.IsNullOrEmpty(icoLink.Href))
                         continue;
 
-                    NetUtil.DownloadFile(icoLink.Href, path, requestTimeout: 5000, userAgent: USER_AGENT);
+                    NetUtil.DownloadFileAsync(icoLink.Href, path, requestTimeout: 5000, userAgent: USER_AGENT).Wait();
                 }
                 catch
                 {

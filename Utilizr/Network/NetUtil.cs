@@ -2,13 +2,14 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
-using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utilizr.Network
 {
-    // TODO: Refactor NetUtil away from WebRequest.CreateRequest()
     public static class NetUtil
     {
         /// <summary>
@@ -103,31 +104,41 @@ namespace Utilizr.Network
             return null;
         }
 
-        public static bool UrlReachable(string url)
+        public static async Task<bool> UrlReachableAsync(string url)
         {
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.Method = "HEAD";
-                using var response = request.GetResponse();
-                var httpResponse = (HttpWebResponse)response;
-                if (httpResponse.StatusCode != HttpStatusCode.OK)
-                {
-                    throw new Exception($"failed to make head request to {url}");
-                }
-                return true;
-            }
-            catch (Exception)
-            {
+                using var http = new HttpClient();
 
+                using var response = await http.SendAsync(
+                    new HttpRequestMessage(HttpMethod.Head, url),
+                    HttpCompletionOption.ResponseHeadersRead
+                );
+
+                return response.StatusCode == HttpStatusCode.OK;
             }
-            return false;
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static async Task<long> GetDownloadSizeAsync(string url)
+        {
+            using var http = new HttpClient();
+            using var response = await http.SendAsync(
+                new HttpRequestMessage(HttpMethod.Head, url),
+                HttpCompletionOption.ResponseHeadersRead
+            );
+
+            response.EnsureSuccessStatusCode();
+            return response.Content.Headers.ContentLength ?? -1;
         }
 
 
         public delegate void DownloadProgressDelegate(double percent, long read, long totalSize);
 
-        public static void DownloadFile(
+        public static async Task DownloadFileAsync(
             string url,
             string destination,
             DownloadProgressDelegate? progressCallback = null,
@@ -136,90 +147,82 @@ namespace Utilizr.Network
             string? userAgent = null,
             Action<PipelineActionArgs>? pipelineAction = null)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Timeout = requestTimeout;//infinite
-            request.ReadWriteTimeout = 15 * 1000;//15 seconds
+            using var http = new HttpClient()
+            {
+                Timeout = requestTimeout > 0
+                    ? TimeSpan.FromMilliseconds(requestTimeout)
+                    : Timeout.InfiniteTimeSpan,
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             if (!string.IsNullOrEmpty(userAgent))
-                request.UserAgent = userAgent;
+                request.Headers.UserAgent.ParseAdd(userAgent);
 
-            long resumeFromByte = 0;
-            if (autoResume)
+            var resumeFrom = 0L;
+            if (autoResume && File.Exists(destination))
             {
-                //check file has this many bytes
-                var exists = File.Exists(destination);
-                if (exists)
-                {
-                    resumeFromByte = new FileInfo(destination).Length;
+                resumeFrom = new FileInfo(destination).Length;
 
-                    //Set the value with reflection so we can use long int values
-                    try
-                    {
-                        var method = typeof(WebHeaderCollection).GetMethod("AddWithoutValidate", BindingFlags.Instance | BindingFlags.NonPublic);
-                        string rangeHeaderValue = $"bytes={resumeFromByte}-";
-                        method?.Invoke(request.Headers, new object[] { HttpRequestHeader.Range.ToString(), rangeHeaderValue });
-                    }
-                    catch (Exception)
-                    {
-                        resumeFromByte = 0;
-                    }
-                }
+                if (resumeFrom > 0)
+                    request.Headers.Range = new RangeHeaderValue(resumeFrom, null);
             }
-            using var response = request.GetResponse();
-            using var responseStream = response.GetResponseStream();
-            using var fileStream = File.Open(destination, resumeFromByte > 0 ? FileMode.Open : FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-            if (resumeFromByte > 0)
-            {
-                fileStream.Seek(resumeFromByte, 0);
-            }
-            long totalSize = response.ContentLength + resumeFromByte;
-            long totalRead = resumeFromByte;
-            int bufferLen = 8 * 1024;
-            byte[] buffer = new byte[bufferLen];
-            int bytesRead = 0;
+
+            using var response = await http.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead
+            );
+
+            response.EnsureSuccessStatusCode();
+
+            long totalSize = (response.Content.Headers.ContentLength ?? 0) + resumeFrom;
+            long totalRead = resumeFrom;
+
+            using var fileStream = new FileStream(
+                destination,
+                resumeFrom > 0
+                    ? FileMode.Open
+                    : FileMode.Create,
+                FileAccess.Write,
+                FileShare.None
+            );
+
+            if (resumeFrom > 0)
+                fileStream.Seek(resumeFrom, SeekOrigin.Begin);
+
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+
+            var buffer = new byte[8 * 1024];
+            int bytesRead;
 
             var pipelineArgs = new PipelineActionArgs(buffer);
-            while ((bytesRead = responseStream.Read(buffer, 0, bufferLen)) != 0)
+
+            while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
-                if (bytesRead > 0)
-                {
-                    fileStream.Write(buffer, 0, bytesRead);
-                    totalRead += bytesRead;
-                    pipelineArgs.Length = bytesRead;
-                    pipelineAction?.Invoke(pipelineArgs);
-                    progressCallback?.Invoke(((double)totalRead / totalSize), totalRead, totalSize);
-                }
+                await fileStream.WriteAsync(buffer, 0, bytesRead);
+
+                totalRead += bytesRead;
+
+                pipelineArgs.Length = bytesRead;
+                pipelineAction?.Invoke(pipelineArgs);
+
+                progressCallback?.Invoke(
+                    (double)totalRead / totalSize,
+                    totalRead,
+                    totalSize
+                );
             }
         }
 
-        public static Task BeginDownloadFileAsync(
-            string url,
-            string destination,
-            DownloadProgressDelegate? progressCallback = null,
-            int requestTimeout = -1,
-            string? userAgent = null)
+        public class PipelineActionArgs
         {
-            return Task.Run(() => DownloadFile(url, destination, progressCallback, requestTimeout:requestTimeout, userAgent:userAgent));
-        }
+            public byte[] Buffer { get; set; }
+            public int Length { get; set; }
 
-        public static long GetDownloadSize(string url)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "HEAD";
-
-            using var response = (HttpWebResponse)(request.GetResponse());
-            return response.ContentLength;
-        }
-    }
-
-    public class PipelineActionArgs
-    {
-        public byte[] Buffer { get; set; }
-        public int Length { get; set; }
-
-        public PipelineActionArgs(byte[] buffer)
-        {
-            Buffer = buffer;
+            public PipelineActionArgs(byte[] buffer)
+            {
+                Buffer = buffer;
+            }
         }
     }
 }
