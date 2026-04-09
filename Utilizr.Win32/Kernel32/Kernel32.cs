@@ -246,5 +246,8 @@ namespace Utilizr.Win32.Kernel32
 
         [DllImport (KERNEL32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool GetLogicalProcessorInformation(IntPtr buffer, ref uint returnLength);
     }
 }

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Utilizr.Extensions;
 using Utilizr.Logging;
 using Utilizr.Win32.Kernel32;
+using Utilizr.Win32.Kernel32.Flags;
 using Utilizr.Win32.Kernel32.Structs;
 
 namespace Utilizr.Win.Info
@@ -195,6 +196,48 @@ namespace Utilizr.Win.Info
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get the physical CPU core count, null if an error occurred.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        public static int? GetPhysicalProcessorCoreCount()
+        {
+            uint len = 0;
+            Kernel32.GetLogicalProcessorInformation(IntPtr.Zero, ref len);
+
+            IntPtr ptr = Marshal.AllocHGlobal((int)len);
+            try
+            {
+                if (!Kernel32.GetLogicalProcessorInformation(ptr, ref len))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                int size = Marshal.SizeOf(typeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
+                int count = (int)len / size;
+
+                int physicalCores = 0;
+
+                for (int i = 0; i < count; i++)
+                {
+                    var info = Marshal.PtrToStructure<SYSTEM_LOGICAL_PROCESSOR_INFORMATION>(ptr + i * size);
+
+                    if (info.Relationship == LOGICAL_PROCESSOR_RELATIONSHIP.RelationProcessorCore)
+                        physicalCores++;
+                }
+
+                return physicalCores;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex);
+                return null;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
         }
     }
 
