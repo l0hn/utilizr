@@ -1,9 +1,13 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using Utilizr.Extensions;
 using Utilizr.Logging;
+using Utilizr.Win32.Kernel32;
+using Utilizr.Win32.Kernel32.Structs;
 
 namespace Utilizr.Win.Info
 {
@@ -167,6 +171,30 @@ namespace Utilizr.Win.Info
                 Log.Exception(e);
             }
             return machineGuid;
+        }
+
+        /// <summary>
+        /// Returns RAM size in bytes, null if an error occurred.
+        /// </summary>
+        /// <returns></returns>
+        public static MEMORYSTATUSEX? GetSystemRamData()
+        {
+            try
+            {
+                var mem = new MEMORYSTATUSEX();
+                mem.dwLength = (uint)Marshal.SizeOf(mem);
+
+                if (!Kernel32.GlobalMemoryStatusEx(mem))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                return mem;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex);
+            }
+
+            return null;
         }
     }
 
