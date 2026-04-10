@@ -199,6 +199,28 @@ namespace Utilizr.Win.Info
         }
 
         /// <summary>
+        /// The real installed RAM, which won't subtract any hardware reserved memory.
+        /// Returns 0 if an error occurs.
+        /// </summary>
+        /// <returns></returns>
+        public static long GetInstalledRamBytes()
+        {
+            try
+            {
+                if (!Kernel32.GetPhysicallyInstalledSystemMemory(out long kb))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                return kb * 1024;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
         /// Get the physical CPU core count, null if an error occurred.
         /// </summary>
         /// <returns></returns>
