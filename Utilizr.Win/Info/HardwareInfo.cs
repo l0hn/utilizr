@@ -56,6 +56,13 @@ namespace Utilizr.Win.Info
                 using var searcher = new ManagementObjectSearcher(query);
                 foreach (var item in searcher.Get().Cast<ManagementObject>())
                 {
+                    /*
+                    * NOTE: there's dragons here, wmi (system.management) gives null (if oem doesn't fill in or for some
+                    * VMs etc) despite the "SerialNumber" property existing and the do not attempt to fix this or it will 
+                    * cause backwards compatibility issues for applications relying on this class as a way to uniquely
+                    * auth/identify devices.
+                    */
+
                     id += item["SerialNumber"].ToString();
                 }
                 _motherboardSerial = id;
