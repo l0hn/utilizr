@@ -42,13 +42,17 @@ namespace Utilizr
             using var proc = new Process();
             var result = new ShellResult(command, args);
 
-            proc.StartInfo = new ProcessStartInfo(command, string.Join(" ", args))
+            proc.StartInfo = new ProcessStartInfo(command)
             {
                 UseShellExecute = asAdmin,
                 RedirectStandardOutput = !asAdmin,
                 RedirectStandardError = !asAdmin,
                 CreateNoWindow = true
             };
+            foreach (var arg in args)
+            {
+                proc.StartInfo.ArgumentList.Add(arg);
+            }
             proc.EnableRaisingEvents = false;
             if (workingDir != null)
             {
