@@ -165,7 +165,7 @@ namespace Utilizr.Vpn.OpenVpn
         {
             try
             {
-                Shell.Exec("netsh", null, "interface", "ip", "delete", "destinationcache");
+                Shell.Exec("netsh", "interface", "ip", "delete", "destinationcache");
             }
             catch (Exception)
             {
