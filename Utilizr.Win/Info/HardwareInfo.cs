@@ -228,7 +228,8 @@ namespace Utilizr.Win.Info
         }
 
         /// <summary>
-        /// Get the physical CPU core count, null if an error occurred. Physical
+        /// Get the physical CPU core count, null if an error occurred.
+        /// May provide incorrect count when running Windows in a virtual machine.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
