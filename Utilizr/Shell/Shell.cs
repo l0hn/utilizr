@@ -29,24 +29,30 @@ namespace Utilizr
 
         public static ShellResult Exec(string command, string? workingDir, bool asAdmin, params string[] args)
         {
-            return Exec(command, workingDir, asAdmin, null, args);
+            return Exec(command, workingDir, asAdmin, asAdmin, null, args);
         }
 
         public static ShellResult Exec(
             string command,
             string? workingDir,
             bool asAdmin,
+            bool useShellExecute,
             IEnumerable<ShellEnvironmentVariable>? environmentVariables,
             params string[] args) 
         {
             using var proc = new Process();
             var result = new ShellResult(command, args);
 
+            // Running as admin requires the 'Verb' property which is a shell feature, not a process feature.
+            // Force to match previous behaviour where we only exposed UseShellExecute via the asAdmin parameter.
+            if (asAdmin)
+                useShellExecute = true;
+
             proc.StartInfo = new ProcessStartInfo(command)
             {
-                UseShellExecute = asAdmin,
-                RedirectStandardOutput = !asAdmin,
-                RedirectStandardError = !asAdmin,
+                UseShellExecute = useShellExecute,
+                RedirectStandardOutput = !useShellExecute,
+                RedirectStandardError = !useShellExecute,
                 CreateNoWindow = true
             };
             foreach (var arg in args)
@@ -88,7 +94,7 @@ namespace Utilizr
             };
             proc.Start();
 
-            if (!asAdmin)
+            if (!useShellExecute)
             {
                 proc.BeginErrorReadLine();
                 proc.BeginOutputReadLine();
