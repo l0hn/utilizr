@@ -1,9 +1,6 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Utilizr.Extensions;
@@ -17,9 +14,14 @@ namespace Utilizr
             return Task.Run(() => Exec(command, args));
         }
 
-        public static Task<ShellResult> ExecAsync(string command, string workingDir, bool asAdmin, params string[] args)
+        public static Task<ShellResult> ExecAsync(string command, string? workingDir, bool asAdmin, params string[] args)
         {
             return Task.Run(() => Exec(command, workingDir, asAdmin, args));
+        }
+
+        public static Task<ShellResult> ExecAsync(string command, string? workingDir, bool asAdmin, bool useShellExecute, params string[] args)
+        {
+            return Task.Run(() => Exec(command, workingDir, asAdmin, useShellExecute, null, true, args));
         }
 
         public static ShellResult Exec(string command, params string[] args)
@@ -29,7 +31,7 @@ namespace Utilizr
 
         public static ShellResult Exec(string command, string? workingDir, bool asAdmin, params string[] args)
         {
-            return Exec(command, workingDir, asAdmin, asAdmin, null, args);
+            return Exec(command, workingDir, asAdmin, asAdmin, null, true, args);
         }
 
         public static ShellResult Exec(
@@ -38,6 +40,7 @@ namespace Utilizr
             bool asAdmin,
             bool useShellExecute,
             IEnumerable<ShellEnvironmentVariable>? environmentVariables,
+            bool waitForExit,
             params string[] args) 
         {
             using var proc = new Process();
@@ -100,9 +103,11 @@ namespace Utilizr
                 proc.BeginOutputReadLine();
             }
 
-            proc.WaitForExit();
-
-            result.ExitCode = proc.ExitCode;
+            if (waitForExit)
+            {
+                proc.WaitForExit();
+                result.ExitCode = proc.ExitCode;
+            }
 
             return result;
         }
