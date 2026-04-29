@@ -1,9 +1,14 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using Utilizr.Extensions;
 using Utilizr.Logging;
+using Utilizr.Win32.Kernel32;
+using Utilizr.Win32.Kernel32.Flags;
+using Utilizr.Win32.Kernel32.Structs;
 
 namespace Utilizr.Win.Info
 {
@@ -174,6 +179,95 @@ namespace Utilizr.Win.Info
                 Log.Exception(e);
             }
             return machineGuid;
+        }
+
+        /// <summary>
+        /// Returns RAM size in bytes, null if an error occurred.
+        /// </summary>
+        /// <returns></returns>
+        public static MEMORYSTATUSEX? GetSystemRamData()
+        {
+            try
+            {
+                var mem = new MEMORYSTATUSEX();
+                mem.dwLength = (uint)Marshal.SizeOf(mem);
+
+                if (!Kernel32.GlobalMemoryStatusEx(mem))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                return mem;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// The real installed RAM, which won't subtract any hardware reserved memory.
+        /// Returns 0 if an error occurs.
+        /// </summary>
+        /// <returns></returns>
+        public static long GetInstalledRamBytes()
+        {
+            try
+            {
+                if (!Kernel32.GetPhysicallyInstalledSystemMemory(out long kb))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                return kb * 1024;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Get the physical CPU core count, null if an error occurred.
+        /// May provide incorrect count when running Windows in a virtual machine.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        public static int? GetPhysicalProcessorCoreCount()
+        {
+            uint len = 0;
+            Kernel32.GetLogicalProcessorInformation(IntPtr.Zero, ref len);
+
+            IntPtr ptr = Marshal.AllocHGlobal((int)len);
+            try
+            {
+                if (!Kernel32.GetLogicalProcessorInformation(ptr, ref len))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                int size = Marshal.SizeOf(typeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
+                int count = (int)len / size;
+
+                int physicalCores = 0;
+
+                for (int i = 0; i < count; i++)
+                {
+                    var info = Marshal.PtrToStructure<SYSTEM_LOGICAL_PROCESSOR_INFORMATION>(ptr + i * size);
+
+                    if (info.Relationship == LOGICAL_PROCESSOR_RELATIONSHIP.RelationProcessorCore)
+                        physicalCores++;
+                }
+
+                return physicalCores;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception(ex);
+                return null;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
         }
     }
 
