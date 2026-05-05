@@ -8,14 +8,22 @@ namespace Utilizr.Util
     /// </summary>
     public abstract class SwitchesBase
     {
-        /// <summary>
-        /// All command line arguments returned as lower invariant.
-        /// </summary>
-        protected static string[] GetArgs()
+        public string[] CommandLineArguments { get; }
+
+        protected SwitchesBase()
         {
-            return Environment.GetCommandLineArgs()
-                .Select(p => p.ToLowerInvariant())
-                .ToArray();
+            CommandLineArguments = Environment.GetCommandLineArgs();
+        }
+
+        /// <summary>
+        /// Whether the supplied argument has an exact match in the arguments array, depending on the comparison parameter.
+        /// </summary>
+        /// <param name="argument"></param>
+        /// <param name="comparison"></param>
+        /// <returns></returns>
+        public bool HasArgument(string argument, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+        {
+            return CommandLineArguments.Any(p => p.Equals(argument, comparison));
         }
 
         /// <summary>
@@ -24,9 +32,9 @@ namespace Utilizr.Util
         /// <param name="arg">'arg' from the format 'arg=value'</param>
         /// <param name="args">All command line arguments to search.</param>
         /// <returns></returns>
-        protected string? ExtractValueFromArg(string arg, string[] args)
+        protected string? ExtractValueFromArg(string arg, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {
-            var foundArg = args?.FirstOrDefault(p => p?.StartsWith(arg, StringComparison.OrdinalIgnoreCase) == true);
+            var foundArg = CommandLineArguments.FirstOrDefault(p => p?.StartsWith(arg, comparison) == true);
             var argWithEquals = $"{arg}=";
             if (foundArg == null || !foundArg.StartsWith(argWithEquals) || foundArg.Length <= argWithEquals.Length)
             {
@@ -46,7 +54,7 @@ namespace Utilizr.Util
             return result;
         }
 
-        protected string[] SplitCommanSeparatedArgValue(string? argumentValue)
+        protected string[] SplitCommaSeparatedArgValue(string? argumentValue)
         {
             if (string.IsNullOrEmpty(argumentValue))
                 return Array.Empty<string>();
