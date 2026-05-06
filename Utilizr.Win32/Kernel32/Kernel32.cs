@@ -111,6 +111,9 @@ namespace Utilizr.Win32.Kernel32
         public static extern bool WriteFile(IntPtr hFile, IntPtr lpBuffer, uint nNumberOfBytesToWrite, uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern uint WTSGetActiveConsoleSessionId();
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern uint QueryDosDevice(string lpDeviceName, StringBuilder lpTargetPath, int ucchMax);
 
         public const int DUPLICATE_SAME_ACCESS = 0x2;
