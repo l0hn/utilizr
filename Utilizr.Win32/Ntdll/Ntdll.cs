@@ -25,7 +25,7 @@ public static class Ntdll
         [Out] out int ReturnLength);
 
 
-    [DllImport("ntdll.dll")]
+    [DllImport(NTDLL_DLL)]
     public static extern int NtQueryInformationProcess(
         IntPtr ProcessHandle,
         int ProcessInformationClass,
@@ -33,4 +33,7 @@ public static class Ntdll
         int ProcessInformationLength,
         ref int ReturnLength
     );
+
+    [DllImport(NTDLL_DLL)]
+    public static extern uint RtlNtStatusToDosError(int Status);
 }
