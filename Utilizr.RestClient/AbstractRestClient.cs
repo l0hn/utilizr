@@ -78,43 +78,43 @@ namespace Utilizr.Rest.Client
             try
             {
                 LogRequest(apiRequest, headers);
-                var response = this.Execute<T>(request);
-                LogResponse(apiRequest, response);
+                apiRequest.Response = this.Execute<T>(request);
+                LogResponse(apiRequest, apiRequest.Response);
 
-                if (string.IsNullOrEmpty(response.Content))
+                if (string.IsNullOrEmpty(apiRequest.Response.Content))
                 {
                     // todo: no internet connection check / custom error thrown so we can show a nicer error message
 
                     // Only throw for no content, otherwise stuff like HTTP 400 will cause it to throw
                     // when in reality we want to show a custom api error message of something like
                     // credentials don't match, or weak password detected on signup, etc
-                    response.ThrowIfError();
+                    apiRequest.Response.ThrowIfError();
                 }
 
-                if (!response.IsSuccessStatusCode)
+                if (!apiRequest.Response.IsSuccessStatusCode)
                 {
-                    var description = response.StatusDescription;
+                    var description = apiRequest.Response.StatusDescription;
 
-                    if (response.StatusCode == HttpStatusCode.Unauthorized)
-                        OnAuthenticationError(response.StatusCode, description);
+                    if (apiRequest.Response.StatusCode == HttpStatusCode.Unauthorized)
+                        OnAuthenticationError(apiRequest.Response.StatusCode, description);
 
-                    var detailedErrorDescription = apiRequest.GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(response.StatusCode, response.Data);
+                    var detailedErrorDescription = apiRequest.GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(apiRequest.Response.StatusCode, apiRequest.Response.Data);
                     if (!string.IsNullOrEmpty(detailedErrorDescription))
                         description = detailedErrorDescription;
 
-                    OnAnyHttpStatusError(request.Method.ToString().ToUpperInvariant(), _serviceUrl, request.Resource, response.StatusCode, description);
+                    OnAnyHttpStatusError(request.Method.ToString().ToUpperInvariant(), _serviceUrl, request.Resource, apiRequest.Response.StatusCode, description);
 
-                    throw new ApiException((int)response.StatusCode, description, response.Content);
+                    throw new ApiException((int)apiRequest.Response.StatusCode, description, apiRequest.Response.Content);
                 }
 
                 //var responseData = JsonConvert.DeserializeObject<T>(response.Content!);
-                if (response.Data == null)
-                    throw new Exception($"Failed to deserialise response on {apiRequest.Endpoint}", response.ErrorException);
+                if (apiRequest.Response.Data == null)
+                    throw new Exception($"Failed to deserialise response on {apiRequest.Endpoint}", apiRequest.Response.ErrorException);
 
-                apiRequest.PostProcessing(response.Data);
+                apiRequest.PostProcessing(apiRequest.Response.Data);
 
-                NotifyRequestCompleted<T>(apiRequest, response.Data);
-                return response.Data;
+                NotifyRequestCompleted<T>(apiRequest, apiRequest.Response.Data);
+                return apiRequest.Response.Data;
             }
             catch (Exception e)
             {
@@ -152,7 +152,7 @@ namespace Utilizr.Rest.Client
             debugDict["Error"] = response.ErrorMessage ?? response.ErrorException?.Message;
             try
             {
-                debugDict["ResponseData"] = apiRequest.GetObjectForResponseLogging(JsonConvert.DeserializeObject<T>(response.Content!)!)!;
+                debugDict["ResponseData"] = apiRequest.GetObjectForResponseLogging()!;
             }
             catch (Exception)
             {

@@ -3,6 +3,7 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Utilizr.Rest.Client
 {
@@ -26,10 +27,15 @@ namespace Utilizr.Rest.Client
     public interface IApiRequest<TResponse> : IApiRequest
     {
         /// <summary>
-        /// Gets the object for request logging.
-        /// You should override this method is for example you need to remove any sensitive information from a specific object before logging
+        /// Raw RestSharp response instance.
         /// </summary>
-        /// <returns>The object for request logging.</returns>
+        public RestResponse<TResponse>? Response { get; set; }
+
+        /// <summary>
+        /// Gets the object for request logging.
+        /// Changing this object will have no effect on the data being sent.
+        /// </summary>
+        /// <returns>The new object for request logging.</returns>
         object GetObjectForRequestLogging();
 
         /// <summary>
@@ -48,7 +54,7 @@ namespace Utilizr.Rest.Client
         /// Note, the changes you make on this response object only affect logging.
         /// </summary>
         /// <returns>The object for response logging.</returns>
-        TResponse GetObjectForResponseLogging(TResponse response);
+        TResponse GetObjectForResponseLogging();
 
         /// <summary>
         /// Return an optional more detailed error message instead of the stardand HTTP status.
@@ -61,6 +67,9 @@ namespace Utilizr.Rest.Client
 
     public abstract class ApiRequest<TResponse> : IApiRequest<TResponse>
     {
+        [JsonIgnore]
+        public RestResponse<TResponse>? Response { get; set; }
+
         [JsonIgnore]
         public string EndpointLogStr => $"({MethodLogStr}){Endpoint}";
 
@@ -79,6 +88,11 @@ namespace Utilizr.Rest.Client
 
         public bool LogRequest { get; set; } = true;
 
+        /// <summary>
+        /// Value used to mask sensitive data in requests/responses.
+        /// </summary>
+        public static string Mask { get; set; } = "***";
+
         public ApiRequest(object? body = null)
         {
             Body = body;
@@ -88,6 +102,7 @@ namespace Utilizr.Rest.Client
         /// Optionally add any extra headers.
         /// </summary>
         public virtual Dictionary<string, string>? GetExtraRequestSpecificHeaders() { return null; }
+
 
         /// <summary>
         /// Gets the object for request logging.
@@ -122,13 +137,16 @@ namespace Utilizr.Rest.Client
         /// Note, the changes you make on this response object only affect logging.
         /// </summary>
         /// <returns>The object for response logging.</returns>
-        public virtual TResponse GetObjectForResponseLogging(TResponse response)
+        public virtual TResponse GetObjectForResponseLogging()
         {
-            return response;
+            if (Response == null)
+                throw new InvalidOperationException("Cannot get response object for logging without a response");
+
+            return JsonConvert.DeserializeObject<TResponse>(Response.Content!)!;
         }
 
         /// <summary>
-        /// Return an optional more detailed error message instead of the stardand HTTP status.
+        /// Return an optional more detailed error message instead of the standard HTTP status.
         /// </summary>
         /// <param name="statusCode">HTTP status code.</param>
         /// <param name="response">Types response for the attempted request.</param>
@@ -136,6 +154,34 @@ namespace Utilizr.Rest.Client
         public virtual string? GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(HttpStatusCode statusCode, TResponse? response)
         {
             return null;
+        }
+
+        /// <summary>
+        /// Some API responses may have a JSON property themselves.
+        /// Helper method to find the given property within the JSON, and change it's value to avoid logging anything sensitive.
+        /// </summary>
+        /// <param name="rawJson">RAW JSOn returned as a property on an API response</param>
+        /// <param name="jsonKey">The matching property name, not case sensitive. E.g. MyProperty</param>
+        /// <param name="maskedValue">Optional mask value, defaulting to the value of <see cref="Mask"/>if null</param>
+        /// <returns></returns>
+        public string MaskRawJsonProperty(string rawJson, string jsonKey, string? maskedValue = null)
+        {
+            maskedValue ??= Mask;
+
+            // If we use regex we can handle scenarios such as this, where IndexOf would fail:
+            // "Key":"value"
+            // "Key": "value"
+            // "Key" : "value"
+            // "Key"
+            // :
+            // "value"
+
+            var pattern = $"(\"{Regex.Escape(jsonKey)}\"\\s*:\\s*\")([^\"]*)(\")";
+
+            return Regex.Replace(
+                rawJson,
+                pattern,
+                $"$1{maskedValue}$3");
         }
     }
 
