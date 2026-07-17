@@ -30,10 +30,10 @@ namespace Utilizr.Rest.Client
         public RestResponse<TResponse>? Response { get; set; }
 
         /// <summary>
-        /// Gets the object for request logging.
+        /// You should override this method if for example you need to remove any sensitive information from a specific object before logging.
         /// Changing this object will have no effect on the data being sent.
         /// </summary>
-        /// <returns>The new object for request logging.</returns>
+        /// <returns>A new object for request logging.</returns>
         object GetObjectForRequestLogging();
 
         /// <summary>
@@ -42,16 +42,16 @@ namespace Utilizr.Rest.Client
         Dictionary<string, string>? GetExtraRequestSpecificHeaders();
 
         /// <summary>
-        /// Override post processing to perform internal tasks upon a successful response
+        /// Override post processing to perform internal tasks upon a successful response.
         /// NOTE: this method is NOT async, do not write blocking code in this method
         /// </summary>
         void PostProcessing(TResponse response);
 
         /// <summary>
-        /// Gets the object for response logging. Override this method if you need to remove sensitive data before logging
+        /// Gets the object for response logging. Override this method if you need to remove sensitive data before logging.
         /// Note, the changes you make on this response object only affect logging.
         /// </summary>
-        /// <returns>The object for response logging.</returns>
+        /// <returns>A new object for response logging.</returns>
         TResponse GetObjectForResponseLogging();
 
         /// <summary>
@@ -100,7 +100,6 @@ namespace Utilizr.Rest.Client
         /// Optionally add any extra headers.
         /// </summary>
         public virtual Dictionary<string, string>? GetExtraRequestSpecificHeaders() { return null; }
-
 
         /// <summary>
         /// Gets the object for request logging.
@@ -165,14 +164,6 @@ namespace Utilizr.Rest.Client
         public static string MaskRawJsonProperty(string rawJson, string jsonKey, string? maskedValue = null)
         {
             maskedValue ??= Mask;
-
-            // If we use regex we can handle scenarios such as this, where IndexOf would fail:
-            // "Key":"value"
-            // "Key": "value"
-            // "Key" : "value"
-            // "Key"
-            // :
-            // "value"
 
             var pattern = $"(\"{Regex.Escape(jsonKey)}\"\\s*:\\s*\")([^\"]*)(\")";
 
