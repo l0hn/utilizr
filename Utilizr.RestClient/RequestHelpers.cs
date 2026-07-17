@@ -91,7 +91,7 @@ namespace Utilizr.Rest.Client
         /// <summary>
         /// Value used to mask sensitive data in requests/responses.
         /// </summary>
-        public static string Mask { get; set; } = "***";
+        public static string Mask { get; set; } = "***"; // Update unit test if changing default value
 
         public ApiRequest(object? body = null)
         {
@@ -160,11 +160,11 @@ namespace Utilizr.Rest.Client
         /// Some API responses may have a JSON property themselves.
         /// Helper method to find the given property within the JSON, and change it's value to avoid logging anything sensitive.
         /// </summary>
-        /// <param name="rawJson">RAW JSOn returned as a property on an API response</param>
+        /// <param name="rawJson">RAW JSON returned as a property on an API response</param>
         /// <param name="jsonKey">The matching property name, not case sensitive. E.g. MyProperty</param>
         /// <param name="maskedValue">Optional mask value, defaulting to the value of <see cref="Mask"/>if null</param>
         /// <returns></returns>
-        public string MaskRawJsonProperty(string rawJson, string jsonKey, string? maskedValue = null)
+        public static string MaskRawJsonProperty(string rawJson, string jsonKey, string? maskedValue = null)
         {
             maskedValue ??= Mask;
 
@@ -181,7 +181,31 @@ namespace Utilizr.Rest.Client
             return Regex.Replace(
                 rawJson,
                 pattern,
-                $"$1{maskedValue}$3");
+                $"$1{maskedValue}$3",
+                RegexOptions.IgnoreCase
+            );
+        }
+
+        /// <summary>
+        /// Mask a specific query parameter's value within a URL.
+        /// </summary>
+        /// <param name="url">URL with the sensitive query parameters</param>
+        /// <param name="parameterName">The matching query parameter name, not case sensitive. E.g. token</param>
+        /// <param name="maskedValue">Optional mask value, defaulting to the value of <see cref="Mask"/>if null</param>
+        /// <returns></returns>
+        public static string MaskUrlQueryParameter(string url, string parameterName, string? maskedValue = null)
+        {
+            maskedValue ??= Mask;
+
+            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(parameterName))
+                return url;
+
+            return Regex.Replace(
+                url,
+                $@"([?&]{Regex.Escape(parameterName)}=)[^&]*",
+                $"$1{maskedValue}",
+                RegexOptions.IgnoreCase
+            );
         }
     }
 
