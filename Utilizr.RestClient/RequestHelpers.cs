@@ -1,8 +1,7 @@
 using Newtonsoft.Json;
 using RestSharp;
-using System;
-using System.Collections.Generic;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Utilizr.Rest.Client
 {
@@ -26,10 +25,15 @@ namespace Utilizr.Rest.Client
     public interface IApiRequest<TResponse> : IApiRequest
     {
         /// <summary>
-        /// Gets the object for request logging.
-        /// You should override this method is for example you need to remove any sensitive information from a specific object before logging
+        /// Raw RestSharp response instance.
         /// </summary>
-        /// <returns>The object for request logging.</returns>
+        public RestResponse<TResponse>? Response { get; set; }
+
+        /// <summary>
+        /// You should override this method if for example you need to remove any sensitive information from a specific object before logging.
+        /// Changing this object will have no effect on the data being sent.
+        /// </summary>
+        /// <returns>A new object for request logging.</returns>
         object GetObjectForRequestLogging();
 
         /// <summary>
@@ -38,17 +42,17 @@ namespace Utilizr.Rest.Client
         Dictionary<string, string>? GetExtraRequestSpecificHeaders();
 
         /// <summary>
-        /// Override post processing to perform internal tasks upon a successful response
+        /// Override post processing to perform internal tasks upon a successful response.
         /// NOTE: this method is NOT async, do not write blocking code in this method
         /// </summary>
         void PostProcessing(TResponse response);
 
         /// <summary>
-        /// Gets the object for response logging. Override this method if you need to remove sensitive data before logging
+        /// Gets the object for response logging. Override this method if you need to remove sensitive data before logging.
         /// Note, the changes you make on this response object only affect logging.
         /// </summary>
-        /// <returns>The object for response logging.</returns>
-        TResponse GetObjectForResponseLogging(TResponse response);
+        /// <returns>A new object for response logging.</returns>
+        TResponse GetObjectForResponseLogging();
 
         /// <summary>
         /// Return an optional more detailed error message instead of the stardand HTTP status.
@@ -61,6 +65,9 @@ namespace Utilizr.Rest.Client
 
     public abstract class ApiRequest<TResponse> : IApiRequest<TResponse>
     {
+        [JsonIgnore]
+        public RestResponse<TResponse>? Response { get; set; }
+
         [JsonIgnore]
         public string EndpointLogStr => $"({MethodLogStr}){Endpoint}";
 
@@ -78,6 +85,11 @@ namespace Utilizr.Rest.Client
         public Dictionary<string, string> Headers { get; set; } = new();
 
         public bool LogRequest { get; set; } = true;
+
+        /// <summary>
+        /// Value used to mask sensitive data in requests/responses.
+        /// </summary>
+        public static string Mask { get; set; } = "***"; // Update unit test if changing default value
 
         public ApiRequest(object? body = null)
         {
@@ -122,13 +134,16 @@ namespace Utilizr.Rest.Client
         /// Note, the changes you make on this response object only affect logging.
         /// </summary>
         /// <returns>The object for response logging.</returns>
-        public virtual TResponse GetObjectForResponseLogging(TResponse response)
+        public virtual TResponse GetObjectForResponseLogging()
         {
-            return response;
+            if (Response == null)
+                throw new InvalidOperationException("Cannot get response object for logging without a response");
+
+            return JsonConvert.DeserializeObject<TResponse>(Response.Content!)!;
         }
 
         /// <summary>
-        /// Return an optional more detailed error message instead of the stardand HTTP status.
+        /// Return an optional more detailed error message instead of the standard HTTP status.
         /// </summary>
         /// <param name="statusCode">HTTP status code.</param>
         /// <param name="response">Types response for the attempted request.</param>
@@ -136,6 +151,50 @@ namespace Utilizr.Rest.Client
         public virtual string? GetCustomApiExceptionDescriptionOnUnsuccessfulStatusCode(HttpStatusCode statusCode, TResponse? response)
         {
             return null;
+        }
+
+        /// <summary>
+        /// Some API responses may have a JSON property themselves.
+        /// Helper method to find the given property within the JSON, and change it's value to avoid logging anything sensitive.
+        /// </summary>
+        /// <param name="rawJson">RAW JSON returned as a property on an API response</param>
+        /// <param name="jsonKey">The matching property name, not case sensitive. E.g. MyProperty</param>
+        /// <param name="maskedValue">Optional mask value, defaulting to the value of <see cref="Mask"/>if null</param>
+        /// <returns></returns>
+        public static string MaskRawJsonProperty(string rawJson, string jsonKey, string? maskedValue = null)
+        {
+            maskedValue ??= Mask;
+
+            var pattern = $"(\"{Regex.Escape(jsonKey)}\"\\s*:\\s*\")([^\"]*)(\")";
+
+            return Regex.Replace(
+                rawJson,
+                pattern,
+                $"$1{maskedValue}$3",
+                RegexOptions.IgnoreCase
+            );
+        }
+
+        /// <summary>
+        /// Mask a specific query parameter's value within a URL.
+        /// </summary>
+        /// <param name="url">URL with the sensitive query parameters</param>
+        /// <param name="parameterName">The matching query parameter name, not case sensitive. E.g. token</param>
+        /// <param name="maskedValue">Optional mask value, defaulting to the value of <see cref="Mask"/>if null</param>
+        /// <returns></returns>
+        public static string MaskUrlQueryParameter(string url, string? parameterName, string? maskedValue = null)
+        {
+            maskedValue ??= Mask;
+
+            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(parameterName))
+                return url;
+
+            return Regex.Replace(
+                url,
+                $@"([?&]{Regex.Escape(parameterName)}=)[^&]*",
+                $"$1{maskedValue}",
+                RegexOptions.IgnoreCase
+            );
         }
     }
 
