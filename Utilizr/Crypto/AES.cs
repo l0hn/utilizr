@@ -91,32 +91,33 @@ namespace Utilizr.Crypto
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException($"{nameof(key)} cannot be null or empty.");
 
-            using (var aes = Aes.Create())
-            {
-                aes.Mode = cipherMode;
-                aes.BlockSize = blockSize;
-                aes.Key = Encoding.UTF8.GetBytes(key);
+            using var aes = Aes.Create();
+            aes.Mode = cipherMode;
+            aes.BlockSize = blockSize;
+            aes.Key = Encoding.UTF8.GetBytes(key);
 
-                var initVectorBytes = new Span<byte>(new byte[initVectorLength]);
-                RandomNumberGenerator.Fill(initVectorBytes);
-                initVector = initVectorBytes.ToArray();
-                aes.IV = initVector;
-                aes.Padding = PaddingMode.PKCS7;
+            var initVectorBytes = new Span<byte>(new byte[initVectorLength]);
+            RandomNumberGenerator.Fill(initVectorBytes);
+            initVector = initVectorBytes.ToArray();
+            aes.IV = initVector;
 
-                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            // todo: should be using GenerateIV(), but needs more testing.
+            //aes.GenerateIV();
+            //initVector = aes.IV;
 
-                using (MemoryStream memStream = new MemoryStream())
-                using (CryptoStream cryptoStream = new CryptoStream(memStream, encryptor, CryptoStreamMode.Write))
-                {
-                    var bytes = Encoding.UTF8.GetBytes(plainText);
+            aes.Padding = PaddingMode.PKCS7;
 
-                    cryptoStream.Write(bytes, 0, bytes.Length);
-                    cryptoStream.FlushFinalBlock();
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
-                    var cipherTextBytes = memStream.ToArray();
-                    return cipherTextBytes;
-                }
-            }
+            using MemoryStream memStream = new MemoryStream();
+            using CryptoStream cryptoStream = new CryptoStream(memStream, encryptor, CryptoStreamMode.Write);
+            var bytes = Encoding.UTF8.GetBytes(plainText);
+
+            cryptoStream.Write(bytes, 0, bytes.Length);
+            cryptoStream.FlushFinalBlock();
+
+            var cipherTextBytes = memStream.ToArray();
+            return cipherTextBytes;
         }
     }
 }

@@ -32,7 +32,7 @@ namespace Utilizr.RestClient.Tests
 
         [TestCase(null)]
         [TestCase("")]
-        public void MaskQueryParameter_ShouldReturnOriginal_WhenUrlIsNullOrEmpty(string input)
+        public void MaskQueryParameter_ShouldReturnOriginal_WhenUrlIsNullOrEmpty(string? input)
         {
             var result = ApiRequest<object>.MaskUrlQueryParameter(input, "token");
             Assert.That(result, Is.EqualTo(input));
@@ -40,7 +40,7 @@ namespace Utilizr.RestClient.Tests
 
         [TestCase(null)]
         [TestCase("")]
-        public void MaskQueryParameter_ShouldReturnOriginal_WhenParameterNameIsNullOrEmpty(string parameterName)
+        public void MaskQueryParameter_ShouldReturnOriginal_WhenParameterNameIsNullOrEmpty(string? parameterName)
         {
             var input = "https://example.com?token=abc123";
             var result = ApiRequest<object>.MaskUrlQueryParameter(input, parameterName);

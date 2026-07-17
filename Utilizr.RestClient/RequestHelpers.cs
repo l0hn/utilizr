@@ -1,7 +1,5 @@
 using Newtonsoft.Json;
 using RestSharp;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -193,7 +191,7 @@ namespace Utilizr.Rest.Client
         /// <param name="parameterName">The matching query parameter name, not case sensitive. E.g. token</param>
         /// <param name="maskedValue">Optional mask value, defaulting to the value of <see cref="Mask"/>if null</param>
         /// <returns></returns>
-        public static string MaskUrlQueryParameter(string url, string parameterName, string? maskedValue = null)
+        public static string MaskUrlQueryParameter(string url, string? parameterName, string? maskedValue = null)
         {
             maskedValue ??= Mask;
 
