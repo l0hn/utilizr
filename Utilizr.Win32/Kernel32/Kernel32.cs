@@ -216,6 +216,24 @@ namespace Utilizr.Win32.Kernel32
             out PROCESS_INFORMATION lpProcessInformation
         );
 
+        //override to allow nulllabel (IntPtr.Zero) attributes
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool CreateProcess(
+            string? lpApplicationName,
+            string? lpCommandLine,
+            IntPtr lpProcessAttributes,
+            IntPtr lpThreadAttributes,
+            bool bInheritHandles,
+            uint dwCreationFlags,
+            IntPtr lpEnvironment,
+            string? lpCurrentDirectory,
+            ref STARTUPINFO lpStartupInfo,
+            out PROCESS_INFORMATION lpProcessInformation
+        );
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool GenerateConsoleCtrlEvent(CtrlEvent dwCtrlEvent, uint dwProcessGroup);
+
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool CreatePipe(
             out SafeFileHandle hReadPipe,
@@ -233,10 +251,13 @@ namespace Utilizr.Win32.Kernel32
         public static extern bool FileTimeToSystemTime(ref FILETIME FileTime, ref SYSTEMTIME SystemTime);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
-        public static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
+        public static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string? lpName);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, ref JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInfo, uint cbJobObjectInfoLength);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern IntPtr CreateIoCompletionPort(IntPtr FileHandle, IntPtr ExistingCompletionPort, UIntPtr CompletionKey, uint NumberOfConcurrentThreads);
@@ -247,7 +268,7 @@ namespace Utilizr.Win32.Kernel32
         [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
-        [DllImport (KERNEL32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(KERNEL32_DLL, CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
