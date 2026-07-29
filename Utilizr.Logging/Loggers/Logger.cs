@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
 using Utilizr.Logging.Filters;
 using Utilizr.Logging.Interfaces;
 
@@ -16,11 +16,14 @@ namespace Utilizr.Logging.Loggers
     {
         internal RootLogger? Root { get; set; }
         internal Logger? Parent { get; set; }
+        private AutoResetEvent _queueReady;
 
         public string Category { get; set; }
         public bool Propagate { get; set; }
         public bool Disabled { get; set; }
         public bool Async { get; set; }
+
+        private bool _disposed;
 
         /// <summary>
         /// List of all handlers added to the Logger
@@ -42,8 +45,13 @@ namespace Utilizr.Logging.Loggers
             Propagate = true;
             Async = async;
             _queuedLogRecords = new ConcurrentQueue<LogRecord>();
+            _queueReady = new AutoResetEvent(false);
             Handlers = new List<IHandler>();
-            Task.Factory.StartNew(ProcessQueue, TaskCreationOptions.LongRunning); // todo: ensure not using threadpool thread
+            new Thread(ProcessQueue)
+            {
+                IsBackground = true,
+                Name = "LogQueueProcessor"
+            }.Start();
         }
 
         /// <summary>
@@ -189,9 +197,9 @@ namespace Utilizr.Logging.Loggers
         }
 
         protected void LogImpl(
-            LoggingLevel level, 
-            string message, 
-            Exception? error, 
+            LoggingLevel level,
+            string message,
+            Exception? error,
             object[]? interestingObjects,
             Dictionary<string, object>? extra,
             params object[] args)
@@ -212,21 +220,32 @@ namespace Utilizr.Logging.Loggers
                 CallHandlers(record);
         }
 
+
         protected void QueueLogRecord(LogRecord record)
         {
-            if (!Disabled && FilterRecord(record))
+            if (!_disposed && !Disabled && FilterRecord(record))
+            {
                 _queuedLogRecords.Enqueue(record);
+                try
+                {
+                    _queueReady.Set();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.ToString());
+                }
+            }
         }
 
         private void ProcessQueue()
         {
-            while (true)
+            while (!_disposed)
             {
                 try
                 {
                     if (!_queuedLogRecords.TryDequeue(out var nextLogRecord))
                     {
-                        Task.Delay(100).Wait();
+                        _queueReady.WaitOne();
                         continue;
                     }
 
@@ -234,7 +253,7 @@ namespace Utilizr.Logging.Loggers
                 }
                 catch (Exception)
                 {
-                    Task.Delay(1000).Wait();
+                    Thread.Sleep(1000);
                 }
             }
         }
@@ -324,10 +343,14 @@ namespace Utilizr.Logging.Loggers
 
         public void Dispose()
         {
+            _disposed = true;
+            _queueReady?.Dispose();
+
             foreach (var handler in Handlers)
             {
                 handler.Dispose();
             }
+
 
             GC.SuppressFinalize(this);
         }
