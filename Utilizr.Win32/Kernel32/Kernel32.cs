@@ -235,6 +235,20 @@ namespace Utilizr.Win32.Kernel32
         public static extern bool GenerateConsoleCtrlEvent(CtrlEvent dwCtrlEvent, uint dwProcessGroup);
 
         [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool AllocConsole();
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern bool FreeConsole(IntPtr hwnd);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
+        public static extern IntPtr GetConsoleWindow();
+
+        public delegate bool HandlerRoutine(uint dwCtrlType);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);
+
+        [DllImport(KERNEL32_DLL, SetLastError = true)]
         public static extern bool CreatePipe(
             out SafeFileHandle hReadPipe,
             out SafeFileHandle hWritePipe,
