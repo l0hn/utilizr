@@ -162,7 +162,7 @@ namespace Utilizr.Info
         }
 
 #if WINDOWS
-        private static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
+        public static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
         {
             if (string.IsNullOrEmpty(AppName))
                 throw new InvalidOperationException($"Unable to get window's directory with null/empty '{nameof(AppName)}' for '{dirName}' with root '{rootDir}'");
