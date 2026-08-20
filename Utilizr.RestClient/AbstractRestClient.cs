@@ -77,7 +77,7 @@ namespace Utilizr.Rest.Client
 
             try
             {
-                LogRequest(apiRequest, headers);
+                LogRequest(apiRequest, headers); // Can overwrite current headers, important they remained added above first!
                 apiRequest.Response = this.Execute<T>(request);
                 LogResponse(apiRequest, apiRequest.Response);
 
@@ -130,7 +130,7 @@ namespace Utilizr.Rest.Client
 
             var debugDict = new Dictionary<string, object>();
             debugDict["Endpoint"] = apiRequest.Endpoint;
-            debugDict["Headers"] = headers;
+            debugDict["Headers"] = MaskClientRequestHeaders(headers);
             debugDict["RequestParams"] = apiRequest.GetObjectForRequestLogging();
             debugDict["FullUrl"] = $"({apiRequest.MethodLogStr}){_serviceUrl}/{apiRequest.Endpoint}";
 
@@ -208,6 +208,14 @@ namespace Utilizr.Rest.Client
             ApplyClientSpecificHeaders(headers, requestObj, postData);
             return headers;
         }
+
+        /// <summary>
+        /// Optional override to modify headers to avoid sensitive data in logs.
+        /// It's assumed headers have already been added to the request at this point to allow modifying the current instance.
+        /// </summary>
+        /// <param name="headers">Current headers for the request</param>
+        /// <returns>The same dictionary instance, which may contain changes if headers have been masked.</returns>
+        protected virtual Dictionary<string, string> MaskClientRequestHeaders(Dictionary<string, string> headers) { return headers; }
 
         /// <summary>
         /// Optional override to add headers for a specific rest client. 
