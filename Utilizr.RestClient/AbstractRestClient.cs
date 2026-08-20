@@ -130,7 +130,7 @@ namespace Utilizr.Rest.Client
 
             var debugDict = new Dictionary<string, object>();
             debugDict["Endpoint"] = apiRequest.Endpoint;
-            debugDict["Headers"] = MaskClientRequestHeaders(headers);
+            debugDict["Headers"] = GetHeadersForRequestLogging(headers);
             debugDict["RequestParams"] = apiRequest.GetObjectForRequestLogging();
             debugDict["FullUrl"] = $"({apiRequest.MethodLogStr}){_serviceUrl}/{apiRequest.Endpoint}";
 
@@ -215,7 +215,7 @@ namespace Utilizr.Rest.Client
         /// </summary>
         /// <param name="headers">Current headers for the request</param>
         /// <returns>The same dictionary instance, which may contain changes if headers have been masked.</returns>
-        protected virtual Dictionary<string, string> MaskClientRequestHeaders(Dictionary<string, string> headers) { return headers; }
+        protected virtual Dictionary<string, string> GetHeadersForRequestLogging(Dictionary<string, string> headers) { return headers; }
 
         /// <summary>
         /// Optional override to add headers for a specific rest client. 
