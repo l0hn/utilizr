@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -89,12 +90,13 @@ namespace Utilizr.Info
             }
         }
 
+        public static string DataDirectoryName { get; } = "data";
         private static string? _dataDirectory;
         public static string DataDirectory
         {
             get
             {
-                CreateAppDirectory(ref _dataDirectory, "data");
+                CreateAppDirectory(ref _dataDirectory, DataDirectoryName);
                 return _dataDirectory!;
             }
         }
@@ -109,12 +111,13 @@ namespace Utilizr.Info
             }
         }
 
+        public static string LogDirectoryName { get; } = "logs";
         private static string? _logDirectory;
         public static string LogDirectory
         {
             get
             {
-                CreateAppDirectory(ref _logDirectory, "logs");
+                CreateAppDirectory(ref _logDirectory, LogDirectoryName);
                 return _logDirectory!;
             }
         }
@@ -159,7 +162,7 @@ namespace Utilizr.Info
         }
 
 #if WINDOWS
-        private static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
+        public static string GetAppDirectory(string dirName, AppInfoRoot rootDir)
         {
             if (string.IsNullOrEmpty(AppName))
                 throw new InvalidOperationException($"Unable to get window's directory with null/empty '{nameof(AppName)}' for '{dirName}' with root '{rootDir}'");
@@ -199,10 +202,31 @@ namespace Utilizr.Info
 
         public static void ZipLogs(string destinationFile)
         {
-            ZipLogs(destinationFile, Array.Empty<ZipLogsAdditionalItem>(), Array.Empty<ZipLogsAdditionalItem>());
+            ZipLogs(
+                destinationFile,
+                Array.Empty<ZipLogsAdditionalItem>(),
+                Array.Empty<ZipLogsAdditionalItem>()
+            );
         }
 
-        public static void ZipLogs(string destinationFile, ZipLogsAdditionalItem[] additionalDirs, ZipLogsAdditionalItem[] additionalFiles) 
+        public static void ZipLogs(
+            string destinationFile,
+            ZipLogsAdditionalItem[] additionalDirs,
+            ZipLogsAdditionalItem[] additionalFiles)
+        {
+            var logDir = new ZipLogsAdditionalItem { Path = LogDirectory, PathInArchive = "logs" };
+            var dataDir = new ZipLogsAdditionalItem { Path = DataDirectory, PathInArchive = "data" };
+
+            ZipLogsAdditionalItem[] allDirs = [logDir, dataDir, ..additionalDirs];
+
+            ZipLogsSelective(destinationFile, allDirs, additionalFiles);
+        }
+
+
+        public static void ZipLogsSelective(
+            string destinationFile,
+            ZipLogsAdditionalItem[] directories,
+            ZipLogsAdditionalItem[] files) 
         {
             if (File.Exists(destinationFile))
             {
@@ -237,45 +261,43 @@ namespace Utilizr.Info
                     }
                 }
 
-                addFolderToZip(new ZipLogsAdditionalItem { Path = LogDirectory, PathInArchive = "logs" });
-                addFolderToZip(new ZipLogsAdditionalItem { Path = DataDirectory, PathInArchive = "data" });
-
-                foreach (var additionalDirectory in additionalDirs)
+                foreach (var directory in directories)
                 {
                     try
                     {
-                        if (!Directory.Exists(additionalDirectory.Path))
+                        if (!Directory.Exists(directory.Path))
                             continue;
 
-                        addFolderToZip(additionalDirectory);
+                        addFolderToZip(directory);
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{additionalDirectory.Path}' to archive: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Error adding additional directory '{directory.Path}' to archive: {ex.Message}");
                     }
                 }
 
-                foreach (var additionalFile in additionalFiles)
+                foreach (var file in files)
                 {
                     try
                     {
-                        if (!File.Exists(additionalFile.Path))
+                        if (!File.Exists(file.Path))
                             continue;
 
-                        zip.CreateEntryFromFile(additionalFile.Path, additionalFile.PathInArchive);
+                        zip.CreateEntryFromFile(file.Path, file.PathInArchive);
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error adding additional file '{additionalFile.Path}' to archive: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Error adding additional file '{file.Path}' to archive: {ex.Message}");
                     }
                 }
             }
         }
     }
 
+    [DebuggerDisplay("PathInArchive={PathInArchive}, Path={Path}")]
     public struct ZipLogsAdditionalItem
     {
-        public string Path;
-        public string PathInArchive;
+        public string Path { get; set; }
+        public string PathInArchive { get; set; }
     }
 }

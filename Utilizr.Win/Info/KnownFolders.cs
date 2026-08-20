@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Utilizr.Info;
 using Utilizr.Win.Util;
+using Utilizr.Win32.Kernel32;
 using Utilizr.Win32.Shell32;
 using Utilizr.Win32.Shell32.Flags;
 
@@ -28,6 +29,7 @@ namespace Utilizr.Win.Info
             "{7D1D3A04-DEBB-4115-95CF-2F29DA2920DA}", // SavedSearches
             "{18989B1D-99B5-455B-841C-AB7C74E4DDFC}", // Videos
             "{82A5EA35-D9CD-47C5-9629-E15D2F714E6E}", // Common startup
+            "{F1B32785-6FBA-4FCF-9D55-7B8E7F157091}", // %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
         };
 
         /// <summary>
@@ -53,26 +55,48 @@ namespace Utilizr.Win.Info
         /// <exception cref="ExternalException">Thrown if the path could not be retrieved.</exception>
         public static string GetPath(KnownFolder knownFolder, bool defaultUser)
         {
-            return GetPath(knownFolder, KnownFolderFlags.DontVerify, defaultUser);
+            return GetPath(knownFolder, KnownFolderFlags.DontVerify, new IntPtr(defaultUser ? -1 : 0));
         }
 
-        private static string GetPath(KnownFolder knownFolder, KnownFolderFlags flags, bool defaultUser)
+        /// <summary>
+        /// Gets the current path to the specified known folder as currently configured.
+        /// This does not require the folder to be existent.
+        /// </summary>
+        /// <param name="knownFolder">The known folder which current path will be returned.</param>
+        /// <param name="defaultUser">The access token for the desired user.</param>
+        /// <returns>The default path of the known folder.</returns>
+        /// <exception cref="ExternalException">Thrown if the path could not be retrieved.</exception>
+        public static string GetPath(KnownFolder knownFolder, IntPtr hToken)
         {
-            int result = Shell32.SHGetKnownFolderPath(
-                new Guid(_knownFolderGuids[(int)knownFolder]),
-                (uint)flags,
-                new IntPtr(defaultUser ? -1 : 0),
-                out IntPtr outPath
-            );
+            return GetPath(knownFolder, KnownFolderFlags.DontUnexpand, hToken);
+        }
 
-            if (result >= 0)
+        private static string GetPath(KnownFolder knownFolder, KnownFolderFlags flags, IntPtr hToken)
+        {
+            IntPtr outPath = IntPtr.Zero;
+            try
             {
-                var path = Marshal.PtrToStringUni(outPath);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
+                int result = Shell32.SHGetKnownFolderPath(
+                    new Guid(_knownFolderGuids[(int)knownFolder]),
+                    (uint)flags,
+                    hToken,
+                    out outPath
+                );
 
-            throw new ExternalException("Unable to retrieve the known folder path. It may not be available on this system.", result);
+                if (result >= 0)
+                {
+                    var path = Marshal.PtrToStringUni(outPath);
+                    if (!string.IsNullOrEmpty(path))
+                        return path;
+                }
+
+                throw new ExternalException("Unable to retrieve the known folder path. It may not be available on this system.", result);
+            }
+            finally
+            {
+                if (outPath != IntPtr.Zero)
+                    Marshal.FreeCoTaskMem(outPath);
+            }
         }
 
         public static string SafeGetDownloadsFolder()
@@ -169,6 +193,7 @@ namespace Utilizr.Win.Info
         SavedGames,
         SavedSearches,
         Videos,
-        CommonStartup
+        CommonStartup,
+        LocalAppData
     }
 }

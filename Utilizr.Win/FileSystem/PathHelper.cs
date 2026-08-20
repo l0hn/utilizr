@@ -149,7 +149,7 @@ namespace Utilizr.Win.FileSystem
         /// <returns></returns>
         public static string AbsolutePathToSubdirectory(string subPathRoot, string absolutePath)
         {
-            var root = GetPathRoot(absolutePath);
+            var root = GetPathRoot(absolutePath) ?? throw new ArgumentException($"Unable to get root volume from {nameof(absolutePath)}: {absolutePath}");
             var rootAsFolder = root.TrimEnd(new char[] { Path.VolumeSeparatorChar, Path.DirectorySeparatorChar });
 
             var combined = Path.Combine(subPathRoot, rootAsFolder);
