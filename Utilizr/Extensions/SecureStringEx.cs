@@ -36,5 +36,14 @@ namespace Utilizr.Extensions
             secString.MakeReadOnly();
             return secString;
         }
+
+        /// <summary>
+        /// Quick and dirty helper method to work with Utilizr validation without significant changes.
+        /// E.g. validation that we only want to see a password has been entered, minimum lengths checks.
+        /// </summary>
+        public static string GenerateEquivalentLength(this SecureString? secureString)
+        {
+            return new string('*', secureString?.Length ?? 0);
+        }
     }
 }
