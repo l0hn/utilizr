@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
@@ -136,7 +135,7 @@ namespace Utilizr.Crypto
 
 
         /// <summary>
-        /// Decrypt a string with a passphrase using TDES
+        /// Decrypt a string with a passphrase using TDES.
         /// </summary>
         /// <param name="encryptedMessage"></param>
         /// <param name="passphrase"></param>
@@ -155,7 +154,12 @@ namespace Utilizr.Crypto
 
 
 
-
+        /// <summary>
+        /// Encrypt a SecureString with AEC-GCM with modern .NET APIs that are not depreciated.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="passphrase"></param>
+        /// <returns>Encrypted message as string</returns>
         public static string EncryptString(SecureString? message, SecureString passphrase, Action<string>? msgBoxCallback = null)
         {
             if (message == null || message.Length < 1)
@@ -176,6 +180,12 @@ namespace Utilizr.Crypto
             return Convert.ToBase64String(EncryptAesGcm(messageBytes, phraseBytes));
         }
 
+        /// <summary>
+        /// Decrypt a string with passphrase using AES-GCM.
+        /// </summary>
+        /// <param name="cipherText"></param>
+        /// <param name="passphrase"></param>
+        /// <returns>Decrypted SecureString</returns>
         public static SecureString? DecryptString(string cipherText, SecureString passphrase)
         {
             var cipherBytes = Convert.FromBase64String(cipherText);
@@ -191,6 +201,12 @@ namespace Utilizr.Crypto
             return DecryptAesGcm(cipherSpanBytes, phraseBytes);
         }
 
+        /// <summary>
+        /// Encrypt a byte span with AES-GCM with modern .NET APIs that are not depreciated.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="passphrase"></param>
+        /// <returns>Encrypted message as byte array.</returns>
         public static byte[] EncryptAesGcm(ReadOnlySpan<byte> message, ReadOnlySpan<byte> passphrase)
         {
             var result = new byte[_aesGcmNonceSize + message.Length + _aeaGcmTagSize];
@@ -209,6 +225,13 @@ namespace Utilizr.Crypto
             return result;
         }
 
+        /// <summary>
+        /// Decrypt a byte span with passphrase using AES-GCM.
+        /// </summary>
+        /// <param name="encrypted"></param>
+        /// <param name="passphrase"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public static SecureString DecryptAesGcm(ReadOnlySpan<byte> encrypted, ReadOnlySpan<byte> passphrase)
         {
             var key = SHA256.HashData(passphrase);
