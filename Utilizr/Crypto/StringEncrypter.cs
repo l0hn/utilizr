@@ -160,7 +160,7 @@ namespace Utilizr.Crypto
         /// <param name="message"></param>
         /// <param name="passphrase"></param>
         /// <returns>Encrypted message as string</returns>
-        public static string EncryptString(SecureString? message, SecureString passphrase, Action<string>? msgBoxCallback = null)
+        public static string EncryptString(SecureString? message, SecureString passphrase)
         {
             if (message == null || message.Length < 1)
                 return string.Empty;
@@ -174,8 +174,6 @@ namespace Utilizr.Crypto
             var phraseBytes = pinnedPhrase.ReadBytes();
             if (phraseBytes.Length < 1)
                 return string.Empty;
-
-            msgBoxCallback?.Invoke("message + passphrase in memory (x2)");
 
             return Convert.ToBase64String(EncryptAesGcm(messageBytes, phraseBytes));
         }
