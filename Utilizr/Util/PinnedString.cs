@@ -16,9 +16,8 @@ namespace Utilizr.Util
 
         public PinnedString(SecureString? secureString)
         {
-            SecureString = secureString;
-            
             _bstr = IntPtr.Zero;
+            SecureString = secureString;
 
             if (secureString != null)
                 _bstr = Marshal.SecureStringToBSTR(secureString);
