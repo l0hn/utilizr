@@ -151,9 +151,6 @@ namespace Utilizr.Crypto
 
 
 
-
-
-
         /// <summary>
         /// Encrypt a SecureString with AEC-GCM with modern .NET APIs that are not depreciated.
         /// </summary>
