@@ -107,8 +107,8 @@ namespace Utilizr.WPF.Shapes
                 PinnedString? pinned = null;
                 if (Text != null && Text.Length > 0)
                 {
-                    pinned = new PinnedString(Text, (ex) => Log.Exception(nameof(PinnedString), ex));
-                    var formattedText = GenerateFormattedText(pinned.String);
+                    pinned = new PinnedString(Text);
+                    var formattedText = GenerateFormattedText(pinned);
                     height = formattedText.Height;
                     width = formattedText.Width;
                 }
@@ -138,11 +138,11 @@ namespace Utilizr.WPF.Shapes
             if (Text == null || Text.Length < 1 || !IsVisible)
                 return;
 
-            PinnedString? pinnedText = null;
+            PinnedString? pinned = null;
             try
             {
-                pinnedText = new PinnedString(Text, (ex) => Log.Exception(nameof(PinnedString), ex));
-                var formattedText = GenerateFormattedText(pinnedText.String);
+                pinned = new PinnedString(Text);
+                var formattedText = GenerateFormattedText(pinned);
 
                 var textLocation = _zeroPoint;
                 if (TextAlignment == TextAlignment.Center)
@@ -160,7 +160,7 @@ namespace Utilizr.WPF.Shapes
             {
                 try
                 {
-                    pinnedText?.Dispose();
+                    pinned?.Dispose();
                 }
                 catch (Exception innerEx)
                 {
@@ -169,10 +169,17 @@ namespace Utilizr.WPF.Shapes
             }
         }
 
-        FormattedText GenerateFormattedText(string? text)
+        /// <summary>
+        /// It's expected the caller will dispose of the PinnedString parameter.
+        /// This will cause a managed C# string to be creased as there is no way around it
+        /// when creating a FormattedText instance. But this will help reduce instances.
+        /// </summary>
+        /// <param name="pinnedString"></param>
+        /// <returns></returns>
+        FormattedText GenerateFormattedText(PinnedString pinnedString)
         {
             var ftText = new FormattedText(
-                text ?? string.Empty,
+                new string(pinnedString.ReadChars()) ?? string.Empty,
                 System.Globalization.CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 Typeface,
