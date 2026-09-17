@@ -1,12 +1,12 @@
 ﻿using NUnit.Framework;
 using Utilizr.Crypto;
+using Utilizr.Extensions;
 
 namespace Utilizr.Tests.Crypto
 {
     [TestFixture]
     public class StringEncrypterTests
     {
-        [Test]
         [TestCase("The cat sat in the hat then did a shat")]
         [TestCase("坐在猫的帽子，然后做了一个歇脚")]
         [TestCase("די קאַץ Sat אין די הוט דעמאָלט האט אַ שאַט")]
@@ -17,12 +17,44 @@ namespace Utilizr.Tests.Crypto
         [TestCase("Con mèo ngồi trong chiếc mũ sau đó đã làm một shat")]
         [TestCase("बिल्ली एक शाट था तब टोपी में बैठे")]
         [TestCase("cat ໄດ້ນັ່ງໃນຫລີກໄດ້ຫຼັງຈາກນັ້ນໄດ້ sh+at ເປັນ")]
-        public void StringEncyptionTest(string message)
+        [TestCase("🔐")]
+        [TestCase("😀")]
+        [TestCase("🚀")]
+        [TestCase("𐐷")]
+        [TestCase("Hello 🔐 日本語 😀")]
+        public void StringEncyptionTDES(string message)
         {
             string passphrase = "איר שמעקן ווי אַ מאַלפּע 'ס טאָכעס| 你闻起来像一只猴子的屁股";
             string encrypted = StringEncrypter.EncryptString(message, passphrase);
             string original = StringEncrypter.DecryptString(encrypted, passphrase);
             Assert.That(message, Is.EqualTo(original));
+        }
+
+
+        [TestCase("The cat sat in the hat then did a shat")]
+        [TestCase("坐在猫的帽子，然后做了一个歇脚")]
+        [TestCase("די קאַץ Sat אין די הוט דעמאָלט האט אַ שאַט")]
+        [TestCase("猫はSHATをした後、帽子に座っ")]
+        [TestCase("Mačka sjedila u šeširu zatim učinio Shat")]
+        [TestCase("Кошка сидела в шляпе тогда сделали Шат")]
+        [TestCase("القط جلس في قبعة ثم قام شط")]
+        [TestCase("Con mèo ngồi trong chiếc mũ sau đó đã làm một shat")]
+        [TestCase("बिल्ली एक शाट था तब टोपी में बैठे")]
+        [TestCase("cat ໄດ້ນັ່ງໃນຫລີກໄດ້ຫຼັງຈາກນັ້ນໄດ້ sh+at ເປັນ")]
+        [TestCase("🔐")]
+        [TestCase("😀")]
+        [TestCase("🚀")]
+        [TestCase("𐐷")]
+        [TestCase("Hello 🔐 日本語 😀")]
+        public void StringEncryptionAesGcm(string message)
+        {
+            var secret = message.ToSecureString();
+            var key = "איר שמעקן ווי אַ מאַלפּע 'ס טאָכעס| 你闻起来像一只猴子的屁股".ToSecureString()!;
+
+            var cipherText = StringEncrypter.EncryptString(secret, key);
+            var decrypted = StringEncrypter.DecryptString(cipherText, key);
+
+            Assert.That(message, Is.EqualTo(decrypted!.ToUnsecureString()));
         }
     }
 }
