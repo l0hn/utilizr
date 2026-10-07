@@ -57,7 +57,7 @@ namespace Utilizr.WPF.Util
             }
             else
             {
-                var hwndSource = PresentationSource.FromVisual(window) as HwndSource;
+                var hwndSource = PresentationSource.FromVisual(win) as HwndSource;
                 var hwndTarget = hwndSource?.CompositionTarget;
                 if (hwndTarget?.RenderMode == RenderMode.SoftwareOnly)
                     return false;
@@ -67,7 +67,7 @@ namespace Utilizr.WPF.Util
             if (RenderOptions.ProcessRenderMode == RenderMode.SoftwareOnly)
                 return false;
 
-            // machine wide level
+            // user wide level
             try
             {
                 var regKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Avalon.Graphics");
