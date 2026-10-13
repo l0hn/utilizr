@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Text.Json;
 using System.IO;
 using System.Threading.Tasks;
 using Utilizr.Async;
 using Utilizr.Logging;
+using System.Text.Json.Serialization;
 
 namespace Utilizr.Util
 {
@@ -136,7 +137,7 @@ namespace Utilizr.Util
 
                         lock (this)
                         {
-                            var json = JsonConvert.SerializeObject(currentT);
+                            var json = JsonSerializer.Serialize(currentT);
                             json = CustomSerializeStep(json);
                             File.WriteAllText(path, json);
                         }
@@ -257,7 +258,7 @@ namespace Utilizr.Util
                 if (string.IsNullOrEmpty(json))
                     return t;
                 
-                var loadedObj = JsonConvert.DeserializeObject<T>(json);
+                var loadedObj = JsonSerializer.Deserialize<T>(json);
                 if (loadedObj != null)
                 {
                     loadFailed = false;
