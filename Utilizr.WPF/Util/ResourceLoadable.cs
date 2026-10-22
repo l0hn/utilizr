@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using Utilizr.Info;
 using Utilizr.Win.Util;
 
@@ -8,7 +8,7 @@ namespace Utilizr.WPF.Util
 {
     public class ResourceLoadable : LoadableEmbedded<ResourceLoadable>
     {
-        [JsonProperty("_resources")]
+        [JsonPropertyName("_resources")]
         private readonly Dictionary<string, byte[]> _resources;
 
         public override string EmbeddedResourceName => "RESOURCES_URES";
