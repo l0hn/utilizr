@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using Utilizr.Info;
 using Utilizr.Win.Util;
 
@@ -9,6 +10,7 @@ namespace Utilizr.WPF.Util
     {
         public override string EmbeddedResourceName => "RESOURCES_URES";
 
+        [JsonInclude]
         private Dictionary<string, byte[]> Resources { get; set; } = new();
 
         public override bool ReadOnly => true;
