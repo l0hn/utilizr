@@ -187,5 +187,51 @@ namespace Utilizr.WPF.Attached
             listBox.ScrollIntoView(newUiModel);
         }
         #endregion
+
+
+
+        #region PassMouseWheelToParent
+        public static readonly DependencyProperty PassMouseWheelToParentProperty =
+            DependencyProperty.RegisterAttached(
+                "PassMouseWheelToParent",
+                typeof(bool),
+                typeof(ListBoxBehaviour),
+                new PropertyMetadata(false, OnChanged)
+            );
+
+        public static bool GetPassMouseWheelToParent(DependencyObject element)
+        {
+            return (bool)element.GetValue(PassMouseWheelToParentProperty);
+        }
+
+        public static void SetPassMouseWheelToParent(DependencyObject element, bool value)
+        {
+            element.SetValue(PassMouseWheelToParentProperty, value);
+        }
+
+        private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not UIElement element)
+                return;
+
+            if ((bool)e.NewValue)
+                element.PreviewMouseWheel += OnPreviewMouseWheel;
+            else
+                element.PreviewMouseWheel -= OnPreviewMouseWheel;
+        }
+
+        private static void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            e.Handled = true;
+
+            var forwarded = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = sender
+            };
+
+            (sender as UIElement)?.RaiseEvent(forwarded);
+        }
+        #endregion
     }
 }
