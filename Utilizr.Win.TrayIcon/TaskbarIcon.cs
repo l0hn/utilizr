@@ -21,6 +21,7 @@
 //
 // THIS COPYRIGHT NOTICE MAY NOT BE REMOVED FROM THIS FILE
 
+using Microsoft.Win32;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -217,9 +218,26 @@ namespace Utilizr.Win.TrayIcon
                 popup.Placement = PlacementMode.AbsolutePoint;
                 popup.StaysOpen = true;
 
-                Point position = TrayInfo.GetTrayLocation(visual);
-                popup.HorizontalOffset = position.X - 1;
-                popup.VerticalOffset = position.Y - 1;
+                void actionDisplayChange(bool invalidate = false)
+                {
+                    Point position = TrayInfo.GetTrayLocation(visual);
+                    popup.HorizontalOffset = position.X - 1;
+                    popup.VerticalOffset = position.Y - 1;
+
+                    if(invalidate)
+                        popup.InvalidateVisual();
+                }
+
+                void onDisplaySettingsChanged(object? sender, EventArgs e)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        actionDisplayChange(true);
+                    });
+                }
+
+                SystemEvents.DisplaySettingsChanged += onDisplaySettingsChanged;
+                actionDisplayChange();
 
                 //store reference
                 lock (this)
