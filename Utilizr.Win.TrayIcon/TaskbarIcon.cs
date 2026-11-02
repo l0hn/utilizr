@@ -160,6 +160,36 @@ namespace Utilizr.Win.TrayIcon
 
         #region Custom Balloons
 
+
+        Visual _visual;
+        async Task ActionDisplayChange(Popup? newPopup = null)
+        {
+            var displayChanged = newPopup == null;
+
+            if (displayChanged) // Settle time
+                await Task.Delay(2000);
+
+            var popup = CustomBalloon ?? newPopup;
+
+            if (popup != null)
+            {
+                Point position = TrayInfo.GetTrayLocation(_visual);
+                popup.HorizontalOffset = position.X - 1;
+                popup.VerticalOffset = position.Y - 1;
+
+                if (displayChanged)
+                    popup.InvalidateVisual();
+            }
+        }
+
+        void OnDisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.InvokeAsync(async () =>
+            {
+                await ActionDisplayChange();
+            });
+        }
+
         /// <summary>
         /// Shows a custom control as a tooltip in the tray location.
         /// </summary>
@@ -174,6 +204,8 @@ namespace Utilizr.Win.TrayIcon
         {
             try
             {
+                _visual = visual;
+
                 Dispatcher dispatcher = this.GetDispatcher();
                 if (!dispatcher.CheckAccess())
                 {
@@ -208,7 +240,6 @@ namespace Utilizr.Win.TrayIcon
                 //don't animate by default - devs can use attached
                 //events or override
                 popup.PopupAnimation = animation;
-
                 popup.Child = balloon;
 
                 //don't set the PlacementTarget as it causes the popup to become hidden if the
@@ -218,26 +249,8 @@ namespace Utilizr.Win.TrayIcon
                 popup.Placement = PlacementMode.AbsolutePoint;
                 popup.StaysOpen = true;
 
-                void actionDisplayChange(bool invalidate = false)
-                {
-                    Point position = TrayInfo.GetTrayLocation(visual);
-                    popup.HorizontalOffset = position.X - 1;
-                    popup.VerticalOffset = position.Y - 1;
-
-                    if(invalidate)
-                        popup.InvalidateVisual();
-                }
-
-                void onDisplaySettingsChanged(object? sender, EventArgs e)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        actionDisplayChange(true);
-                    });
-                }
-
-                SystemEvents.DisplaySettingsChanged += onDisplaySettingsChanged;
-                actionDisplayChange();
+                SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+                ActionDisplayChange(popup).Wait();
 
                 //store reference
                 lock (this)
@@ -330,12 +343,13 @@ namespace Utilizr.Win.TrayIcon
                         if (element != null) SetParentTaskbarIcon(element, null);
                     }
 
+                    SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+
                     //remove custom balloon anyway
                     SetCustomBalloon(null);
                 }
             }
         }
-
 
         /// <summary>
         /// Timer-invoke event which closes the currently open balloon and
