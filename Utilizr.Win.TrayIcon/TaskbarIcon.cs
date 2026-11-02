@@ -85,6 +85,11 @@ namespace Utilizr.Win.TrayIcon
         private readonly Timer balloonCloseTimer;
 
         /// <summary>
+        /// Retained for display changes
+        /// </summary>
+        private Visual visual;
+
+        /// <summary>
         /// Indicates whether the taskbar icon has been created or not.
         /// </summary>
         public bool IsTaskbarIconCreated { get; private set; }
@@ -98,8 +103,6 @@ namespace Utilizr.Win.TrayIcon
         {
             get { return messageSink.Version == NotifyIconVersion.Vista; }
         }
-
-
 
         /// <summary>
         /// Checks whether a non-tooltip popup is currently opened.
@@ -160,8 +163,11 @@ namespace Utilizr.Win.TrayIcon
 
         #region Custom Balloons
 
-
-        Visual _visual;
+        /// <summary>
+        /// Updates the popup position after display change or creation
+        /// </summary>
+        /// <param name="newPopup">Suppied when the popup has just been created and needs position setting</param>
+        /// <returns></returns>
         async Task ActionDisplayChange(Popup? newPopup = null)
         {
             var displayChanged = newPopup == null;
@@ -173,7 +179,7 @@ namespace Utilizr.Win.TrayIcon
 
             if (popup != null)
             {
-                Point position = TrayInfo.GetTrayLocation(_visual);
+                Point position = TrayInfo.GetTrayLocation(visual);
                 popup.HorizontalOffset = position.X - 1;
                 popup.VerticalOffset = position.Y - 1;
 
@@ -182,6 +188,11 @@ namespace Utilizr.Win.TrayIcon
             }
         }
 
+        /// <summary>
+        /// Callback that invokes repositioning logic
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void OnDisplaySettingsChanged(object? sender, EventArgs e)
         {
             Dispatcher.InvokeAsync(async () =>
@@ -204,7 +215,7 @@ namespace Utilizr.Win.TrayIcon
         {
             try
             {
-                _visual = visual;
+                this.visual = visual;
 
                 Dispatcher dispatcher = this.GetDispatcher();
                 if (!dispatcher.CheckAccess())
