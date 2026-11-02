@@ -21,6 +21,7 @@
 //
 // THIS COPYRIGHT NOTICE MAY NOT BE REMOVED FROM THIS FILE
 
+using Microsoft.Win32;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -84,6 +85,11 @@ namespace Utilizr.Win.TrayIcon
         private readonly Timer balloonCloseTimer;
 
         /// <summary>
+        /// Retained for display changes
+        /// </summary>
+        private Visual visual;
+
+        /// <summary>
         /// Indicates whether the taskbar icon has been created or not.
         /// </summary>
         public bool IsTaskbarIconCreated { get; private set; }
@@ -97,8 +103,6 @@ namespace Utilizr.Win.TrayIcon
         {
             get { return messageSink.Version == NotifyIconVersion.Vista; }
         }
-
-
 
         /// <summary>
         /// Checks whether a non-tooltip popup is currently opened.
@@ -160,6 +164,44 @@ namespace Utilizr.Win.TrayIcon
         #region Custom Balloons
 
         /// <summary>
+        /// Updates the popup position after display change or creation
+        /// </summary>
+        /// <param name="newPopup">Suppied when the popup has just been created and needs position setting</param>
+        /// <returns></returns>
+        async Task ActionDisplayChange(Popup? newPopup = null)
+        {
+            var displayChanged = newPopup == null;
+
+            if (displayChanged) // Settle time
+                await Task.Delay(2000);
+
+            var popup = CustomBalloon ?? newPopup;
+
+            if (popup != null)
+            {
+                Point position = TrayInfo.GetTrayLocation(visual);
+                popup.HorizontalOffset = position.X - 1;
+                popup.VerticalOffset = position.Y - 1;
+
+                if (displayChanged)
+                    popup.InvalidateVisual();
+            }
+        }
+
+        /// <summary>
+        /// Callback that invokes repositioning logic
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void OnDisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.InvokeAsync(async () =>
+            {
+                await ActionDisplayChange();
+            });
+        }
+
+        /// <summary>
         /// Shows a custom control as a tooltip in the tray location.
         /// </summary>
         /// <param name="balloon"></param>
@@ -173,6 +215,8 @@ namespace Utilizr.Win.TrayIcon
         {
             try
             {
+                this.visual = visual;
+
                 Dispatcher dispatcher = this.GetDispatcher();
                 if (!dispatcher.CheckAccess())
                 {
@@ -207,7 +251,6 @@ namespace Utilizr.Win.TrayIcon
                 //don't animate by default - devs can use attached
                 //events or override
                 popup.PopupAnimation = animation;
-
                 popup.Child = balloon;
 
                 //don't set the PlacementTarget as it causes the popup to become hidden if the
@@ -217,9 +260,8 @@ namespace Utilizr.Win.TrayIcon
                 popup.Placement = PlacementMode.AbsolutePoint;
                 popup.StaysOpen = true;
 
-                Point position = TrayInfo.GetTrayLocation(visual);
-                popup.HorizontalOffset = position.X - 1;
-                popup.VerticalOffset = position.Y - 1;
+                SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+                ActionDisplayChange(popup).Wait();
 
                 //store reference
                 lock (this)
@@ -312,12 +354,13 @@ namespace Utilizr.Win.TrayIcon
                         if (element != null) SetParentTaskbarIcon(element, null);
                     }
 
+                    SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+
                     //remove custom balloon anyway
                     SetCustomBalloon(null);
                 }
             }
         }
-
 
         /// <summary>
         /// Timer-invoke event which closes the currently open balloon and
