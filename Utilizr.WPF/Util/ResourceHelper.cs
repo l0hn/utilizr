@@ -72,10 +72,13 @@ namespace Utilizr.WPF.Util
             }
             catch (Exception ex)
             {
+                // Moved this logging to here as I think the initial exception is getting swallowed
+                Log.Exception(ex, $"Failed to load resource for key {resourceKey}, theme={theme ?? "none"}");
+
                 if (!string.IsNullOrEmpty(theme) && fallbackToUnthemed)
                     return GetImageSource(resourceKey);
 
-                Log.Exception(ex, $"Failed to load resource for key {resourceKey}, theme={theme ?? "none"}");
+                //Log.Exception(ex, $"Failed to load resource for key {resourceKey}, theme={theme ?? "none"}");
 #if DEBUG
                 if (_inDesignMode != true)
                     throw;
