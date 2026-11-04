@@ -58,23 +58,31 @@ namespace Utilizr.WPF.Util
         {
             try
             {
-                CheckDesignMode();
+                Log.Info($"IDBLOG resourceKey {resourceKey} theme {theme} fallbackToUnthemed {fallbackToUnthemed}");
 
+#if DEBUG
+                CheckDesignMode();
+#endif
+
+                Log.Info("IDBLOG*1");
                 var bitmapFrame = ImageCache.Get(resourceKey, theme);
                 if (bitmapFrame != null)
                     return bitmapFrame;
 
                 var uri = GetImageUri(resourceKey, theme);
+                Log.Info("IDBLOG*2");
 
                 //IMPORTANT!!! never return a BitmapImage.. doing so will lock image files and prevent application auto updates from working.
                 return BitmapFrame.Create(uri, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
                 //IMPORTANT!!!
+                Log.Info("IDBLOG*3");
             }
             catch (Exception ex)
             {
                 // Moved this logging to here as I think the initial exception is getting swallowed
                 Log.Exception(ex, $"Failed to load resource for key {resourceKey}, theme={theme ?? "none"}");
 
+                Log.Info("IDBLOG*4");
                 if (!string.IsNullOrEmpty(theme) && fallbackToUnthemed)
                     return GetImageSource(resourceKey);
 
@@ -83,6 +91,7 @@ namespace Utilizr.WPF.Util
                 if (_inDesignMode != true)
                     throw;
 #endif
+                Log.Info("IDBLOG*5");
                 return GetDefaultImagePlaceholder();
             }
         }
