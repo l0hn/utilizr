@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Text.Json;
 using System.IO;
 using System.Threading.Tasks;
 using Utilizr.Async;
 using Utilizr.Logging;
+using System.Text.Json.Serialization;
 
 namespace Utilizr.Util
 {
@@ -74,7 +75,7 @@ namespace Utilizr.Util
         /// deleted since it was originally loaded.
         /// </summary>
         [JsonIgnore]
-        public virtual bool SaveOnLoadFaliure { get; set; } = false;
+        public virtual bool SaveOnLoadFailure { get; set; } = false;
         
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace Utilizr.Util
 
                         lock (this)
                         {
-                            var json = JsonConvert.SerializeObject(currentT);
+                            var json = JsonSerializer.Serialize(currentT);
                             json = CustomSerializeStep(json);
                             File.WriteAllText(path, json);
                         }
@@ -164,8 +165,8 @@ namespace Utilizr.Util
 
         /// <summary>
         /// Locks this instance for the duration of updateAction and saves back to disk when complete
-        /// NOTE: this is only atomic with other calls to AtomicUpdate or AtomicRead. if you directly access Instance or manually call SaveInstance you're on your own.
-        /// IMPORTANT! Do NOT call saveinstance or load instance inside your updateAction.
+        /// NOTE: this is only atomic with other calls to AtomicUpdate or AtomicRead. if you directly access Instance or manually call <see cref="SaveInstance"/> you're on your own.
+        /// IMPORTANT! Do NOT call <see cref="SaveInstance"/> or load instance inside your updateAction.
         /// </summary>
         /// <param name="updateAction"></param>
         public static void AtomicUpdate(Action<T> updateAction)
@@ -184,13 +185,13 @@ namespace Utilizr.Util
                    updateAction(Instance); 
                 }
                 await SaveInstanceAsync();
-            });            
+            });
         }
 
         /// <summary>
         /// Locks this instance for the duration of readAction
-        /// NOTE: this is only atomic with other calls to AtomicUpdate or AtomicRead. if you directly access Instance or manually call SaveInstance you're on your own.
-        /// IMPORTANT! Do NOT call saveinstance or load instance inside your readAction.
+        /// NOTE: this is only atomic with other calls to AtomicUpdate or AtomicRead. if you directly access Instance or manually call <see cref="SaveInstance"/> you're on your own.
+        /// IMPORTANT! Do NOT call <see cref="SaveInstance"/> or load instance inside your readAction.
         /// </summary>
         /// <param name="readAction"></param>
         public static void AtomicRead(Action<T> readAction)
@@ -213,7 +214,7 @@ namespace Utilizr.Util
         {
             var newT = Load(t, out bool failed, customLoadPath);
 
-            if (failed && newT.SaveOnLoadFaliure && !newT.ReadOnly)
+            if (failed && newT.SaveOnLoadFailure && !newT.ReadOnly)
                 newT.Save(newT, customLoadPath);
 
             return newT;
@@ -257,7 +258,7 @@ namespace Utilizr.Util
                 if (string.IsNullOrEmpty(json))
                     return t;
                 
-                var loadedObj = JsonConvert.DeserializeObject<T>(json);
+                var loadedObj = JsonSerializer.Deserialize<T>(json);
                 if (loadedObj != null)
                 {
                     loadFailed = false;

@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using Utilizr.Info;
 using Utilizr.Win.Util;
 
@@ -8,21 +8,16 @@ namespace Utilizr.WPF.Util
 {
     public class ResourceLoadable : LoadableEmbedded<ResourceLoadable>
     {
-        [JsonProperty("_resources")]
-        private readonly Dictionary<string, byte[]> _resources;
-
         public override string EmbeddedResourceName => "RESOURCES_URES";
+
+        [JsonInclude]
+        private Dictionary<string, byte[]> Resources { get; set; } = new();
 
         public override bool ReadOnly => true;
 
-        public ResourceLoadable()
-        {
-            _resources = new Dictionary<string, byte[]>();
-        }
-
         public void Add(string resourceKey, byte[] resourceData)
         {
-            _resources[resourceKey.Replace("\\", "/").ToLowerInvariant()] = resourceData;
+            Resources[resourceKey.Replace("\\", "/").ToLowerInvariant()] = resourceData;
         }
 
         public byte[]? Get(string resourceKey)
@@ -30,7 +25,7 @@ namespace Utilizr.WPF.Util
             //resourceKey = $"{ResourceHelper.ResourceDir}/{resourceKey}".Trim('/');
             resourceKey = resourceKey.Replace("\\", "/").ToLowerInvariant();
             byte[]? dat = null;
-            _resources?.TryGetValue(resourceKey, out dat);
+            Resources?.TryGetValue(resourceKey, out dat);
             return dat;
         }
 
