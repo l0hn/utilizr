@@ -8,13 +8,13 @@ namespace Utilizr.Logging.Handlers
     {
         protected int _backupCount;
 
-        public BaseRotatingHandler(string filePath, bool append = true, bool delay = false)
-            : base(filePath, append, delay)
+        public BaseRotatingHandler(string filePath, bool append = true, bool delay = false, bool async = false)
+            : base(filePath, append, delay, async)
         {
         }
 
-        public BaseRotatingHandler(string filePath, Encoding? encoding, bool append = true, bool delay = false)
-            : base(filePath, encoding, append, delay)
+        public BaseRotatingHandler(string filePath, Encoding? encoding, bool append = true, bool delay = false, bool async = false)
+            : base(filePath, encoding, append, delay, async)
         {
         }
 

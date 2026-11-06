@@ -29,15 +29,15 @@ namespace Utilizr.Logging.Handlers
         /// then the oldest is deleted.</param>
         /// <param name="append"></param>
         /// <param name="delay"></param>
-        public RotatingFileHandler(string filePath, Encoding? encoding, long maxBytes = 0, int backupCount = 0, bool append = true, bool delay = false)
-            : base(filePath, encoding, AdjustAppendParam(maxBytes, append), delay)
+        public RotatingFileHandler(string filePath, Encoding? encoding, long maxBytes = 0, int backupCount = 0, bool append = true, bool delay = false, bool async = false)
+            : base(filePath, encoding, AdjustAppendParam(maxBytes, append), delay, async)
         {
             _maxBytes = maxBytes;
             _backupCount = backupCount;
         }
 
-        public RotatingFileHandler(string filePath, long maxBytes = 0, int backupCount = 0, bool append = true, bool delay = false)
-            : this(filePath, null, maxBytes, backupCount, append, delay)
+        public RotatingFileHandler(string filePath, long maxBytes = 0, int backupCount = 0, bool append = true, bool delay = false, bool async = false)
+            : this(filePath, null, maxBytes, backupCount, append, delay, async)
         {
         }
 

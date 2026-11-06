@@ -16,7 +16,7 @@ namespace Utilizr.Logging.Handlers
         /// <summary>
         /// </summary>
         /// <param name="stream">If stream is not specified, StandardError is used.</param>
-        public StreamHandler(Stream? stream = null)
+        public StreamHandler(Stream? stream = null, bool async = false): base(async)
         {
             stream ??= Console.OpenStandardError();
             _writer = new StreamWriter(stream);
@@ -25,7 +25,7 @@ namespace Utilizr.Logging.Handlers
         /// <summary>
         /// </summary>
         /// <param name="writer">writer to write the formatted log record events to</param>
-        public StreamHandler(StreamWriter writer)
+        public StreamHandler(StreamWriter writer, bool async = false): base(async)
         {
             _writer = writer;
         }

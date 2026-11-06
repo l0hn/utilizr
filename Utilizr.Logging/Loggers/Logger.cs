@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Utilizr.Logging.Filters;
@@ -16,12 +15,10 @@ namespace Utilizr.Logging.Loggers
     {
         internal RootLogger? Root { get; set; }
         internal Logger? Parent { get; set; }
-        private AutoResetEvent _queueReady;
 
         public string Category { get; set; }
         public bool Propagate { get; set; }
         public bool Disabled { get; set; }
-        public bool Async { get; set; }
 
         private bool _disposed;
 
@@ -35,23 +32,12 @@ namespace Utilizr.Logging.Loggers
         /// </summary>
         public int HandlerCount => Handlers.Count;
 
-
-        private readonly ConcurrentQueue<LogRecord> _queuedLogRecords;
-
         public Logger(string category, LoggingLevel level = LoggingLevel.NOTSET, bool async = false) : base()
         {
             Category = category;
             Level = level;
             Propagate = true;
-            Async = async;
-            _queuedLogRecords = new ConcurrentQueue<LogRecord>();
-            _queueReady = new AutoResetEvent(false);
             Handlers = new List<IHandler>();
-            new Thread(ProcessQueue)
-            {
-                IsBackground = true,
-                Name = "LogQueueProcessor"
-            }.Start();
         }
 
         /// <summary>
@@ -205,12 +191,6 @@ namespace Utilizr.Logging.Loggers
             params object[] args)
         {
             var record = new LogRecord(Category, level, message, error, interestingObjects, extra, args);
-            if (Async)
-            {
-                QueueLogRecord(record);
-                return;
-            }
-
             Handle(record);
         }
 
@@ -220,43 +200,6 @@ namespace Utilizr.Logging.Loggers
                 CallHandlers(record);
         }
 
-
-        protected void QueueLogRecord(LogRecord record)
-        {
-            if (!_disposed && !Disabled && FilterRecord(record))
-            {
-                _queuedLogRecords.Enqueue(record);
-                try
-                {
-                    _queueReady.Set();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.ToString());
-                }
-            }
-        }
-
-        private void ProcessQueue()
-        {
-            while (!_disposed)
-            {
-                try
-                {
-                    if (!_queuedLogRecords.TryDequeue(out var nextLogRecord))
-                    {
-                        _queueReady.WaitOne();
-                        continue;
-                    }
-
-                    Handle(nextLogRecord);
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(1000);
-                }
-            }
-        }
 
         /// <summary>
         /// Add the specified handler to this logger.
@@ -344,7 +287,6 @@ namespace Utilizr.Logging.Loggers
         public void Dispose()
         {
             _disposed = true;
-            _queueReady?.Dispose();
 
             foreach (var handler in Handlers)
             {

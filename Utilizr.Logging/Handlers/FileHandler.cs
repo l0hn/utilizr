@@ -15,13 +15,22 @@ namespace Utilizr.Logging.Handlers
         private readonly bool _append;
         protected Encoding? _encoding;
 
-        public FileHandler(string filePath, bool append = true, bool delay = false)
-            : this (filePath, null, append, delay)
-        {
+        public FileHandler(
+            string filePath,
+            bool append = true,
+            bool delay = false,
+            bool async = false
+        )
+            : this(filePath, null, append, delay, async) { }
 
-        }
-
-        public FileHandler(string filePath, Encoding? encoding, bool append = true, bool delay = false)
+        public FileHandler(
+            string filePath,
+            Encoding? encoding,
+            bool append = true,
+            bool delay = false,
+            bool async = false
+        )
+            : base(async: async)
         {
             FilePath = filePath;
             _encoding = encoding;
@@ -53,9 +62,14 @@ namespace Utilizr.Logging.Handlers
         {
             FileMode fileMode = _append ? FileMode.Append : FileMode.Create;
             if (encoding == null)
-                return new StreamWriter(new FileStream(filePath, fileMode, FileAccess.Write, FileShare.ReadWrite));
+                return new StreamWriter(
+                    new FileStream(filePath, fileMode, FileAccess.Write, FileShare.ReadWrite)
+                );
 
-            return new StreamWriter(new FileStream(filePath, fileMode, FileAccess.Write, FileShare.ReadWrite), encoding);
+            return new StreamWriter(
+                new FileStream(filePath, fileMode, FileAccess.Write, FileShare.ReadWrite),
+                encoding
+            );
         }
 
         protected override void Emit(LogRecord record)

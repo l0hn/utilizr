@@ -20,7 +20,6 @@ namespace Utilizr.Logging
         NOTSET = 0,
     }
 
-
     public static class Log
     {
         internal static readonly RootLogger Root = new RootLogger(Defaults.Level);
@@ -40,11 +39,11 @@ namespace Utilizr.Logging
 
         /// <summary>
         /// Basic configuration for the logging system.
-        /// 
-        /// This does nothing if the root logger already has handlers configured. It is a convenience method intended for use by 
-        /// simple scripts and programs to do one-shot configuration of the logging. 
-        /// 
-        /// The default behaviour is to create a StreamHandler which writes to StandardError, sets a formatter using the Defaults.format 
+        ///
+        /// This does nothing if the root logger already has handlers configured. It is a convenience method intended for use by
+        /// simple scripts and programs to do one-shot configuration of the logging.
+        ///
+        /// The default behaviour is to create a StreamHandler which writes to StandardError, sets a formatter using the Defaults.format
         /// format string, and adds the handler to the root logger.
         /// </summary>
         /// <param name="logFilePath"></param>
@@ -56,26 +55,28 @@ namespace Utilizr.Logging
             string? format = null,
             string? dateFormat = null,
             LoggingLevel level = LoggingLevel.NOTSET,
-            bool async = false)
+            bool async = false
+        )
         {
             if (Root.HandlerCount != 0)
                 return;
 
             if (string.IsNullOrEmpty(logFilePath))
-                throw new ArgumentException($"Null or empty value provided for {nameof(logFilePath)}");
+                throw new ArgumentException(
+                    $"Null or empty value provided for {nameof(logFilePath)}"
+                );
 
-            var handler = new RotatingFileHandler(logFilePath, 100*1024*1024, 2);
+            var handler = new RotatingFileHandler(logFilePath, 100 * 1024 * 1024, 2, async: async);
             BasicConfigure(handler, format, dateFormat, level, async);
         }
 
-
         /// <summary>
         /// Basic configuration for the logging system.
-        /// 
-        /// This does nothing if the root logger already has handlers configured. It is a convenience method intended for use by 
-        /// simple scripts and programs to do one-shot configuration of the logging. 
-        /// 
-        /// The default behaviour is to create a StreamHandler which writes to StandardError, sets a formatter using the Defaults.format 
+        ///
+        /// This does nothing if the root logger already has handlers configured. It is a convenience method intended for use by
+        /// simple scripts and programs to do one-shot configuration of the logging.
+        ///
+        /// The default behaviour is to create a StreamHandler which writes to StandardError, sets a formatter using the Defaults.format
         /// format string, and adds the handler to the root logger.
         /// </summary>
         /// <param name="stream"></param>
@@ -87,7 +88,8 @@ namespace Utilizr.Logging
             string? format = null,
             string? dateFormat = null,
             LoggingLevel level = LoggingLevel.NOTSET,
-            bool async = false)
+            bool async = false
+        )
         {
             if (Root.HandlerCount != 0)
                 return;
@@ -95,11 +97,17 @@ namespace Utilizr.Logging
             if (stream == null)
                 throw new ArgumentException($"Null passed for {nameof(stream)} parameter");
 
-            var handler = new StreamHandler(stream);
+            var handler = new StreamHandler(stream, async: true);
             BasicConfigure(handler, format, dateFormat, level, async);
         }
 
-        static void BasicConfigure(IHandler handler, string? format, string? dateFormat, LoggingLevel level = LoggingLevel.NOTSET, bool async = false)
+        static void BasicConfigure(
+            IHandler handler,
+            string? format,
+            string? dateFormat,
+            LoggingLevel level = LoggingLevel.NOTSET,
+            bool async = false
+        )
         {
             format ??= Defaults.Format;
             dateFormat ??= Defaults.DateFormat;
@@ -112,8 +120,6 @@ namespace Utilizr.Logging
 
             if (level != LoggingLevel.NOTSET)
                 Root.Level = level;
-
-            Root.Async = async;
         }
 
         /// <summary>
@@ -134,8 +140,10 @@ namespace Utilizr.Logging
             Root.RemoveHandler(handler);
         }
 
-        public static void FlushAllHandlers() {
-            Root.Handlers.ForEach(handler => {
+        public static void FlushAllHandlers()
+        {
+            Root.Handlers.ForEach(handler =>
+            {
                 try
                 {
                     handler.Flush();
@@ -152,14 +160,14 @@ namespace Utilizr.Logging
             return Manager.GetLogger(name);
         }
 
-
-        public static ILogger CreateILogger() {
+        public static ILogger CreateILogger()
+        {
             return new ILoggerWrapper();
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity DEBUG to the root logger.
-        /// 
+        ///
         /// Log.debug("Houston, we have a {0}", "thorny problem");
         /// </summary>
         /// <param name="message"></param>
@@ -171,7 +179,7 @@ namespace Utilizr.Logging
 
         /// <summary>
         /// Log String.Format(message, args) with severity DEBUG to getLogger(category)
-        /// 
+        ///
         /// Log.debug("Houston, we have a {0}", "thorny problem");
         /// </summary>
         /// <param name="category"></param>
@@ -184,7 +192,7 @@ namespace Utilizr.Logging
 
         /// <summary>
         /// Log String.Format(message, args) with severity INFO to the root logger.
-        /// 
+        ///
         /// Log.info("Houston, we have a {0}", "interesting problem");
         /// </summary>
         /// <param name="message"></param>
@@ -196,7 +204,7 @@ namespace Utilizr.Logging
 
         /// <summary>
         /// Log String.Format(message, args) with severity INFO to getLogger(category)
-        /// 
+        ///
         /// Log.info("Houston, we have a {0}", "interesting problem");
         /// </summary>
         /// <param name="category"></param>
@@ -208,15 +216,12 @@ namespace Utilizr.Logging
             {
                 GetLogger(category).Info(message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity WARNING to the root logger.
-        /// 
+        ///
         /// Log.warning("Houston, we have a {0}", "bit of a problem");
         /// </summary>
         /// <param name="message"></param>
@@ -227,15 +232,12 @@ namespace Utilizr.Logging
             {
                 Root.Warning(message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity WARNING to getLogger(category).
-        /// 
+        ///
         /// Log.warning("Houston, we have a {0}", "bit of a problem");
         /// </summary>
         /// <param name="category"></param>
@@ -247,15 +249,12 @@ namespace Utilizr.Logging
             {
                 GetLogger(category).Warning(message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity ERROR to the root logger.
-        /// 
+        ///
         /// Log.error("Houston, we have a {0}", "major problem");
         /// </summary>
         /// <param name="message"></param>
@@ -266,15 +265,12 @@ namespace Utilizr.Logging
             {
                 Root.Error(message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity ERROR to getLogger(category).
-        /// 
+        ///
         /// Log.error("Houston, we have a {0}", "major problem");
         /// </summary>
         /// <param name="category"></param>
@@ -286,15 +282,12 @@ namespace Utilizr.Logging
             {
                 GetLogger(category).Error(message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity CRITICAL to the root logger.
-        /// 
+        ///
         /// Logs.critical("Houston, we have a {0}", "major disaster");
         /// </summary>
         /// <param name="message"></param>
@@ -305,15 +298,12 @@ namespace Utilizr.Logging
             {
                 Root.Critical(message, args);
             }
-            catch 
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
         /// Log String.Format(message, args) with severity CRITICAL to getLogger(category)
-        /// 
+        ///
         /// Logs.critical("Houston, we have a {0}", "major disaster");
         /// </summary>
         /// <param name="category"></param>
@@ -325,10 +315,7 @@ namespace Utilizr.Logging
             {
                 GetLogger(category).Critical(message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -343,10 +330,7 @@ namespace Utilizr.Logging
             {
                 Root.Message(level, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -356,16 +340,18 @@ namespace Utilizr.Logging
         /// <param name="category"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Message(LoggingLevel level, string category, string message, params object[] args)
+        public static void Message(
+            LoggingLevel level,
+            string category,
+            string message,
+            params object[] args
+        )
         {
             try
             {
                 GetLogger(category).Message(level, message, args);
             }
-            catch 
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -375,16 +361,18 @@ namespace Utilizr.Logging
         /// <param name="error"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Exception(LoggingLevel level, Exception error, string message = "", params object[] args)
+        public static void Exception(
+            LoggingLevel level,
+            Exception error,
+            string message = "",
+            params object[] args
+        )
         {
             try
             {
                 Root.Exception(level, error, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -399,10 +387,7 @@ namespace Utilizr.Logging
             {
                 Root.Exception(error, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -413,16 +398,19 @@ namespace Utilizr.Logging
         /// <param name="error"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Exception(LoggingLevel level, string category, Exception error, string message = "", params object[] args)
+        public static void Exception(
+            LoggingLevel level,
+            string category,
+            Exception error,
+            string message = "",
+            params object[] args
+        )
         {
             try
             {
                 GetLogger(category).Exception(level, error, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -432,17 +420,18 @@ namespace Utilizr.Logging
         /// <param name="error"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Exception(string category, Exception error, string message = "",
-            params object[] args)
+        public static void Exception(
+            string category,
+            Exception error,
+            string message = "",
+            params object[] args
+        )
         {
             try
             {
                 GetLogger(category).Exception(error, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -452,16 +441,18 @@ namespace Utilizr.Logging
         /// <param name="interestingObjects"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Objects(LoggingLevel level, object[] interestingObjects, string message, params object[] args)
+        public static void Objects(
+            LoggingLevel level,
+            object[] interestingObjects,
+            string message,
+            params object[] args
+        )
         {
             try
             {
                 Root.Objects(level, interestingObjects, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -472,18 +463,20 @@ namespace Utilizr.Logging
         /// <param name="interestingObjects"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Objects(LoggingLevel level, string category, object[] interestingObjects, string message, params object[] args)
+        public static void Objects(
+            LoggingLevel level,
+            string category,
+            object[] interestingObjects,
+            string message,
+            params object[] args
+        )
         {
             try
             {
                 GetLogger(category).Objects(level, interestingObjects, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
-
 
         /// <summary>
         /// Log String.Format(message, args) with the specified severity level to the root logger, also extra values to be passed to the formatter
@@ -492,16 +485,18 @@ namespace Utilizr.Logging
         /// <param name="extra"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Extra(LoggingLevel level, Dictionary<string, object> extra, string message, params object[] args)
+        public static void Extra(
+            LoggingLevel level,
+            Dictionary<string, object> extra,
+            string message,
+            params object[] args
+        )
         {
             try
             {
                 Root.Extra(level, extra, message, args);
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         /// <summary>
@@ -512,16 +507,19 @@ namespace Utilizr.Logging
         /// <param name="extra"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public static void Extra(LoggingLevel level, string category, Dictionary<string, object> extra, string message, params object[] args)
+        public static void Extra(
+            LoggingLevel level,
+            string category,
+            Dictionary<string, object> extra,
+            string message,
+            params object[] args
+        )
         {
             try
             {
                 GetLogger(category).Extra(level, extra, message, args);
             }
-            catch (Exception)
-            {
-
-            }
+            catch (Exception) { }
         }
     }
 }
