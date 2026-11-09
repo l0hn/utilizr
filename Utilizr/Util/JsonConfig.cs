@@ -1,14 +1,16 @@
 ﻿using System;
-using System.Text.Json;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Utilizr.Async;
 using Utilizr.Logging;
-using System.Text.Json.Serialization;
 
 namespace Utilizr.Util
 {
-    public static class JsonConfig<T> where T : Loadable<T>, new()
+    public static class JsonConfig<T>
+        where T : Loadable<T>, new()
     {
         static readonly object LOCK = new();
 
@@ -37,7 +39,6 @@ namespace Utilizr.Util
             }
         }
 
-
         static T LoadFromConfigFile(T currentT)
         {
             try
@@ -51,7 +52,8 @@ namespace Utilizr.Util
         }
     }
 
-    public abstract class Loadable<T> where T : Loadable<T>, new()
+    public abstract class Loadable<T>
+        where T : Loadable<T>, new()
     {
         private static readonly object ATOMIC_LOCK = new();
         public event EventHandler? Saved;
@@ -76,15 +78,21 @@ namespace Utilizr.Util
         /// </summary>
         [JsonIgnore]
         public virtual bool SaveOnLoadFailure { get; set; } = false;
-        
 
         /// <summary>
         /// Setting ReadOnly to true will cause an exception if a SaveInstance() attempt is made on the instance without explicitly providing a file path
         /// </summary>
-        [JsonIgnore] public virtual bool ReadOnly => false;
+        [JsonIgnore]
+        public virtual bool ReadOnly => false;
 
         [JsonIgnore]
         public string LoadPath => GetLoadPath();
+
+        /// <summary>
+        /// Provide type info for AOT / Trim safety
+        /// </summary>
+        [JsonIgnore]
+        public abstract JsonTypeInfo<T>? TypeInfo { get; }
 
         public virtual void Reload()
         {
@@ -115,7 +123,9 @@ namespace Utilizr.Util
         public virtual void Save(T currentT, string customFilePath = "")
         {
             if (currentT.ReadOnly && string.IsNullOrEmpty(customFilePath))
-                throw new InvalidOperationException($"Attempted to call {nameof(Save)}() or {nameof(SaveInstance)}() on a readonly loadable");
+                throw new InvalidOperationException(
+                    $"Attempted to call {nameof(Save)}() or {nameof(SaveInstance)}() on a readonly loadable"
+                );
 
             int localRetryCount = SaveRetries;
             bool done = false;
@@ -125,9 +135,7 @@ namespace Utilizr.Util
                 {
                     try
                     {
-                        var path = string.IsNullOrEmpty(customFilePath)
-                            ? LoadPath
-                            : customFilePath;
+                        var path = string.IsNullOrEmpty(customFilePath) ? LoadPath : customFilePath;
 
                         var dir = Path.GetDirectoryName(path);
                         if (!Directory.Exists(dir))
@@ -137,7 +145,7 @@ namespace Utilizr.Util
 
                         lock (this)
                         {
-                            var json = JsonSerializer.Serialize(currentT);
+                            var json = Serialise(currentT);
                             json = CustomSerializeStep(json);
                             File.WriteAllText(path, json);
                         }
@@ -163,6 +171,30 @@ namespace Utilizr.Util
             OnSaved();
         }
 
+        static string Serialise(T t)
+        {
+            if (t.TypeInfo == null)
+            {
+                return JsonSerializer.Serialize<T>(t);
+            }
+            return JsonSerializer.Serialize(t, t.TypeInfo);
+        }
+
+        static T? Deserialize(string json, JsonTypeInfo<T>? typeInfo)
+        {
+            if (typeInfo == null)
+            {
+                return JsonSerializer.Deserialize<T>(json);
+            }
+            T? obj = JsonSerializer.Deserialize(json, typeInfo);
+            if (obj == null)
+            {
+                Console.WriteLine($"Failed to deserialize {typeof(T).Name}");
+                Console.WriteLine(json);
+            }
+            return obj;
+        }
+
         /// <summary>
         /// Locks this instance for the duration of updateAction and saves back to disk when complete
         /// NOTE: this is only atomic with other calls to AtomicUpdate or AtomicRead. if you directly access Instance or manually call <see cref="SaveInstance"/> you're on your own.
@@ -178,11 +210,13 @@ namespace Utilizr.Util
             }
         }
 
-        public static async Task AtomicUpdateAsync(Action<T> updateAction) {
-            await Task.Factory.StartNew(async () => {
+        public static async Task AtomicUpdateAsync(Action<T> updateAction)
+        {
+            await Task.Factory.StartNew(async () =>
+            {
                 lock (ATOMIC_LOCK)
                 {
-                   updateAction(Instance); 
+                    updateAction(Instance);
                 }
                 await SaveInstanceAsync();
             });
@@ -224,7 +258,7 @@ namespace Utilizr.Util
         {
             return null;
         }
-        
+
         public static T Load(T t, out bool loadFailed, string customLoadPath = "")
         {
             loadFailed = true;
@@ -235,12 +269,8 @@ namespace Utilizr.Util
                 try
                 {
                     json = t.RawLoad(customLoadPath);
-                    
                 }
-                catch (Exception)
-                {
-
-                }
+                catch (Exception) { }
 
                 if (string.IsNullOrEmpty(json))
                 {
@@ -257,27 +287,29 @@ namespace Utilizr.Util
 
                 if (string.IsNullOrEmpty(json))
                     return t;
-                
-                var loadedObj = JsonSerializer.Deserialize<T>(json);
+
+                var loadedObj = Deserialize(json, t.TypeInfo);
+
                 if (loadedObj != null)
                 {
                     loadFailed = false;
                     return loadedObj;
                 }
+                Console.WriteLine(json);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Log.Exception(ex);
-             }
-            finally {
+            }
+            finally
+            {
                 if (loadFailed)
                 {
                     try
                     {
                         Log.Error("LOADABLE", $"failed to load {loadPath}");
                     }
-                    catch (Exception)
-                    {
-                    }
+                    catch (Exception) { }
                 }
             }
 
