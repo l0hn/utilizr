@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.IO;
+using System.Text.Json.Serialization.Metadata;
 using Utilizr.Util;
 
 namespace Utilizr.Tests.Util;
@@ -47,6 +48,8 @@ public class DummyLoadable : Loadable<DummyLoadable>
     public string? SomeName { get; set; }
     public int SomeNumber { get; set; }
     public DateTime SomeDateTime { get; set; }
+
+    public override JsonTypeInfo<DummyLoadable>? TypeInfo => null;
 
     protected override string CustomDeserializeStep(string source)
     {

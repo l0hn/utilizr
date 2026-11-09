@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Utilizr.Info;
 using Utilizr.Win.Util;
 
@@ -14,6 +15,8 @@ namespace Utilizr.WPF.Util
         private Dictionary<string, byte[]> Resources { get; set; } = new();
 
         public override bool ReadOnly => true;
+
+        public override JsonTypeInfo<ResourceLoadable>? TypeInfo => null;
 
         public void Add(string resourceKey, byte[] resourceData)
         {
